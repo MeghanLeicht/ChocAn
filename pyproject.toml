@@ -1,0 +1,13 @@
+[project]
+name = "term_project"
+description = "Group 7's term project for CS 314"
+version = "0.1.0"
+authors = [
+    { name = "Danny Love", email = "danielov@pdx.edu" }
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
