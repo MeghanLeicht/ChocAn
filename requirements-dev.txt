@@ -1,2 +1,4 @@
 # List packages used for development here
 pytest 
+black
+coverage
