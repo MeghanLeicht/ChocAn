@@ -5,9 +5,14 @@ version = "0.1.0"
 authors = [
     { name = "Danny Love", email = "danielov@pdx.edu" }
 ]
-dependencies = []
+dependencies = [
+    'pandas'
+]
 
 [project.optional-dependencies]
 dev = [
-    "pytest"
+    'pre-commit',
+    'pytest',
+    'black',
+    'coverage',
 ]
