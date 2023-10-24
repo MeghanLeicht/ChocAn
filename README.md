@@ -1,5 +1,23 @@
 # For Developers
 
+## Commits
+
+### 1. Before submitting
+Code should be tested, formatted and checked for test coverage before submitting for code review.
+
+To check testing & formatting:
+```bash
+pre-commit run --all-files
+```
+To check test coverage (Coverage should be 100%):
+```bash
+coverage run -m pytest
+coverage report
+```
+### 2. Submit for code review
+
+**I have no idea how this process works, help?**
+
 ## Development Environment
 ChocAn Simulator development / testing should be done using a virutalenv virtual environment.
 ### Setting up a virtual environment
@@ -26,6 +44,12 @@ source ./.venv/bin/activate
 ```
 pip install -r ./requirements.txt
 pip install -r ./requirements-dev.txt
+```
+
+5) Install choc_an_simulator
+
+```
+pip install -m .
 ```
 
 ## Code Standards
