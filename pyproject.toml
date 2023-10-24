@@ -1,5 +1,5 @@
 [project]
-name = "term_project"
+name = "choc_an_simulator"
 description = "Group 7's term project for CS 314"
 version = "0.1.0"
 authors = [
