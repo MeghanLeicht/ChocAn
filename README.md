@@ -43,6 +43,7 @@ Function argument and return types must have type hinting. Some examples below:
 Basic hints:
 ```python
 def add_ints(a: int, b: int) -> int:
+    """Add two ints together"""
     return a + b
 ```
 Data structures:
@@ -51,6 +52,7 @@ Data structures:
 #Use the 'Any' hint when any type is allowed
 from typing import List, Any
 def combine_lists(a: List[Any], b: List[Any]) -> List[Any]:
+    """Combine two lists into one"""
     return a + b
 ```
 Optional arguments:
@@ -58,10 +60,18 @@ Optional arguments:
 # Optiona[type] accepts 'type' or 'None'.
 from typing import Optional
 def print_stats(name: str, age: Optional[int]) -> None:
+    """Print some stats"""
     print(f"Name: {name}")
     if age is not None:
         print(f"Age: {age}")
 ```
+
+### Docstrings
+
+All functions should have docstrings that adhere to the [PEP-0257 convention](https://peps.python.org/pep-0257/). 
+
+Check formatting with: ```pre-commit run pydocstring```
+
 
 ## Commits
 
