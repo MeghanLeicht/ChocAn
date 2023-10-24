@@ -4,32 +4,31 @@
 ## Development Environment
 ChocAn Simulator development / testing should be done using a virutalenv virtual environment.
 ### Setting up a virtual environment
-1) Install the virtualenv package (make sure you're using Python 3.12)
+1. Install the virtualenv package (make sure you're using Python 3.12)
 
 ```
 sudo apt-get install virtualenv
 ```
 
-2) Set up a virtual environment
-
+2. Set up a virtual environment
 ```
 python3 -m virtualenv ./.venv
 ```
 
-3) Activate the environment in your shell (you'll need to do this whenever you open a new shell)
+3. Activate the environment in your shell (you'll need to do this whenever you open a new shell)
 
 ```
 source ./.venv/bin/activate
 ```
 
-4) Install requirements from requirements.txt and requirements-dev.txt
+4. Install requirements from requirements.txt and requirements-dev.txt
 
 ```
 pip install -r ./requirements.txt
 pip install -r ./requirements-dev.txt
 ```
 
-5) Install choc_an_simulator
+5. Install choc_an_simulator
 
 ```
 pip install -m .
