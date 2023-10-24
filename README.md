@@ -1,22 +1,5 @@
 # For Developers
 
-## Commits
-
-### 1. Before submitting
-Code should be tested, formatted and checked for test coverage before submitting for code review.
-
-To check testing & formatting:
-```bash
-pre-commit run --all-files
-```
-To check test coverage (Coverage should be 100%):
-```bash
-coverage run -m pytest
-coverage report
-```
-### 2. Submit for code review
-
-**I have no idea how this process works, help?**
 
 ## Development Environment
 ChocAn Simulator development / testing should be done using a virutalenv virtual environment.
@@ -80,3 +63,21 @@ def print_stats(name: str, age: Optional[int]) -> None:
     if age is not None:
         print(f"Age: {age}")
 ```
+
+## Commits
+
+### 1. Before submitting
+Code should be tested, formatted and checked for test coverage before submitting for code review.
+
+To check testing & formatting:
+```bash
+pre-commit run --all-files
+```
+To check test coverage (Coverage should be 100%):
+```bash
+coverage run -m pytest
+coverage report
+```
+### 2. Submit for code review
+
+**I have no idea how this process works, help?**
