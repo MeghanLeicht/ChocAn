@@ -1,4 +1,5 @@
 **/.*
+**/*.pkt
 build
 !.gitignore
 !.pre-commit-config.yaml
