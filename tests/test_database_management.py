@@ -6,7 +6,6 @@ from choc_an_simulator.database_management import (
     load_records_from_file,
     _load_all_records_from_file_,
     _overwrite_records_to_file_,
-    _convert_name_to_path_,
     _PARQUET_DIR_,
 )
 
