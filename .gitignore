@@ -1,5 +1,7 @@
 **/.*
 **/*.pkt
+**/*.egg-info
+**/__pycache__
 build
 !.gitignore
 !.pre-commit-config.yaml

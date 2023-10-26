@@ -5,7 +5,7 @@ version = "0.1.0"
 authors = [
     { name = "Danny Love", email = "danielov@pdx.edu" }
 ]
-requires-python = "=3.11.0"
+requires-python = ">=3.11.0,<3.12"
 dependencies = [
     'numpy',
     'pandas',
