@@ -9,9 +9,7 @@ import pyarrow as pa
 _PARQUET_DIR_ = str(files("choc_an_simulator") / "storage")
 
 
-def add_records_to_file(
-    name: str, records: pd.DataFrame, schema: pa.Schema
-) -> pd.DataFrame:
+def add_records_to_file(name: str, records: pd.DataFrame, schema: pa.Schema) -> None:
     """
     Add records to a parquet file.
 
@@ -19,13 +17,15 @@ def add_records_to_file(
         name: The name of the parquet file (no extension)
         records: The records to add to the file
         schema: The file's schema
+
+    Raises-
+        ValueError: Duplicate entries in the first column
     """
     existing_records = _load_all_records_from_file_(name, schema)
     if existing_records[schema.names[0]].isin(records[schema.names[0]]).any():
         raise ValueError("Duplicate entries found in the first column.")
     records = pd.concat([existing_records, records])
     _overwrite_records_to_file_(name, records, schema)
-    return records
 
 
 def load_records_from_file(
@@ -81,6 +81,51 @@ def load_records_from_file(
             records = records[records[col] > val]
 
     return records
+
+
+def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Series:
+    """
+    Update a single record in a database.
+
+    Args-
+        name: Name of the parquet database
+        index: Value to match in the first column of the database
+        schema: Schema of the parquet database
+        **kwargs: Key/value pairs to change
+
+    Returns-
+        The matching row with updated values
+
+    Rauses-
+        KeyError: Missing index or colum name
+
+    Examples-
+        # Update the name of member 1234 to Martha
+        updated_member = update_record("members",1234,member_schema, name = "Martha")
+
+        # Update service #12 to be Zamboni Accident
+        updated_service = update_record("services",12,service_schema, service_name = "Zamboni Attack")
+
+        # Update address info for provider 2023
+        updated_provider = update_record(
+            "providers",
+            2023,
+            provider_schema,
+            address_line_1 = "1600 Pennsylvania Avenue, NW",
+            address_line_2 = "Unit 2",
+            zipcode = 97212
+        )
+    """
+    records = _load_all_records_from_file_(name, schema).set_index(schema.names[0])
+    try:
+        record = records.loc[index]
+    except KeyError:
+        raise KeyError(f"Index {index} not found in {name}")
+    for key, value in kwargs.items():
+        if key not in record:
+            raise KeyError(f"Column {key} not found in {name}")
+        record[key] = value
+    return record
 
 
 def _convert_name_to_path_(name: str) -> str:
