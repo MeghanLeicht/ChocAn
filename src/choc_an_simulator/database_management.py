@@ -97,6 +97,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         The matching row with updated values
 
     Rauses-
+        AssertionError: No key/value pairs given
         IndexError: Index not found
         KeyError: column name not found
 
