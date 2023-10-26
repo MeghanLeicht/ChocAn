@@ -4,7 +4,6 @@ from typing import Optional, Dict, Any
 from importlib.resources import files
 import pandas as pd
 import pyarrow as pa
-import choc_an_simulator
 
 # The directory where all parquet files are stored
 _PARQUET_DIR_ = str(files("choc_an_simulator") / "storage")
@@ -116,10 +115,3 @@ def _overwrite_records_to_file_(
         schema: The file's schema
     """
     records.to_parquet(_convert_name_to_path_(name), schema=schema)
-
-
-if __name__ == "_main_":
-    records = pd.DataFrame({"col_a": [1, 2, 3], "col_b": ["a", "b", "c"]})
-    schema = pa.schema([pa.field("col_a", pa.int64()), pa.field("col_b", pa.string())])
-    print(load_records_from_file("test", schema))
-    add_records_to_file("test", records, schema)

@@ -23,7 +23,8 @@ def save_example_file():
 def delete_example_file():
     """Delete file saved by save_example_file"""
     test_path = os.path.join(_PARQUET_DIR_, f"{EXAMPLE_NAME}.pkt")
-    os.remove(test_path)
+    if os.path.exists(test_path):
+        os.remove(test_path)
 
 
 def test_add_records_to_file():
@@ -58,6 +59,10 @@ def test_load_records_from_file():
         EXAMPLE_NAME, EXAMPLE_SCHEMA, gt_cols={"value": 2.0}
     )
     assert EXAMPLE_RECORDS[EXAMPLE_RECORDS["value"] > 2.0].equals(lt_records)
+    delete_example_file()
+    # Test 5: Missiing file
+    empty_records = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
+    assert empty_records.empty
     delete_example_file()
 
 
