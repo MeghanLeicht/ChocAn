@@ -28,6 +28,7 @@ def _delete_example_file_():
 
 
 def test_add_records_to_file():
+    """Test of the add_records_to_file function"""
     _save_example_file_()
     add_records_to_file(EXAMPLE_NAME, EXAMPLE_RECORDS, EXAMPLE_SCHEMA)
     updated_records = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
