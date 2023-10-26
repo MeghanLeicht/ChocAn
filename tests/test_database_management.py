@@ -1,6 +1,7 @@
 import pandas as pd
 import pyarrow as pa
 import os
+import pytest
 from choc_an_simulator.database_management import (
     add_records_to_file,
     load_records_from_file,
@@ -29,14 +30,15 @@ def _delete_example_file_():
 def test_add_records_to_file():
     """Test of the add_records_to_file function"""
     _save_example_file_()
-    add_records_to_file(EXAMPLE_NAME, EXAMPLE_RECORDS, EXAMPLE_SCHEMA)
+    new_records = pd.DataFrame({"ID": [3, 4], "value": [1.1, 2.2]})
+    add_records_to_file(EXAMPLE_NAME, new_records, EXAMPLE_SCHEMA)
     updated_records = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
-    expected_records = pd.concat([EXAMPLE_RECORDS, EXAMPLE_RECORDS]).reset_index(
-        drop=True
-    )
+    expected_records = pd.concat([EXAMPLE_RECORDS, new_records]).reset_index(drop=True)
     assert updated_records.equals(
         expected_records
     ), f"\n{expected_records}\n{updated_records}"
+    with pytest.raises(ValueError) as duplicate_error:
+        add_records_to_file(EXAMPLE_NAME, EXAMPLE_RECORDS, EXAMPLE_SCHEMA)
     _delete_example_file_()
 
 

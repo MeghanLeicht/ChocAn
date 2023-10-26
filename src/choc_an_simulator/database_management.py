@@ -21,6 +21,8 @@ def add_records_to_file(
         schema: The file's schema
     """
     existing_records = _load_all_records_from_file_(name, schema)
+    if existing_records[schema.names[0]].isin(records[schema.names[0]]).any():
+        raise ValueError("Duplicate entries found in the first column.")
     records = pd.concat([existing_records, records])
     _overwrite_records_to_file_(name, records, schema)
     return records
