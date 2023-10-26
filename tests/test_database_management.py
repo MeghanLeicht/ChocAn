@@ -15,12 +15,12 @@ EXAMPLE_RECORDS = pd.DataFrame({"ID": [1, 2], "value": [1.1, 2.2]})
 EXAMPLE_SCHEMA = pa.schema([("ID", pa.int64()), ("value", pa.float64())])
 
 
-def save_example_file():
+def _save_example_file_():
     """Save an example file for testing"""
     _overwrite_records_to_file_(EXAMPLE_NAME, EXAMPLE_RECORDS, EXAMPLE_SCHEMA)
 
 
-def delete_example_file():
+def _delete_example_file_():
     """Delete file saved by save_example_file"""
     test_path = os.path.join(_PARQUET_DIR_, f"{EXAMPLE_NAME}.pkt")
     if os.path.exists(test_path):
@@ -28,7 +28,7 @@ def delete_example_file():
 
 
 def test_add_records_to_file():
-    save_example_file()
+    _save_example_file_()
     add_records_to_file(EXAMPLE_NAME, EXAMPLE_RECORDS, EXAMPLE_SCHEMA)
     updated_records = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
     expected_records = pd.concat([EXAMPLE_RECORDS, EXAMPLE_RECORDS]).reset_index(
@@ -37,12 +37,12 @@ def test_add_records_to_file():
     assert updated_records.equals(
         expected_records
     ), f"\n{expected_records}\n{updated_records}"
-    delete_example_file()
+    _delete_example_file_()
 
 
 def test_load_records_from_file():
     """Tests of the load_records_from_file function"""
-    save_example_file()
+    _save_example_file_()
     # Test 1: No Filter
     all_records = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
     assert EXAMPLE_RECORDS.equals(all_records)
@@ -59,16 +59,16 @@ def test_load_records_from_file():
         EXAMPLE_NAME, EXAMPLE_SCHEMA, gt_cols={"value": 2.0}
     )
     assert EXAMPLE_RECORDS[EXAMPLE_RECORDS["value"] > 2.0].equals(lt_records)
-    delete_example_file()
+    _delete_example_file_()
     # Test 5: Missiing file
     empty_records = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
     assert empty_records.empty
-    delete_example_file()
+    _delete_example_file_()
 
 
 def test_overwrite_records_to_file_():
     """Tests of the overwrite_records_to_file_ function"""
-    save_example_file()
+    _save_example_file_()
     records = pd.DataFrame({"ID": [3, 4], "value": [3.3, 4.4]})
     _overwrite_records_to_file_(EXAMPLE_NAME, records, EXAMPLE_SCHEMA)
 
@@ -77,4 +77,4 @@ def test_overwrite_records_to_file_():
     assert updated_records.equals(records), (
         "\n" + str(records) + "\n" + str(updated_records)
     )
-    delete_example_file()
+    _delete_example_file_()
