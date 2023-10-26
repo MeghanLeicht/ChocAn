@@ -1,10 +1,7 @@
 **/.*
 **/*.pkt
-<<<<<<< Updated upstream
-**/*.egg-info
-=======
->>>>>>> Stashed changes
 **/__pycache__
+**/*.egg-info
 build
 !.gitignore
 !.pre-commit-config.yaml
