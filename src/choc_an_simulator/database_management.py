@@ -97,7 +97,8 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         The matching row with updated values
 
     Rauses-
-        KeyError: Missing index or colum name
+        IndexError: Index not found
+        KeyError: column name not found
 
     Examples-
         # Update the name of member 1234 to Martha
@@ -116,16 +117,19 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
             zipcode = 97212
         )
     """
-    records = _load_all_records_from_file_(name, schema).set_index(schema.names[0])
+    assert len(kwargs) > 0, "Must provide at least one key/value pair to update"
+    records = _load_all_records_from_file_(name, schema)
+
     try:
-        record = records.loc[index]
-    except KeyError:
-        raise KeyError(f"Index {index} not found in {name}")
+        index = records[records[schema.names[0]] == index].index.values[0]
+    except IndexError as index_error:
+        raise IndexError(f"Index {index} not found in {name}")
     for key, value in kwargs.items():
-        if key not in record:
+        if key not in schema.names:
             raise KeyError(f"Column {key} not found in {name}")
-        record[key] = value
-    return record
+        records.loc[index, key] = value
+    _overwrite_records_to_file_(name, records, schema)
+    return records.loc[index]
 
 
 def _convert_name_to_path_(name: str) -> str:

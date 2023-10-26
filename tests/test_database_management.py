@@ -5,6 +5,7 @@ import pytest
 from choc_an_simulator.database_management import (
     add_records_to_file,
     load_records_from_file,
+    update_record,
     _load_all_records_from_file_,
     _overwrite_records_to_file_,
     _PARQUET_DIR_,
@@ -79,4 +80,28 @@ def test_overwrite_records_to_file_():
     assert updated_records.equals(records), (
         "\n" + str(records) + "\n" + str(updated_records)
     )
+    _delete_example_file_()
+
+
+def test_update_record():
+    _save_example_file_()
+    # Test 1: Normal update
+    updated_record = update_record(EXAMPLE_NAME, 2, EXAMPLE_SCHEMA, value=2.3)
+    loaded_record = load_records_from_file(
+        EXAMPLE_NAME, EXAMPLE_SCHEMA, eq_cols={"ID": 2}
+    ).iloc[0]
+    assert (updated_record == loaded_record).all()
+
+    # Test 2: No keyword arguments
+    with pytest.raises(AssertionError) as no_kwarg_error:
+        update_record(EXAMPLE_NAME, 2, EXAMPLE_SCHEMA)
+
+    # Test 3: Bad index
+    with pytest.raises(IndexError) as index_error:
+        update_record(EXAMPLE_NAME, 3, EXAMPLE_SCHEMA, value=3.3)
+
+    # Test 4: Bad column
+    with pytest.raises(KeyError) as column_error:
+        update_record(EXAMPLE_NAME, 2, EXAMPLE_SCHEMA, bad_column_name="hello")
+
     _delete_example_file_()
