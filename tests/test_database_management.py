@@ -84,6 +84,7 @@ def test_overwrite_records_to_file_():
 
 
 def test_update_record():
+    """Tests of the update_record function"""
     _save_example_file_()
     # Test 1: Normal update
     updated_record = update_record(EXAMPLE_NAME, 2, EXAMPLE_SCHEMA, value=2.3)
