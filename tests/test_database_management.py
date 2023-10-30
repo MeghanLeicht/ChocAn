@@ -6,6 +6,7 @@ from choc_an_simulator.database_management import (
     add_records_to_file,
     load_records_from_file,
     update_record,
+    remove_record,
     _load_all_records_from_file_,
     _overwrite_records_to_file_,
     _PARQUET_DIR_,
@@ -104,5 +105,27 @@ def test_update_record():
     # Test 4: Bad column
     with pytest.raises(KeyError) as column_error:
         update_record(EXAMPLE_NAME, 2, EXAMPLE_SCHEMA, bad_column_name="hello")
+
+    _delete_example_file_()
+
+
+def test_remove_record():
+    """Tests of the remove_record function"""
+    _save_example_file_()
+    # Test 1: Remove existing entry
+    records_before = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
+    assert 1 in records_before["ID"]
+    removed = remove_record(EXAMPLE_NAME, 1, EXAMPLE_SCHEMA)
+    assert removed
+    # Load updated table from file
+    records_rem_1 = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
+    assert len(records_rem_1) == len(records_before) - 1
+    assert 1 not in records_rem_1["ID"]
+
+    # Test 2: Remove non
+    removed = remove_record(EXAMPLE_NAME, 1, EXAMPLE_SCHEMA)
+    records_rem_2 = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
+    assert removed is False
+    assert records_rem_1.equals(records_rem_2)
 
     _delete_example_file_()

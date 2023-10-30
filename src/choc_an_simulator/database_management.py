@@ -96,7 +96,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
     Returns-
         The matching row with updated values
 
-    Rauses-
+    Raises-
         AssertionError: No key/value pairs given
         IndexError: Index not found
         KeyError: column name not found
@@ -120,9 +120,9 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
     """
     assert len(kwargs) > 0, "Must provide at least one key/value pair to update"
     records = _load_all_records_from_file_(name, schema)
-
+    index_col = schema.names[0]
     try:
-        index = records[records[schema.names[0]] == index].index.values[0]
+        index = records[records[index_col] == index].index.values[0]
     except IndexError as index_error:
         raise IndexError(f"Index {index} not found in {name}")
     for key, value in kwargs.items():
@@ -131,6 +131,40 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         records.loc[index, key] = value
     _overwrite_records_to_file_(name, records, schema)
     return records.loc[index]
+
+
+def remove_record(name: str, index: Any, schema: pa.Schema) -> bool:
+    """
+    Update a single record in a database.
+
+    Args-
+        name: Name of the parquet database
+        index: Value to match in the first column of the database. Row wit this index is removed.
+        schema: Schema of the parquet database
+
+    Returns-
+        True: Row with matching index was removed
+        False: Index was not found.
+
+    Raises-
+        IndexError: Index not found
+        KeyError: column name not found
+
+    Examples-
+        # Remove member 1234
+
+        if remove_record("members",1234,member_schema):
+            print("Member 1234 Removed")
+        else:
+            print("Member 1234 Not Found.")
+    """
+    records = _load_all_records_from_file_(name, schema)
+    index_col = schema.names[0]
+    if index not in records[index_col]:
+        return False
+    records = records[records[index_col] != index]
+    _overwrite_records_to_file_(name, records, schema)
+    return True
 
 
 def _convert_name_to_path_(name: str) -> str:
