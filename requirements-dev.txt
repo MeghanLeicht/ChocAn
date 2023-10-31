@@ -1,4 +1,5 @@
 # List packages used for development here
+-r requirements.txt
 pre-commit
 pytest
 black

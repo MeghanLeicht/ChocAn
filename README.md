@@ -24,14 +24,14 @@ source ./.venv/bin/activate
 4. Install requirements from requirements.txt and requirements-dev.txt
 
 ```
-pip install -r ./requirements.txt
-pip install -r ./requirements-dev.txt
+python -m pip install -r ./requirements.txt
+python -m pip install -r ./requirements-dev.txt (installs requirements.txt and requirements-dev.txt)
 ```
 
 5. Install choc_an_simulator
 
 ```
-pip install -m .
+python -m pip install .
 ```
 
 ## Code Standards
