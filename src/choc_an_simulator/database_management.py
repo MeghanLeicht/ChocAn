@@ -85,7 +85,7 @@ def load_records_from_file(
 
 def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Series:
     """
-    Update a single record in a database.
+    Update a single record in a database file.
 
     Args-
         name: Name of the parquet database
@@ -135,7 +135,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
 
 def remove_record(name: str, index: Any, schema: pa.Schema) -> bool:
     """
-    Update a single record in a database.
+    Remove a single record from a database file.
 
     Args-
         name: Name of the parquet database
