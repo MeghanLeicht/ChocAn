@@ -12,7 +12,7 @@ sudo apt-get install virtualenv
 
 2. Set up a virtual environment
 ```
-python3 -m virtualenv ./.venv
+python3.11 -m virtualenv ./.venv
 ```
 
 3. Activate the environment in your shell (you'll need to do this whenever you open a new shell)
@@ -24,14 +24,14 @@ source ./.venv/bin/activate
 4. Install requirements from requirements.txt and requirements-dev.txt
 
 ```
-python -m pip install -r ./requirements.txt
-python -m pip install -r ./requirements-dev.txt (installs requirements.txt and requirements-dev.txt)
+python3.11 -m pip install -r ./requirements.txt
+python3.11 -m pip install -r ./requirements-dev.txt (installs requirements.txt and requirements-dev.txt)
 ```
 
 5. Install choc_an_simulator
 
 ```
-python -m pip install .
+python3.11 -m pip install -e .
 ```
 
 ## Code Standards
