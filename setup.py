@@ -4,5 +4,5 @@ setup(
     name="choc_an_simulator",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    package_data={"choc_an_simulator": ["storage/"]},
+    package_data={"choc_an_simulator": ["storage/*"]},
 )
