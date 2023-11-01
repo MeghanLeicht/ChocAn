@@ -64,7 +64,7 @@ def test_load_records_from_file():
     )
     assert EXAMPLE_RECORDS[EXAMPLE_RECORDS["value"] > 2.0].equals(lt_records)
     _delete_example_file_()
-    # Test 5: Missiing file
+    # Test 5: Missing file
     empty_records = load_records_from_file(EXAMPLE_NAME, EXAMPLE_SCHEMA)
     assert empty_records.empty
     _delete_example_file_()
