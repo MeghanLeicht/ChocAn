@@ -1,10 +1,14 @@
 """
 Collection of constant schemas, to be used when interacting with the database management module.
 
-Examples - 
-
+Examples -
+# 1. Get a full list of members
+def get_full_member_list():
+    from database_management import load_records_from_file
+    from schemas import MEMBER_INFO
+    members = load_records_from_file(MEMBER_INFO.name, MEMBER_INFO.schema)
 """
-from typing import Dict
+from typing import Any
 import pyarrow as pa
 import pandas as pd
 from dataclasses import dataclass, field
@@ -69,6 +73,57 @@ class TableInfo:
             ):
                 raise ArithmeticError(
                     f"Column {col_name} contains entries outside of numeric limit ({limit_range})."
+                )
+
+    def check_field(self, value: Any, field_name: str) -> None:
+        """
+        Check a single field value for alignment with the schema.
+
+        Args-
+            value: Value to check for compatibility with field
+            field_name: Name of the schema field to check the value against
+
+        Raises-
+            KeyError: Field doesn't exist in schema
+            TypeError: Value type is incompatible with field
+            ArithmeticError: Value doesn't adhere to field's character or numeric limit.
+        """
+        if field_name not in self.schema.names:
+            raise KeyError(
+                f"Field Name {field_name} does not exist in {self.name} schema."
+            )
+        field: pa.Field = self.schema.field_by_name(field_name)
+
+        # Check for type compatibility
+        try:
+            _ = pa.array([value], type=field.type)
+        except TypeError:
+            raise TypeError(
+                f"Value {value} has wrong type for column "
+                f"{field_name} ({type(value)} -> {field.type})"
+            )
+
+        if field_name in self.character_limits.keys():
+            val_len = len(str(value))
+            limit_range = self.character_limits[field_name]
+            if val_len < limit_range.start:
+                raise ArithmeticError(
+                    f"{field_name} value {value} is below character limit {limit_range} "
+                )
+            if val_len > limit_range.stop:
+                raise ArithmeticError(
+                    f"{field_name} value {value} is above character limit {limit_range} "
+                )
+
+        if field_name in self.numeric_limits.keys():
+            limit_range = self.numeric_limits[field_name]
+            if value < limit_range.start:
+                raise ArithmeticError(
+                    f"{field_name} value {value} is below numeric limit {limit_range} "
+                )
+            if value > limit_range.stop:
+                raise ArithmeticError(
+                    f"{field_name} value {value} is above numeric limit {limit_range} "
                 )
 
 

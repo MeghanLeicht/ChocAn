@@ -4,10 +4,10 @@ import pandas as pd
 import pyarrow as pa
 from choc_an_simulator.schemas import (
     TableInfo,
-    PROVIDER_DIRECTORY_INFO,
-    MEMBER_INFO,
-    PROVIDER_INFO,
-    SERVICE_LOG_INFO,
+    # PROVIDER_DIRECTORY_INFO,
+    # MEMBER_INFO,
+    # PROVIDER_INFO,
+    # SERVICE_LOG_INFO,
 )
 
 
