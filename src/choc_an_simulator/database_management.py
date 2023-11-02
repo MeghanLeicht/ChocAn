@@ -256,11 +256,13 @@ def _load_all_records_from_file_(name: str, schema: pa.Schema) -> pd.DataFrame:
     """
     Load an entire parquet file into a dataframe.
 
+    If no file is found, returns an empty dataframe with the given schema.
+
     Args-
         name: The name of the parquet file (no extension)
         schema: The file's schema
     Returns-
-        All records in the file. If the file doesn't exist, returns an empty dataframe.
+        All records in the file, or none if no file found.
     Raises-
         pyarrow.ArrowInvalid: File format is invalid
         pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
@@ -273,8 +275,10 @@ def _load_all_records_from_file_(name: str, schema: pa.Schema) -> pd.DataFrame:
         return pa.Table.from_pylist([], schema=schema).to_pandas()
     except (pa.ArrowInvalid, pa.ArrowIOError) as err_arrow:
         raise err_arrow
+
     if _check_schema_columns_(schema, records) is False:
         raise KeyError("File columns do not match schema")
+
     return records
 
 
