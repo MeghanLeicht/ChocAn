@@ -19,7 +19,7 @@ def add_records_to_file(name: str, records: pd.DataFrame, schema: pa.Schema) -> 
         schema: The file's schema
 
     Raises-
-        ValueError: Addded entries cause duplicate entries in the first column
+        ValueError: Added entries cause duplicate entries in the first column
         pyarrow.ArrowInvalid: Mismatch between the dataframe and the schema.
         pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
         KeyError: Mismatch between schema & records, or schema & file.
