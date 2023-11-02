@@ -309,7 +309,7 @@ class TestOverwriteRecordsToFile:
 
 def test_convert_name_to_path():
     """Test of the _convert_name_to_path_ function"""
-    assert _convert_name_to_path_("name") == f"{_PARQUET_DIR_}/name.pkt"
+    assert _convert_name_to_path_("name") == os.path.join(_PARQUET_DIR_, f"name.pkt")
 
 
 def test_check_schema_columns():
