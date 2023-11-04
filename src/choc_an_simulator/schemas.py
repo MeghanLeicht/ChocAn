@@ -50,8 +50,6 @@ class TableInfo:
             TypeError: Value type is incompatible with field
             ArithmeticError: Out of character range or numeric range.
         """
-        if set(self.schema.names) != set(data.columns):
-            raise KeyError("Dataframe and schema have mismatched columns.")
         data.apply(lambda row: self.check_series(row), axis=1)  # type: ignore
 
     def check_series(self, data: pd.Series) -> None:
@@ -67,7 +65,7 @@ class TableInfo:
             ArithmeticError: Value doesn't adhere to field's character or numeric limit.
         """
         if set(self.schema.names) != set(data.index.values):
-            raise KeyError("Series and schema have mismatched columns.")
+            raise KeyError("Data and schema have mismatched columns.")
         for field_name, value in data.items():
             self.check_field(value, str(field_name))
 
@@ -93,7 +91,7 @@ class TableInfo:
         # Check for type compatibility
         try:
             _ = pa.array([value], type=field.type)
-        except TypeError:
+        except pa.ArrowInvalid:
             raise TypeError(
                 f"Value {value} has wrong type for column "
                 f"{field_name} ({type(value)} -> {field.type})"
@@ -102,24 +100,16 @@ class TableInfo:
         if field_name in self.character_limits.keys():
             val_len = len(str(value))
             limit_range = self.character_limits[field_name]
-            if val_len < limit_range.start:
+            if (val_len < limit_range.start) or (val_len > limit_range.stop):
                 raise ArithmeticError(
-                    f"{field_name} value {value} is below character limit {limit_range} "
-                )
-            if val_len > limit_range.stop:
-                raise ArithmeticError(
-                    f"{field_name} value {value} is above character limit {limit_range} "
+                    f"{field_name} value {value} is outside character limit {limit_range} "
                 )
 
         if field_name in self.numeric_limits.keys():
             limit_range = self.numeric_limits[field_name]
-            if value < limit_range.start:
+            if (value < limit_range.start) or (value > limit_range.stop):
                 raise ArithmeticError(
-                    f"{field_name} value {value} is below numeric limit {limit_range} "
-                )
-            if value > limit_range.stop:
-                raise ArithmeticError(
-                    f"{field_name} value {value} is above numeric limit {limit_range} "
+                    f"{field_name} value {value} is outside numeric limit {limit_range} "
                 )
 
 
