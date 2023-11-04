@@ -39,41 +39,37 @@ class TableInfo:
                 )
 
     def check_dataframe(self, data: pd.DataFrame) -> None:
-        """Checks a dataframe for alignment with schema."""
+        """
+        Check a dataframe for alignment with schema.
+
+        Args-
+            data: Dataframe to check against schema
+
+        Raises-
+            KeyError: Mismatched columns
+            TypeError: Value type is incompatible with field
+            ArithmeticError: Out of character range or numeric range.
+        """
         if set(self.schema.names) != set(data.columns):
             raise KeyError("Dataframe and schema have mismatched columns.")
-        for col_name, limit_range in self.character_limits.items():
-            char_lens = data[col_name].astype(str).str.len()
-            if any((char_lens < limit_range.start) | (char_lens > limit_range.stop)):
-                raise ArithmeticError(
-                    f"Column {col_name} contains entries outsde of character limit ({limit_range})."
-                )
-        for col_name, limit_range in self.numeric_limits.items():
-            if any(
-                (data[col_name] < limit_range.start)
-                | (data[col_name] > limit_range.stop)
-            ):
-                raise ArithmeticError(
-                    f"Column {col_name} contains entries outside of numeric limit ({limit_range})."
-                )
+        data.apply(lambda row: self.check_series(row), axis=1)  # type: ignore
 
     def check_series(self, data: pd.Series) -> None:
-        """Checks a series for alignment with schema."""
+        """
+        Check a series for alignment with schema.
+
+        Args-
+            data: Series to check for compatibility with field
+
+        Raises-
+            KeyError: Field doesn't exist in schema
+            TypeError: Value type is incompatible with field
+            ArithmeticError: Value doesn't adhere to field's character or numeric limit.
+        """
         if set(self.schema.names) != set(data.index.values):
             raise KeyError("Series and schema have mismatched columns.")
-        for col_name, limit_range in self.character_limits.items():
-            char_len = len(str(data[col_name]))
-            if (char_len < limit_range.start) or (char_len > limit_range.stop):
-                raise ArithmeticError(
-                    f"Column {col_name} contains entries out of range {limit_range}."
-                )
-        for col_name, limit_range in self.numeric_limits.items():
-            if (data[col_name] < limit_range.start) or (
-                data[col_name] > limit_range.stop
-            ):
-                raise ArithmeticError(
-                    f"Column {col_name} contains entries outside of numeric limit ({limit_range})."
-                )
+        for field_name, value in data.items():
+            self.check_field(value, str(field_name))
 
     def check_field(self, value: Any, field_name: str) -> None:
         """
@@ -92,7 +88,7 @@ class TableInfo:
             raise KeyError(
                 f"Field Name {field_name} does not exist in {self.name} schema."
             )
-        field: pa.Field = self.schema.field_by_name(field_name)
+        field: pa.Field = self.schema.field(field_name)
 
         # Check for type compatibility
         try:

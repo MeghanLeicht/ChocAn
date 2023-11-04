@@ -106,7 +106,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         updated_member = update_record("members",1234,member_schema, name = "Martha")
 
         # Update service #12 to be Zamboni Accident
-        updated_service = update_record("services",12,service_schema, service_name = "Zamboni Attack")
+        updated_service = update_record("services",12,service_schema, service_name = "Broken leg")
 
         # Update address info for provider 2023
         updated_provider = update_record(
@@ -123,7 +123,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
     index_col = schema.names[0]
     try:
         index = records[records[index_col] == index].index.values[0]
-    except IndexError as index_error:
+    except IndexError:
         raise IndexError(f"Index {index} not found in {name}")
     for key, value in kwargs.items():
         if key not in schema.names:
@@ -196,7 +196,7 @@ def _overwrite_records_to_file_(
     Overwrite a parquet file with new records.
 
     Args-
-        name: The name of the parquet file (no      ValueError: invalid pyproject.toml config: `project.requires-python`. extension)
+        name: The name of the parquet file (no .pkt extension)
         records: The records to write to file
         schema: The file's schema
     """

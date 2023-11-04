@@ -39,7 +39,7 @@ def test_add_records_to_file():
     assert updated_records.equals(
         expected_records
     ), f"\n{expected_records}\n{updated_records}"
-    with pytest.raises(ValueError) as duplicate_error:
+    with pytest.raises(ValueError):
         add_records_to_file(EXAMPLE_NAME, EXAMPLE_RECORDS, EXAMPLE_SCHEMA)
     _delete_example_file_()
 
@@ -95,15 +95,15 @@ def test_update_record():
     assert (updated_record == loaded_record).all()
 
     # Test 2: No keyword arguments
-    with pytest.raises(AssertionError) as no_kwarg_error:
+    with pytest.raises(AssertionError):
         update_record(EXAMPLE_NAME, 2, EXAMPLE_SCHEMA)
 
     # Test 3: Bad index
-    with pytest.raises(IndexError) as index_error:
+    with pytest.raises(IndexError):
         update_record(EXAMPLE_NAME, 3, EXAMPLE_SCHEMA, value=3.3)
 
     # Test 4: Bad column
-    with pytest.raises(KeyError) as column_error:
+    with pytest.raises(KeyError):
         update_record(EXAMPLE_NAME, 2, EXAMPLE_SCHEMA, bad_column_name="hello")
 
     _delete_example_file_()
