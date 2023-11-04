@@ -175,7 +175,14 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         )
     """
     assert len(kwargs) > 0, "Must provide at least one key/value pair to update"
-    records = _load_all_records_from_file_(name, schema)
+    try:
+        records = _load_all_records_from_file_(name, schema)
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
+    except KeyError as err_key:
+        raise err_key
 
     index_col = schema.names[0]
     try:
