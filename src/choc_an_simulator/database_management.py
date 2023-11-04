@@ -162,7 +162,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         updated_member = update_record("members",1234,member_schema, name = "Martha")
 
         # Update service #12 to be Zamboni Accident
-        updated_service = update_record("services",12,service_schema, service_name = "Bad eyeballs")
+        updated_service = update_record("services",12,service_schema, service_name = "Zamboni Accident")
 
         # Update address info for provider 2023
         updated_provider = update_record(
