@@ -181,7 +181,7 @@ SERVICE_LOG_INFO = TableInfo(
     schema=pa.schema(
         [
             pa.field("entry_datetime_utc", pa.date64(), nullable=False),
-            pa.field("service_datetime_utc", pa.date32(), nullable=False),
+            pa.field("service_date_utc", pa.date32(), nullable=False),
             pa.field("provider_id", pa.uint32(), nullable=False),
             pa.field("member_id", pa.uint32(), nullable=False),
             pa.field("service_id", pa.uint32(), nullable=False),
