@@ -19,13 +19,38 @@ def add_records_to_file(name: str, records: pd.DataFrame, schema: pa.Schema) -> 
         schema: The file's schema
 
     Raises-
-        ValueError: Duplicate entries in the first column
+        ValueError: Added entries cause duplicate entries in the first column
+        pyarrow.ArrowInvalid: Mismatch between the dataframe and the schema.
+        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
+        KeyError: Mismatch between schema & records, or schema & file.
+
     """
-    existing_records = _load_all_records_from_file_(name, schema)
+    # Load file into memory
+    try:
+        existing_records = _load_all_records_from_file_(name, schema)
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
+    except KeyError as err_key:
+        # Schema / file mismatch
+        raise err_key
+
+    # Check that index name is correct
+    if schema.names[0] != records.columns[0]:
+        raise KeyError("Mismatch between schema & records.")
+    # Check that the addition will cause no duplicate indices
     if existing_records[schema.names[0]].isin(records[schema.names[0]]).any():
-        raise ValueError("Duplicate entries found in the first column.")
+        raise ValueError("Added entries cause duplicates in the first column.")
+
+    # Add the new data and save
     records = pd.concat([existing_records, records])
-    _overwrite_records_to_file_(name, records, schema)
+    try:
+        _overwrite_records_to_file_(name, records, schema)
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
 
 
 def load_records_from_file(
@@ -48,6 +73,13 @@ def load_records_from_file(
     Returns-
         All matching records. If the file doesn't exist, returns an empty dataframe.
 
+    Raises-
+        KeyError: Mismatch between schema & records.
+        pyarrow.ArrowTypeError: Type mismatch between schema & added records.
+        pyarrow.ArrowInvalid: Mismatch between the dataframe and the schema.
+        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
+        TypeError: Unsupported type comparison with filter
+
     Examples-
         # Get all records, no filters:
         records = load_records_from_file("example", example_schema)
@@ -66,19 +98,41 @@ def load_records_from_file(
             eq_cols = {"ID" : 1234}
         )
     """
-    records = _load_all_records_from_file_(name, schema)
+    try:
+        records = _load_all_records_from_file_(name, schema)
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
+    except KeyError as err_key:
+        raise err_key
+
     if eq_cols is not None:
         for col, val in eq_cols.items():
-            assert col in schema.names, f"eq_cols name {col} not found in schema."
-            records = records[records[col] == val]
+            if col not in schema.names:
+                raise KeyError("eq_cols name {col} not found in schema.")
+            try:
+                records = records[records[col] == val]
+            except TypeError as err_type:
+                raise TypeError(f"{err_type}: {col} == {val} not supported.")
     if lt_cols is not None:
         for col, val in lt_cols.items():
-            assert col in schema.names, f"lt_cols name {col} not found in schema."
-            records = records[records[col] < val]
+            if col not in schema.names:
+                raise KeyError(f"lt_cols name {col} not found in schema.")
+            try:
+                records = records[records[col] < val]
+            except TypeError as err_type:
+                raise TypeError(f"{err_type}: {col} < {val} not supported.")
     if gt_cols is not None:
         for col, val in gt_cols.items():
-            assert col in schema.names, f"gt_cols name {col} not found in schema."
-            records = records[records[col] > val]
+            if col not in schema.names:
+                raise KeyError(f"gt_cols name {col} not found in schema.")
+            try:
+                records = records[records[col] > val]
+            except TypeError as err_type:
+                raise TypeError(
+                    f"{err_type}: {col} > records = records[records[col] > val]{val} not supported."
+                )
 
     return records
 
@@ -99,7 +153,9 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
     Raises-
         AssertionError: No key/value pairs given
         IndexError: Index not found
-        KeyError: column name not found
+        KeyError: Mismatch between dataframe & schema, or kwargs & schema
+        pyarrow.ArrowInvalid: Type mismatch between the updated table and the schema.
+        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
 
     Examples-
         # Update the name of member 1234 to Martha
@@ -119,17 +175,33 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         )
     """
     assert len(kwargs) > 0, "Must provide at least one key/value pair to update"
-    records = _load_all_records_from_file_(name, schema)
+    try:
+        records = _load_all_records_from_file_(name, schema)
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
+    except KeyError as err_key:
+        raise err_key
+
     index_col = schema.names[0]
     try:
         index = records[records[index_col] == index].index.values[0]
     except IndexError:
         raise IndexError(f"Index {index} not found in {name}")
+
     for key, value in kwargs.items():
         if key not in schema.names:
             raise KeyError(f"Column {key} not found in {name}")
         records.loc[index, key] = value
-    _overwrite_records_to_file_(name, records, schema)
+
+    try:
+        _overwrite_records_to_file_(name, records, schema)
+    except pa.ArrowInvalid as err_type:
+        raise err_type
+    except pa.ArrowIOError as err_io:
+        raise err_io
+
     return records.loc[index]
 
 
@@ -147,8 +219,9 @@ def remove_record(name: str, index: Any, schema: pa.Schema) -> bool:
         False: Index was not found.
 
     Raises-
-        IndexError: Index not found
-        KeyError: column name not found
+        KeyError: Mismatch between dataframe and schema
+        pyarrow.ArrowInvalid: Invalid file format
+        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
 
     Examples-
         # Remove member 1234
@@ -158,34 +231,54 @@ def remove_record(name: str, index: Any, schema: pa.Schema) -> bool:
         else:
             print("Member 1234 Not Found.")
     """
-    records = _load_all_records_from_file_(name, schema)
+    try:
+        records = _load_all_records_from_file_(name, schema)
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
+    except KeyError as err_key:
+        raise err_key
+
     index_col = schema.names[0]
     if index not in records[index_col]:
         return False
     records = records[records[index_col] != index]
-    _overwrite_records_to_file_(name, records, schema)
+
+    try:
+        _overwrite_records_to_file_(name, records, schema)
+    except pa.ArrowIOError as err_io:
+        raise err_io
     return True
-
-
-def _convert_name_to_path_(name: str) -> str:
-    """Convert a parquet file's name to a full path."""
-    return os.path.join(_PARQUET_DIR_, name + ".pkt")
 
 
 def _load_all_records_from_file_(name: str, schema: pa.Schema) -> pd.DataFrame:
     """
     Load an entire parquet file into a dataframe.
 
+    If no file is found, returns an empty dataframe with the given schema.
+
     Args-
         name: The name of the parquet file (no extension)
         schema: The file's schema
     Returns-
-        All records in the file. If the file doesn't exist, returns an empty dataframe.
+        All records in the file, or none if no file found.
+    Raises-
+        pyarrow.ArrowInvalid: File format is invalid
+        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
+        KeyError: File columns do not match schema
     """
     path = _convert_name_to_path_(name)
-    if not os.path.exists(path):
+    try:
+        records = pd.read_parquet(path)
+    except FileNotFoundError:
         return pa.Table.from_pylist([], schema=schema).to_pandas()
-    records = pd.read_parquet(path, schema=schema)
+    except (pa.ArrowInvalid, pa.ArrowIOError) as err_arrow:
+        raise err_arrow
+
+    if _check_schema_columns_(schema, records) is False:
+        raise KeyError("File columns do not match schema")
+
     return records
 
 
@@ -196,8 +289,31 @@ def _overwrite_records_to_file_(
     Overwrite a parquet file with new records.
 
     Args-
-        name: The name of the parquet file (no .pkt extension)
-        records: The records to write to file
-        schema: The file's schema
+        name: The name of the parquet file (without the .pkt extension).
+        records: The records to write to file.
+        schema: The file's schema.
+    Raises-
+        pyarrow.ArrowInvalid: Type mismatch between dataframe and schema.
+        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.).
+        KeyError: Mismatch between records and schema.
+
     """
-    records.to_parquet(_convert_name_to_path_(name), schema=schema)
+    if _check_schema_columns_(schema, records) is False:
+        raise KeyError("Record columns don't match schema.")
+
+    try:
+        records.to_parquet(_convert_name_to_path_(name), schema=schema)
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
+
+
+def _convert_name_to_path_(name: str) -> str:
+    """Convert a parquet file's name to a full path."""
+    return os.path.join(_PARQUET_DIR_, name + ".pkt")
+
+
+def _check_schema_columns_(schema: pa.Schema, dataframe: pd.DataFrame) -> bool:
+    """Check that a dataframe and a schema have the same column names."""
+    return set(schema.names) == set(dataframe.columns)
