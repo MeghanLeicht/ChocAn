@@ -162,7 +162,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         updated_member = update_record("members",1234,member_schema, name = "Martha")
 
         # Update service #12 to be Zamboni Accident
-        updated_service = update_record("services",12,service_schema, service_name = "Zamboni Attack")
+        updated_service = update_record("services",12,service_schema, service_name = "Bad eyeballs")
 
         # Update address info for provider 2023
         updated_provider = update_record(
@@ -175,14 +175,7 @@ def update_record(name: str, index: Any, schema: pa.Schema, **kwargs) -> pd.Seri
         )
     """
     assert len(kwargs) > 0, "Must provide at least one key/value pair to update"
-    try:
-        records = _load_all_records_from_file_(name, schema)
-    except pa.ArrowInvalid as err_invalid:
-        raise err_invalid
-    except pa.ArrowIOError as err_io:
-        raise err_io
-    except KeyError as err_key:
-        raise err_key
+    records = _load_all_records_from_file_(name, schema)
 
     index_col = schema.names[0]
     try:

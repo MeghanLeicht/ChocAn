@@ -101,7 +101,7 @@ class FrozenBarPatron:
 
 bobby = FrozenBarPatron("Bobby", 12)
 try:
-    bobby.can_drink = True
+    bobby.can_drink = True  # type: ignore
 except FrozenInstanceError:
     print("Silly bobby, you can't change your members after they're initialized!")
 assert bobby.can_drink is False
