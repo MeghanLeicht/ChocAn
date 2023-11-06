@@ -8,7 +8,7 @@ def get_full_member_list():
     from schemas import MEMBER_INFO
     members = load_records_from_file(MEMBER_INFO.name, MEMBER_INFO.schema)
 """
-from typing import Any
+from typing import Any, List
 import pyarrow as pa
 import pandas as pd
 from dataclasses import dataclass, field
@@ -26,7 +26,7 @@ class TableInfo:
     numeric_limits: dict[str, range] = field(default_factory=lambda: {})
 
     def __post_init__(self):
-        """Assert that character limit information aligns with schema information."""
+        """Assertions & assignments after init."""
         for col_name in self.character_limits.keys():
             if col_name not in self.schema.names:
                 raise KeyError(
@@ -37,6 +37,19 @@ class TableInfo:
                 raise KeyError(
                     f"Numeric limit column {col_name} could not be found in schema {self.name}"
                 )
+
+    def index_col(self) -> str:
+        """Get the index column name of the schema."""
+        return self.schema.names[0]
+
+    def includes_columns(self, columns: List[str]) -> bool:
+        """Check if all of the given columns exist in the schema."""
+        return all(col in self.schema.names for col in columns)
+
+    def check_columns(self, columns: List[str]) -> None:
+        """Check that the given columns are the same as the schema columns."""
+        if set(self.schema.names) != set(columns):
+            raise KeyError("Data and schema have mismatched columns.")
 
     def check_dataframe(self, data: pd.DataFrame) -> None:
         """
@@ -64,8 +77,7 @@ class TableInfo:
             TypeError: Value type is incompatible with field
             ArithmeticError: Value doesn't adhere to field's character or numeric limit.
         """
-        if set(self.schema.names) != set(data.index.values):
-            raise KeyError("Data and schema have mismatched columns.")
+        self.check_columns(list(data.index.values))
         for field_name, value in data.items():
             self.check_field(value, str(field_name))
 
