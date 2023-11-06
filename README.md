@@ -58,7 +58,7 @@ def combine_lists(a: List[Any], b: List[Any]) -> List[Any]:
 ```
 Optional arguments:
 ```python
-# Optiona[type] accepts 'type' or 'None'.
+# Optional[type] accepts 'type' or 'None'.
 from typing import Optional
 def print_stats(name: str, age: Optional[int]) -> None:
     """Print some stats"""
