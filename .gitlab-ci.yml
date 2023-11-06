@@ -1,8 +1,5 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Python.gitlab-ci.yml
+# CI/CD config file for CS314 term project
+# This just makes sure that tests are ran on all PR's
 
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/python/tags/
@@ -36,8 +33,3 @@ test:
     - python3 -m pytest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-
-deploy:
-  stage: deploy
-  script: echo "Define your deployment script!"
-  environment: production
