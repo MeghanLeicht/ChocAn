@@ -6,7 +6,7 @@ Examples -
 def get_full_member_list():
     from database_management import load_records_from_file
     from schemas import MEMBER_INFO
-    members = load_records_from_file(MEMBER_INFO.name, MEMBER_INFO.schema)
+    members = load_records_from_file(MEMBER_INFO)
 """
 from typing import Any, List
 import pyarrow as pa
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class TableInfo:
-    """Info for one database file on the disc."""
+    """Info for one database file."""
 
     name: str
     schema: pa.Schema

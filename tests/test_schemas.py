@@ -45,6 +45,34 @@ class TestTableInfo:
                 numeric_limits={"missing column": range(1, 1)},
             )
 
+    def test_index_col(self):
+        """Test the check_dataframe function"""
+        test_info = TableInfo(
+            "test", self.test_schema, self.test_character_limit, self.test_numeric_limit
+        )
+        assert test_info.index_col() == "number"
+
+    def test_includes_columns(self):
+        """Test of the includes_columns function"""
+        test_info = TableInfo(
+            "test", self.test_schema, self.test_character_limit, self.test_numeric_limit
+        )
+        assert test_info.includes_columns(["number", "text"])
+        assert test_info.includes_columns(["missing_column"]) is False
+
+    def test_check_columns(self):
+        """Test of the check_columns function"""
+        test_info = TableInfo(
+            "test", self.test_schema, self.test_character_limit, self.test_numeric_limit
+        )
+        test_info.check_columns(["number", "text"])
+        with pytest.raises(KeyError):
+            test_info.check_columns(["number"])
+        with pytest.raises(KeyError):
+            test_info.check_columns(["number", "text", "extra_column"])
+        with pytest.raises(KeyError):
+            test_info.check_columns(["missing_column"])
+
     def test_check_dataframe(self):
         """Test the check_dataframe function"""
         test_info = TableInfo(

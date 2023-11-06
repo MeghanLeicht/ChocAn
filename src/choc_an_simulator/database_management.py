@@ -42,6 +42,7 @@ def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
         raise err_type
     except ArithmeticError as err_limit:
         raise err_limit
+
     # Check that the addition will cause no duplicate indices
     if (
         existing_records[table_info.index_col()]
@@ -54,8 +55,6 @@ def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
     records = pd.concat([existing_records, records])
     try:
         _overwrite_records_to_file_(records, table_info)
-    except pa.ArrowInvalid as err_invalid:
-        raise err_invalid
     except pa.ArrowIOError as err_io:
         raise err_io
 
@@ -155,7 +154,7 @@ def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
     Raises-
         AssertionError: No key/value pairs given
         IndexError: Index not found
-        KeyError: Mismatch between dataframe & schema, or kwargs & schema
+        KeyError: Mismatch between kwargs & schema
         pyarrow.ArrowInvalid: Type mismatch between the updated table and the schema.
         pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
 
@@ -183,23 +182,25 @@ def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
         raise err_invalid
     except pa.ArrowIOError as err_io:
         raise err_io
-    except KeyError as err_key:
-        raise err_key
 
     try:
         index = records[records[table_info.index_col()] == index].index.values[0]
     except IndexError:
         raise IndexError(f"Index {index} not found in {table_info.name}")
 
-    for key, value in kwargs.items():
-        if key not in table_info.schema.names:
-            raise KeyError(f"Column {key} not found in {table_info.name}")
-        records.loc[index, key] = value
+    for field_name, value in kwargs.items():
+        try:
+            table_info.check_field(value, field_name)
+        except KeyError as err_key:
+            raise err_key
+        except TypeError as err_type:
+            raise err_type
+        except ArithmeticError as err_out_of_range:
+            raise err_out_of_range
+        records.loc[index, field_name] = value
 
     try:
         _overwrite_records_to_file_(records, table_info)
-    except pa.ArrowInvalid as err_type:
-        raise err_type
     except pa.ArrowIOError as err_io:
         raise err_io
 
@@ -219,7 +220,6 @@ def remove_record(index: Any, table_info: TableInfo) -> bool:
         False: Index was not found.
 
     Raises-
-        KeyError: Mismatch between dataframe and schema
         pyarrow.ArrowInvalid: Invalid file format
         pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
 
@@ -237,8 +237,6 @@ def remove_record(index: Any, table_info: TableInfo) -> bool:
         raise err_invalid
     except pa.ArrowIOError as err_io:
         raise err_io
-    except KeyError as err_key:
-        raise err_key
 
     if index not in records[table_info.index_col()]:
         return False
@@ -278,6 +276,7 @@ def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
         table_info.check_dataframe(records)
     except KeyError as err_mismatch:
         raise err_mismatch
+
     return records
 
 
@@ -292,7 +291,6 @@ def _overwrite_records_to_file_(records: pd.DataFrame, table_info: TableInfo) ->
         KeyError: Records & schema have mismatched columns
         TypeError: Records have incorrect types
         ArithmeticError: Records contain values outside of the table_info's limits
-        pyarrow.ArrowInvalid: Type mismatch between dataframe and schema.
         pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.).
 
     """
@@ -308,8 +306,6 @@ def _overwrite_records_to_file_(records: pd.DataFrame, table_info: TableInfo) ->
     try:
         path = _convert_name_to_path_(table_info.name)
         records.to_parquet(path, schema=table_info.schema)
-    except pa.ArrowInvalid as err_invalid:
-        raise err_invalid
     except pa.ArrowIOError as err_io:
         raise err_io
 
