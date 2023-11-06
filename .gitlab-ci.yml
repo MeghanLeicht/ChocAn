@@ -33,6 +33,7 @@ test:
   script:
     - python3 -m pip install -r requirements-dev.txt
     - python3 -m pip install -e .
+    - coverage run -m pytest
 
 deploy:
   stage: deploy
