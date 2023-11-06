@@ -48,7 +48,7 @@ class TestAddRecordsToFile:
 
     new_records = pd.DataFrame({"ID": [3, 4], "value": [1.1, 2.2]})
 
-    def test_addRecordsToFile_NormalConditions(self, test_file):
+    def test_add_records_to_file_normal_conditions(self, test_file):
         """Test normal add to file."""
         # Test 1: Normal add
         add_records_to_file(test_file, self.new_records, TEST_SCHEMA)
@@ -60,17 +60,17 @@ class TestAddRecordsToFile:
             expected_records
         ), f"\n{expected_records}\n{updated_records}"
 
-    def test_addRecordsToFile_DuplicateEntries(self, test_file):
+    def test_add_records_to_file_duplicate_entries(self, test_file):
         """Test add duplicate entries"""
         with pytest.raises(ValueError):
             add_records_to_file(test_file, TEST_RECORDS, TEST_SCHEMA)
 
-    def test_addRecordsToFile_CorruptedFile(self, corrupted_test_file):
+    def test_add_records_to_file_corrupted_file(self, corrupted_test_file):
         """Test add to a corrupted file"""
         with pytest.raises(pa.ArrowInvalid):
             add_records_to_file(corrupted_test_file, self.new_records, TEST_SCHEMA)
 
-    def test_addRecordsToFile_SchemaMismatch(self, test_file):
+    def test_add_records_to_file_schema_mismatch(self, test_file):
         """Test add record with a mismatched schema"""
         mismatched_records = pd.DataFrame({"mismatched": [3, 4], "test": [1.1, 2.2]})
         mismatched_records_correct_index = pd.DataFrame(
@@ -95,13 +95,13 @@ class TestAddRecordsToFile:
         with pytest.raises(KeyError):
             add_records_to_file(test_file, mismatched_records, MISMATCHED_TEST_SCHEMA)
 
-    def test_addRecordsToFile_ReadError(self, test_file, mocker):
+    def test_add_records_to_file_read_error(self, test_file, mocker):
         """Test adding records to an unreadable file"""
         mocker.patch("pyarrow.parquet.read_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
             add_records_to_file(test_file, self.new_records, TEST_SCHEMA)
 
-    def test_addRecordsToFile_WriteError(self, test_file, mocker):
+    def test_add_records_to_file_write_error(self, test_file, mocker):
         """Test adding records to an unwriteable file"""
         mocker.patch("pyarrow.parquet.write_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
@@ -111,28 +111,28 @@ class TestAddRecordsToFile:
 class TestLoadRecordsFromFile:
     """Tests of the load_records_from_file function"""
 
-    def test_loadRecordsFromFile_AllRecords(self, test_file):
+    def test_load_records_from_file_all_records(self, test_file):
         """Test loading with no filters"""
         all_records = load_records_from_file(test_file, TEST_SCHEMA)
         assert TEST_RECORDS.equals(all_records)
 
-    def test_loadRecordsFromFile_CorruptedFile(self, corrupted_test_file):
+    def test_load_records_from_file_corrupted_file(self, corrupted_test_file):
         """Test loading a corrupted file"""
         with pytest.raises(pa.ArrowInvalid):
             load_records_from_file(corrupted_test_file, TEST_SCHEMA)
 
-    def test_loadRecordsFromFile_SchemaMismatch(self, test_file):
+    def test_load_records_from_file_schema_mismatch(self, test_file):
         """Test loading a file with the incorrect schema"""
         with pytest.raises(KeyError):
             load_records_from_file(test_file, MISMATCHED_TEST_SCHEMA)
 
-    def test_loadRecordsFromFile_IOError(self, test_file, mocker):
+    def test_load_records_from_file_io_error(self, test_file, mocker):
         """Test loading an inacessible file"""
         mocker.patch("pyarrow.parquet.read_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
             load_records_from_file(test_file, TEST_SCHEMA)
 
-    def test_loadRecordsFromFile_ValidFilters(self, test_file):
+    def test_load_records_from_file_valid_filters(self, test_file):
         """Test loading with valid filters"""
         # Test 1: Equality filter
         eq_records = load_records_from_file(test_file, TEST_SCHEMA, eq_cols={"ID": 1})
@@ -148,12 +148,12 @@ class TestLoadRecordsFromFile:
         )
         assert TEST_RECORDS[TEST_RECORDS["value"] > 2.0].equals(lt_records)
 
-    def test_loadRecordsFromFile_InvalidFilters(self, test_file):
+    def test_load_records_from_file_invalid_filters(self, test_file):
         """Test loading with invalid filters"""
         # Test 1: Invalid comparisons
         with pytest.raises(TypeError):
 
-            class no_eq:
+            class NoEq:
                 """Example of a class that doesn't support equality"""
 
                 def __eq__(self, other):
@@ -161,7 +161,7 @@ class TestLoadRecordsFromFile:
                         "Equality between no_eq and {type(other)} not supported"
                     )
 
-            load_records_from_file(test_file, TEST_SCHEMA, eq_cols={"ID": no_eq()})
+            load_records_from_file(test_file, TEST_SCHEMA, eq_cols={"ID": NoEq()})
         with pytest.raises(TypeError):
             load_records_from_file(test_file, TEST_SCHEMA, lt_cols={"value": "a"})
         with pytest.raises(TypeError):
@@ -175,7 +175,7 @@ class TestLoadRecordsFromFile:
         with pytest.raises(KeyError):
             load_records_from_file(test_file, TEST_SCHEMA, gt_cols={"invalid": 1})
 
-    def test_loadRecordsFromFile_MissingFile(self):
+    def test_load_records_from_file_missing_file(self):
         """Test loading from a file that doesn't exist."""
         empty_records = load_records_from_file("missing", TEST_SCHEMA)
         assert empty_records.empty
@@ -184,7 +184,7 @@ class TestLoadRecordsFromFile:
 class TestUpdateRecord:
     """Tests of the update_record function."""
 
-    def test_updateRecord_NormalUpdate(self, test_file):
+    def test_update_record__normal_update(self, test_file):
         """Test normal record update."""
         updated_record = update_record(test_file, 2, TEST_SCHEMA, value=2.3)
         loaded_record = load_records_from_file(
@@ -192,45 +192,45 @@ class TestUpdateRecord:
         ).iloc[0]
         assert (updated_record == loaded_record).all()
 
-    def test_updateRecord_NoKeywordArgs(self, test_file):
+    def test_update_record__no_keywordargs(self, test_file):
         """Test updating without providing any updates."""
         with pytest.raises(AssertionError):
             update_record(test_file, 2, TEST_SCHEMA)
 
-    def test_updateRecord_InvalidIndex(self, test_file):
+    def test_update_record__invalid_index(self, test_file):
         """Test updating an entry with an index that isn't in the dataset"""
         with pytest.raises(IndexError):
             update_record(test_file, 3, TEST_SCHEMA, value=3.3)
 
-    def test_updateRecord_InvalidColumn(self, test_file):
+    def test_update_record__invalid_column(self, test_file):
         """Test updating a field in column that isn't in the dataset"""
         with pytest.raises(KeyError):
             update_record(test_file, 2, TEST_SCHEMA, bad_column_name="hello")
 
     @pytest.mark.filterwarnings("ignore: Setting an item of incompatible dtype")
-    def test_updateRecord_TypeMismatch(self, test_file):
+    def test_update_record__type_mismatch(self, test_file):
         """Test updating a field with a different type than in the schema"""
         with pytest.raises(pa.ArrowInvalid):
             update_record(test_file, 2, TEST_SCHEMA, value="hello")
 
-    def test_updateRecord_SchemaMismatch(self, test_file):
+    def test_update_record__schema_mismatch(self, test_file):
         """Test updating with mismatched file / schema"""
         # Test 1: Mismatched schema / file
         with pytest.raises(KeyError):
             update_record(test_file, 2, MISMATCHED_TEST_SCHEMA, value=2.2)
 
-    def test_updateRecord_CorruptedFile(self, corrupted_test_file):
+    def test_update_record__corrupted_file(self, corrupted_test_file):
         """Test add record with mismatched file / schema"""
         with pytest.raises(pa.ArrowInvalid):
             update_record(corrupted_test_file, 2, TEST_SCHEMA, value=2.2)
 
-    def test_updateRecord_ReadError(self, test_file, mocker):
+    def test_update_record__read_error(self, test_file, mocker):
         """Test updating an unreadable file"""
         mocker.patch("pyarrow.parquet.read_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
             update_record(test_file, 2, TEST_SCHEMA, value=2.2)
 
-    def test_updateRecord_WriteError(self, test_file, mocker):
+    def test_update_record__write_error(self, test_file, mocker):
         """Test updating an unwriteable file"""
         mocker.patch("pyarrow.parquet.write_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
@@ -240,7 +240,7 @@ class TestUpdateRecord:
 class TestRemoveRecord:
     """Tests of the remove_record function"""
 
-    def test_removeRecord_NormalRemoval(self, test_file):
+    def test_remove_record__normal_removal(self, test_file):
         """Test normal removal"""
         records_before = load_records_from_file(test_file, TEST_SCHEMA)
         assert 1 in records_before["ID"]
@@ -250,7 +250,7 @@ class TestRemoveRecord:
         assert len(records_after) == len(records_before) - 1
         assert 1 not in records_after["ID"]
 
-    def test_removeRecord_MissingIndex(self, test_file):
+    def test_remove_record__missing_index(self, test_file):
         """Test removal at a non-existant index"""
         records_before = load_records_from_file(test_file, TEST_SCHEMA)
         removed = remove_record(test_file, 3, TEST_SCHEMA)
@@ -258,24 +258,24 @@ class TestRemoveRecord:
         assert removed is False
         assert records_before.equals(records_after)
 
-    def test_removeRecord_CorruptedFile(self, corrupted_test_file):
+    def test_remove_record__corrupted_file(self, corrupted_test_file):
         """Test removing from a corrupted file"""
         with pytest.raises(pa.ArrowInvalid):
             remove_record(corrupted_test_file, 2, TEST_SCHEMA)
 
-    def test_removeRecord_ReadError(self, test_file, mocker):
+    def test_remove_record__read_error(self, test_file, mocker):
         """Test removing from an unreadable file"""
         mocker.patch("pyarrow.parquet.read_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
             remove_record(test_file, 2, TEST_SCHEMA)
 
-    def test_removeRecord_WriteError(self, test_file, mocker):
+    def test_remove_record__write_error(self, test_file, mocker):
         """Test removing from an unwriteable file"""
         mocker.patch("pyarrow.parquet.write_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
             remove_record(test_file, 1, TEST_SCHEMA)
 
-    def test_removeRecord_SchemaMismatch(self, test_file):
+    def test_remove_record__schema_mismatch(self, test_file):
         with pytest.raises(KeyError):
             remove_record(test_file, 1, MISMATCHED_TEST_SCHEMA)
 
@@ -285,7 +285,7 @@ class TestOverwriteRecordsToFile:
 
     new_records = pd.DataFrame({"ID": [3, 4], "value": [3.3, 4.4]})
 
-    def test_overwriteRecordsToFile_NormalOverwrite(self, test_file):
+    def test_overwrite_records_to_file_normal_overwrite(self, test_file):
         """Tests of the overwrite_records_to_file_ function"""
         _overwrite_records_to_file_(test_file, self.new_records, TEST_SCHEMA)
 
@@ -295,13 +295,13 @@ class TestOverwriteRecordsToFile:
             "\n" + str(self.new_records) + "\n" + str(updated_records)
         )
 
-    def test_overwriteRecordsToFile_SchemaMismatch(self, test_file):
+    def test_overwrite_records_to_file_schema_mismatch(self, test_file):
         """Test overwrite record with a mismatched schema"""
         mismatched_records = pd.DataFrame({"mismatched": [3, 4], "test": [1.1, 2.2]})
         with pytest.raises(KeyError):
             _overwrite_records_to_file_(test_file, mismatched_records, TEST_SCHEMA)
 
-    def test_overwriteRecordsToFile_IOError(self, test_file, mocker):
+    def test_overwrite_records_to_file_io_error(self, test_file, mocker):
         mocker.patch("pyarrow.parquet.write_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
             _overwrite_records_to_file_(test_file, self.new_records, TEST_SCHEMA)
@@ -309,7 +309,7 @@ class TestOverwriteRecordsToFile:
 
 def test_convert_name_to_path():
     """Test of the _convert_name_to_path_ function"""
-    assert _convert_name_to_path_("name") == os.path.join(_PARQUET_DIR_, f"name.pkt")
+    assert _convert_name_to_path_("name") == os.path.join(_PARQUET_DIR_, "name.pkt")
 
 
 def test_check_schema_columns():
