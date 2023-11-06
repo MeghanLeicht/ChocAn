@@ -143,10 +143,10 @@ MEMBER_INFO = TableInfo(
         ]
     ),
     character_limits={
-        "member_id": range(9, 9),
+        "member_id": range(11, 11),
         "name": range(1, 25),
         "address": range(1, 25),
-        "city": range(1, 25),
+        "city": range(1, 14),
         "state": range(2, 2),
         "zipcode": range(5, 5),
     },
@@ -166,10 +166,10 @@ PROVIDER_INFO = TableInfo(
         ]
     ),
     character_limits={
-        "provider_id": range(9, 9),
+        "provider_id": range(11, 11),
         "name": range(1, 25),
         "address": range(1, 25),
-        "city": range(1, 25),
+        "city": range(1, 14),
         "state": range(2, 2),
         "zipcode": range(5, 5),
     },
