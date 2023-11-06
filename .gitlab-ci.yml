@@ -1,0 +1,35 @@
+# CI/CD config file for CS314 term project
+# This just makes sure that tests are ran on all PR's
+
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: python:3.11
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/topics/caching/
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - .venv/
+
+before_script:
+  - python3 --version ; python3 -m pip --version  # For debugging
+  - python3 -m pip install virtualenv
+  - virtualenv .venv
+  - source .venv/bin/activate
+
+test:
+  script:
+    - python3 -m pip install -r requirements-dev.txt
+    - python3 -m pip install -e .
+    - python3 -m pytest
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
