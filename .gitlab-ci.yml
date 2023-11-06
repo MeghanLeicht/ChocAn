@@ -33,7 +33,7 @@ test:
   script:
     - python3 -m pip install -r requirements-dev.txt
     - python3 -m pip install -e .
-    - coverage run -m pytest
+    - python3 -m pytest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
