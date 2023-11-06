@@ -160,16 +160,15 @@ def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
 
     Examples-
         # Update the name of member 1234 to Martha
-        updated_member = update_record("members",1234,member_schema, name = "Martha")
+        updated_member = update_record(1234,MEMBER_INFO, name = "Martha")
 
         # Update service #12 to be Broken Leg
-        updated_service = update_record("services",12,service_schema, service_name = "Broken leg")
+        updated_service = update_record(12, SERVICE_INFO, service_name = "Broken leg")
 
         # Update address info for provider 2023
         updated_provider = update_record(
-            "providers",
             2023,
-            provider_schema,
+            PROVIDER_INFO,
             address_line_1 = "1600 Pennsylvania Avenue, NW",
             address_line_2 = "Unit 2",
             zipcode = 97212
@@ -226,7 +225,7 @@ def remove_record(index: Any, table_info: TableInfo) -> bool:
     Examples-
         # Remove member 1234
 
-        if remove_record("members",1234,member_schema):
+        if remove_record(1234,MEMBER_SCHEMA):
             print("Member 1234 Removed")
         else:
             print("Member 1234 Not Found.")
