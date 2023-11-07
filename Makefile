@@ -5,7 +5,7 @@ install: .venv/touchfile
 
 .venv/touchfile: requirements-dev.txt requirements.txt
 	sudo apt-get install python3.11-venv
-	test -d venv || python3.11 -m virtualenv .venv
+	test -d .venv || python3.11 -m virtualenv .venv
 	. .venv/bin/activate; \
 	python3 -m pip install -Ur requirements-dev.txt; \
 	python3 -m pip install -e .
