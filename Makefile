@@ -1,4 +1,6 @@
-
+VENV = .venv
+PYTHON = $(VENV)/bin/python
+PIP = $(VENV)/bin/pip
 install: .venv/touchfile
 
 .venv/touchfile: requirements-dev.txt requirements.txt
