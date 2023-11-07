@@ -17,11 +17,11 @@ test: .venv/touchfile
 	rm .coverage
 
 clean:
-	rm -rf .venv ;\
-	rm -rf .coverage ;\
-	rm -rf .pytest_cache ;\
-	rm -rf htmlcov ;\
-	find . -type f -name '*.pyc' -exec rm -f {} \; ;\
-	find . -type f -name '*.pyo' -exec rm -f {} \; ;\
-	find . -type d -name '__pycache__' -exec rm -rf {} \; ;\
-	find . -type d -name '*.egg-info' -exec rm -rf {} \; ;\
+	rm -rf .venv
+	rm -rf .coverage
+	rm -rf .pytest_cache
+	rm -rf htmlcov
+	find . -type f -name '*.pyc' -exec rm -f {} \;
+	find . -type f -name '*.pyo' -exec rm -f {} \;
+	find . -type d -name '__pycache__' -exec rm -rf {} \;
+	find . -type d -name '*.egg-info' -exec rm -rf {} \;
