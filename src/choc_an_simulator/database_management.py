@@ -281,7 +281,7 @@ def save_report(table: pd.DataFrame, file_name: str) -> str:
                 table[col_name].dt.tz_convert(tzlocal()).dt.strftime(dttm_fmt)
             )
     try:
-        table.to_csv(path, na_rep="", index=False)
+        table.to_csv(path, index=False)
     except IOError as err_io:
         raise err_io
 
