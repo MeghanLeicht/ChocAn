@@ -3,37 +3,20 @@
 
 ## Development Environment
 ChocAn Simulator development / testing should be done using a virutalenv virtual environment.  
-**Note: If using python3 in these commands is causing any issues, try using python3.11 instead.**
 ### Setting up a virtual environment
-1. Install the virtualenv package (make sure you're using Python 3.11)
+
+1. Install the virtual environment and dependencies. (make sure you have Python 3.11 installed). 
 
 ```
-sudo apt-get install virtualenv
+make install
 ```
 
-2. Set up a virtual environment
-```
-python3 -m virtualenv ./.venv
-```
-
-3. Activate the environment in your shell (you'll need to do this whenever you open a new shell)
+2. Activate the environment in your shell (you'll need to do this whenever you open a new shell)
 
 ```
 source ./.venv/bin/activate
 ```
 
-4. Install requirements from requirements.txt and requirements-dev.txt
-
-```
-python3 -m pip install -r ./requirements.txt
-python3 -m pip install -r ./requirements-dev.txt (installs requirements.txt and requirements-dev.txt)
-```
-
-5. Install choc_an_simulator
-
-```
-python3 -m pip install -e .
-```
 
 ## Code Standards
 
@@ -73,7 +56,29 @@ All functions should have docstrings that adhere to the [PEP-0257 convention](ht
 
 Check formatting with: ```pre-commit run pydocstring```
 
+### Error Handling
+In order to ensure full test overage, errors should be handled explicitly and separately. 
+```python
+#Bad:
+try:
+    rases_key_or_type_error()
+except Exception as e:
+    raise e
 
+#Still bad, because incomplete testing can show full coverage:
+try:
+    rases_key_or_type_error()
+except (KeyError, TypeError) as e:
+    raise e
+
+#Good:
+try:
+    rases_key_or_type_error()
+except KeyError as err_key:
+    raise err_key
+except TypeError as err_type:
+    raise err_type
+```
 ## Commits
 
 ### 1. Before submitting
@@ -85,10 +90,16 @@ pre-commit run --all-files
 ```
 To check test coverage (Coverage should be 100%):
 
-``````
+```
+make test
+```
+If coverage is less than 100%, you can use coverage's html option to generate
+a graphical view
+```
 coverage run -m pytest
-coverage report
-``````
+coverage html
+# Open the new file at "./htmlcov/index.html" in your browser. 
+```
 
 ### 2. Push your code
 - Push to the branch that is relevant to your work.
