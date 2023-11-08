@@ -9,6 +9,7 @@ image: python:3.11
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  
 
 # Pip's cache doesn't store the python packages
 # https://pip.pypa.io/en/stable/topics/caching/
@@ -21,15 +22,12 @@ cache:
     - .venv/
 
 before_script:
-  - python3 --version ; python3 -m pip --version  # For debugging
-  - python3 -m pip install virtualenv
-  - virtualenv .venv
-  - source .venv/bin/activate
+  - make install
+  - python --version
+  - python -m --version
 
 test:
   script:
-    - python3 -m pip install -r requirements-dev.txt
-    - python3 -m pip install -e .
-    - python3 -m pytest
+    - make test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

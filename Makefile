@@ -4,19 +4,19 @@ PIP = $(VENV)/bin/pip
 install: .venv/touchfile
 
 .venv/touchfile: requirements-dev.txt requirements.txt
-	test -d .venv || python3.11 -m virtualenv .venv
-	. .venv/bin/activate
-	python3 -m pip install -Ur requirements-dev.txt
-	python3 -m pip install -e .
-	touch .venv/touchfile
+	test -d $(VENV) || python3.11 -m virtualenv $(VENV)
+	. $(VENV)/bin/activate
+	$(PYTHON) -m $(PIP) install -Ur requirements-dev.txt
+	$(PYTHON) -m $(PIP) install -e .
+	touch $(VENV)/touchfile
 
 test: .venv/touchfile
-	. .venv/bin/activate; coverage run -m pytest
+	coverage run -m pytest
 	coverage report
 	rm .coverage
 
 clean:
-	rm -rf .venv
+	rm -rf $(VENV)
 	rm -rf .coverage
 	rm -rf .pytest_cache
 	rm -rf htmlcov
