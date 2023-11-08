@@ -328,6 +328,11 @@ class TestOverwriteRecordsToFile:
 
 
 class TestSaveReport:
+    """Tests of the save_report function"""
+
+    # Local timezone calculated using a different method than save_report
+    local_timezone = datetime.now().astimezone().tzinfo
+
     report_input: pd.DataFrame = pd.DataFrame(
         {
             "ID": [1, 2],
@@ -344,7 +349,14 @@ class TestSaveReport:
         {
             "ID": [1, 2],
             "date": ["01-01-2021", "01-01-2022"],
-            "dttm": ["12-31-2020 16:00", "12-31-2021 16:00"],
+            "dttm": [
+                datetime(2021, 1, 1, tzinfo=timezone.utc)
+                .astimezone(local_timezone)
+                .strftime("%m-%d-%Y %H:%M"),
+                datetime(2022, 1, 1, tzinfo=timezone.utc)
+                .astimezone(local_timezone)
+                .strftime("%m-%d-%Y %H:%M"),
+            ],
             "bool": [True, False],
             "nullable": [1, None],
         }
@@ -352,6 +364,7 @@ class TestSaveReport:
 
     def test_save_report_normal_save(self):
         """Test saving a report under normal conditions"""
+
         path = save_report(self.report_input, "test")
         reloaded_from_file = pd.read_csv(path)
         assert reloaded_from_file.equals(self.expected_output)

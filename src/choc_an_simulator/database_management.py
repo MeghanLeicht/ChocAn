@@ -1,6 +1,7 @@
 """Functions related to database Input/Output."""
 import os
-from datetime import datetime, date
+from datetime import date
+from dateutil.tz import tzlocal
 from typing import Optional, Dict, Any
 from importlib.resources import files
 import pandas as pd
@@ -268,7 +269,6 @@ def save_report(table: pd.DataFrame, file_name: str) -> str:
     dttm_fmt = "%m-%d-%Y %H:%M"
     date_fmt = "%m-%d-%Y"
     path = _convert_report_name_to_path_(file_name)
-    local_timezone = datetime.now().astimezone().tzinfo
     for col_name, col_dtype in table.dtypes.items():
         # Convert all dates to strings
         if str(col_dtype) == "object":
@@ -278,7 +278,7 @@ def save_report(table: pd.DataFrame, file_name: str) -> str:
         # Convert all timezone-aware datetimes to local time
         elif str(col_dtype).startswith("datetime64[ns, "):
             table[col_name] = (
-                table[col_name].dt.tz_convert(local_timezone).dt.strftime(dttm_fmt)
+                table[col_name].dt.tz_convert(tzlocal()).dt.strftime(dttm_fmt)
             )
     try:
         table.to_csv(path, na_rep="", index=False)
