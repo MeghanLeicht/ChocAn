@@ -367,7 +367,11 @@ class TestSaveReport:
 
         path = save_report(self.report_input, "test")
         reloaded_from_file = pd.read_csv(path)
-        assert reloaded_from_file.equals(self.expected_output)
+        assert reloaded_from_file.equals(self.expected_output), (
+            "\nMismatch with expected file: "
+            + f"\nExpected: {self.expected_output}"
+            + f"\nReturned: {reloaded_from_file}"
+        )
         os.remove(path)
 
     def test_save_report_bad_path(self):
