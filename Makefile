@@ -1,16 +1,15 @@
-VENV = ./.venv
+VENV = .venv
 PYTHON = $(VENV)/bin/python
-PIP = $(VENV)/bin/pip
-install: .venv/touchfile
 
-.venv/touchfile: requirements-dev.txt requirements.txt
+.PHONY: install test clean
+
+install:  requirements-dev.txt requirements.txt
 	test -d $(VENV) || python3.11 -m virtualenv $(VENV)
 	. $(VENV)/bin/activate
-	$(PYTHON) -m $(PIP) install -Ur requirements-dev.txt
-	$(PYTHON) -m $(PIP) install -e .
-	touch $(VENV)/touchfile
+	$(PYTHON) -m pip install -Ur requirements-dev.txt
+	$(PYTHON) -m pip install -e .
 
-test: .venv/touchfile
+test:
 	coverage run -m pytest
 	coverage report
 	rm .coverage
