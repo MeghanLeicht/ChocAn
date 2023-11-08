@@ -1,5 +1,6 @@
-VENV = .venv
-PYTHON = $(VENV)/bin/python
+VENV     = .venv
+PYTHON   = $(VENV)/bin/python
+COVERAGE = $(VENV)/bin/coverage
 
 .PHONY: install test clean
 
@@ -10,8 +11,8 @@ install:  requirements-dev.txt requirements.txt
 	$(PYTHON) -m pip install -e .
 
 test:
-	coverage run -m pytest
-	coverage report
+	$(COVERAGE) run -m pytest
+	$(COVERAGE) report
 	rm .coverage
 
 clean:
