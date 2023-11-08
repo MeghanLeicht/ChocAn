@@ -24,7 +24,7 @@ cache:
 before_script:
   - make install
   - python --version
-  - python -m --version
+  - python -m pip --version
 
 test:
   script:
