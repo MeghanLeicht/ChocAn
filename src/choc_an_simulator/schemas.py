@@ -175,6 +175,7 @@ USER_INFO = TableInfo(
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
             pa.field("zipcode", pa.uint32(), nullable=False),
+            pa.field("password_hash", pa.binary(256), nullable=False),
         ]
     ),
     character_limits={
