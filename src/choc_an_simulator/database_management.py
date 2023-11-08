@@ -1,13 +1,16 @@
 """Functions related to database Input/Output."""
 import os
+from datetime import datetime, date
 from typing import Optional, Dict, Any
 from importlib.resources import files
 import pandas as pd
 import pyarrow as pa
 from .schemas import TableInfo
 
-# The directory where all parquet files are stored
+# The directory where all parquet files are stored.
 _PARQUET_DIR_ = str(files("choc_an_simulator") / "storage")
+# The directory where report files are stored.
+_REPORT_DIR_ = str(files("choc_an_simulator") / "reports")
 
 
 def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
@@ -248,6 +251,43 @@ def remove_record(index: Any, table_info: TableInfo) -> bool:
     return True
 
 
+def save_report(table: pd.DataFrame, file_name: str) -> str:
+    """
+    Save a table of information into a CSV file.
+
+    Args-
+        table: Data to write to the file
+        file_name: Name of the report (no directory or extension).
+
+    Returns-
+        Full path that the report was saved to
+
+    Raises-
+        IOError: Error while writing the report to file.
+    """
+    dttm_fmt = "%m-%d-%Y %H:%M"
+    date_fmt = "%m-%d-%Y"
+    path = _convert_report_name_to_path_(file_name)
+    local_timezone = datetime.now().astimezone().tzinfo
+    for col_name, col_dtype in table.dtypes.items():
+        # Convert all dates to strings
+        if str(col_dtype) == "object":
+            table[col_name] = table[col_name].apply(
+                lambda val: val.strftime(date_fmt) if isinstance(val, date) else val
+            )
+        # Convert all timezone-aware datetimes to local time
+        elif str(col_dtype).startswith("datetime64[ns, "):
+            table[col_name] = (
+                table[col_name].dt.tz_convert(local_timezone).dt.strftime(dttm_fmt)
+            )
+    try:
+        table.to_csv(path, na_rep="", index=False)
+    except IOError as err_io:
+        raise err_io
+
+    return path
+
+
 def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
     """
     Load an entire parquet file into a dataframe.
@@ -263,7 +303,7 @@ def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
         pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
         KeyError: File columns do not match schema
     """
-    path = _convert_name_to_path_(table_info.name)
+    path = _convert_parquet_name_to_path_(table_info.name)
     try:
         records = pd.read_parquet(path)
     except FileNotFoundError:
@@ -303,12 +343,17 @@ def _overwrite_records_to_file_(records: pd.DataFrame, table_info: TableInfo) ->
         raise err_limit
 
     try:
-        path = _convert_name_to_path_(table_info.name)
+        path = _convert_parquet_name_to_path_(table_info.name)
         records.to_parquet(path, schema=table_info.schema)
     except pa.ArrowIOError as err_io:
         raise err_io
 
 
-def _convert_name_to_path_(name: str) -> str:
+def _convert_parquet_name_to_path_(name: str) -> str:
     """Convert a parquet file's name to a full path."""
     return os.path.join(_PARQUET_DIR_, name + ".pkt")
+
+
+def _convert_report_name_to_path_(name: str) -> str:
+    """Convert a report file's name to a full path."""
+    return os.path.join(_REPORT_DIR_, name + ".csv")

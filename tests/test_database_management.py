@@ -1,5 +1,5 @@
 """Tests of the database_managemenr module"""
-
+from datetime import datetime, date, timezone
 import pandas as pd
 import pyarrow as pa
 import os
@@ -10,10 +10,11 @@ from choc_an_simulator.database_management import (
     load_records_from_file,
     update_record,
     remove_record,
+    save_report,
     _load_all_records_from_file_,
     _overwrite_records_to_file_,
     _PARQUET_DIR_,
-    _convert_name_to_path_,
+    _convert_parquet_name_to_path_,
 )
 
 TEST_NAME = "test"
@@ -326,6 +327,43 @@ class TestOverwriteRecordsToFile:
             _overwrite_records_to_file_(self.new_records, TEST_TABLE_INFO)
 
 
+class TestSaveReport:
+    report_input: pd.DataFrame = pd.DataFrame(
+        {
+            "ID": [1, 2],
+            "date": [date(2021, 1, 1), date(2022, 1, 1)],
+            "dttm": [
+                datetime(2021, 1, 1, tzinfo=timezone.utc),
+                datetime(2022, 1, 1, tzinfo=timezone.utc),
+            ],
+            "bool": [True, False],
+            "nullable": [1, None],
+        }
+    )
+    expected_output: pd.DataFrame = pd.DataFrame(
+        {
+            "ID": [1, 2],
+            "date": ["01-01-2021", "01-01-2022"],
+            "dttm": ["12-31-2020 16:00", "12-31-2021 16:00"],
+            "bool": [True, False],
+            "nullable": [1, None],
+        }
+    )
+
+    def test_save_report_normal_save(self):
+        """Test saving a report under normal conditions"""
+        path = save_report(self.report_input, "test")
+        reloaded_from_file = pd.read_csv(path)
+        assert reloaded_from_file.equals(self.expected_output)
+
+    def test_save_report_bad_path(self):
+        """Test saving a report to a non-existent location"""
+        with pytest.raises(IOError):
+            save_report(self.report_input, "directory/test")
+
+
 def test_convert_name_to_path():
     """Test of the _convert_name_to_path_ function"""
-    assert _convert_name_to_path_("name") == os.path.join(_PARQUET_DIR_, "name.pkt")
+    assert _convert_parquet_name_to_path_("name") == os.path.join(
+        _PARQUET_DIR_, "name.pkt"
+    )
