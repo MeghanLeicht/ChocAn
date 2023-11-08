@@ -164,21 +164,22 @@ MEMBER_INFO = TableInfo(
     },
 )
 
-"""All current ChocAn providers."""
-PROVIDER_INFO = TableInfo(
+"""All current ChocAn providers & managers."""
+USER_INFO = TableInfo(
     name="providers",
     schema=pa.schema(
         [
-            pa.field("provider_id", pa.uint32(), nullable=False),
+            pa.field("id", pa.uint32(), nullable=False),
             pa.field("name", pa.string(), nullable=False),
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
             pa.field("zipcode", pa.uint32(), nullable=False),
+            pa.field("password_hash", pa.binary(256), nullable=False),
         ]
     ),
     character_limits={
-        "provider_id": range(11, 11),
+        "id": range(11, 11),
         "name": range(1, 25),
         "address": range(1, 25),
         "city": range(1, 14),
@@ -201,7 +202,7 @@ SERVICE_LOG_INFO = TableInfo(
         ]
     ),
     character_limits={
-        "provider_id": PROVIDER_INFO.character_limits["provider_id"],
+        "provider_id": USER_INFO.character_limits["id"],
         "member_id": MEMBER_INFO.character_limits["member_id"],
         "service_id": PROVIDER_DIRECTORY_INFO.character_limits["service_id"],
     },
