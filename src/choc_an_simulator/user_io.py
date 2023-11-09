@@ -8,6 +8,25 @@ from typing import Optional, List, Tuple
 from datetime import date, datetime
 
 
+class PColor:
+    """Functions for printing in color."""
+
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+    @classmethod
+    def pfail(cls, text: str) -> None:
+        """Print text using the failure color (red)."""
+        print(f"{cls.FAIL}{text}{cls.ENDC}")
+
+
 def prompt_date(
     message: str, min_date: Optional[date] = None, max_date: Optional[date] = None
 ) -> Optional[date]:
@@ -41,16 +60,16 @@ def prompt_date(
             result = datetime.strptime(date_str, "%m-%d-%Y").date()
         # Date incorrectly formatted
         except ValueError:
-            print(f"{date_str} is not in MM-DD-YYYY format.")
+            PColor.pfail(f"{date_str}is not in MM-DD-YYYY format.")
             continue
         # Date before min_date
         if (min_date is not None) and (result < min_date):
-            print(f"Date must be on or after {min_date.strftime('%m-%d-%Y')}")
+            PColor.pfail(f"Date must be on or after {min_date.strftime('%m-%d-%Y')}")
             result = None
 
         # Date after max_date
         elif (max_date is not None) and (result > max_date):
-            print(f"Date must be on or before {max_date.strftime('%m-%d-%Y')}")
+            PColor.pfail(f"Date must be on or before {max_date.strftime('%m-%d-%Y')}")
             result = None
     return result
 
@@ -114,8 +133,8 @@ def prompt_int(
         elif (numeric_limit is not None) and not (
             numeric_limit.start <= result <= numeric_limit.stop
         ):
-            print(
-                f'"{result}" is not in the range ({numeric_limit.start}-{numeric_limit.stop})"'
+            PColor.pfail(
+                f"{result} is not in the range ({numeric_limit.start}-{numeric_limit.stop})"
             )
             result = None
 
@@ -141,7 +160,7 @@ def prompt_str(message: str, char_limit: Optional[range] = None) -> Optional[str
             if (char_limit is not None) and not (
                 char_limit.start <= len(result) <= char_limit.stop
             ):
-                print(
+                PColor.pfail(
                     "Input must be between "
                     f"{char_limit.start} and {char_limit.stop} characters long."
                 )
