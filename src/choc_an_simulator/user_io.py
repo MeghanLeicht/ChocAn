@@ -39,8 +39,8 @@ def prompt_date(
             return None
         try:
             result = datetime.strptime(date_str, "%m-%d-%Y").date()
+        # Date incorrectly formatted
         except ValueError:
-            # Date incorrectly formatted
             print(f"{date_str} is not in MM-DD-YYYY format.")
             continue
         # Date before min_date
