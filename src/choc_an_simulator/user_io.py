@@ -1,7 +1,7 @@
 """
 Functions related to interaction with the terminal.
 
-This includes both user input and formatted display.
+Examples for prompting functions available in examples/prompting.py
 """
 
 from typing import Optional, List, Tuple
