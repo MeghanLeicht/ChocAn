@@ -148,6 +148,7 @@ def prompt_str(message: str, char_limit: Optional[range] = None) -> Optional[str
                 result = None
         return result
     except KeyboardInterrupt:
+        print()
         return None
 
 
