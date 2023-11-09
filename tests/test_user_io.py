@@ -12,7 +12,11 @@ from choc_an_simulator.user_io import (
 
 
 class TestPColor:
-    test_parameters = [(PColor.pfail, "FAIL"), (PColor.pwarn, "WARNING")]
+    test_parameters = [
+        (PColor.pfail, "FAIL"),
+        (PColor.pwarn, "WARNING"),
+        (PColor.pok, "OKGREEN"),
+    ]
 
     @pytest.mark.parametrize("func,ansi_code_name", test_parameters)
     def test_pfuncs(self, func, ansi_code_name, capsys):

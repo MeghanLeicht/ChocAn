@@ -26,19 +26,28 @@ class PColor:
     TColorNames = Literal["HEADER", "OKGREEN", "WARNING", "FAIL", "BOLD", "UNDERLINE"]
 
     @classmethod
-    def pfail(cls, text: str) -> None:
-        """Print failure text."""
-        cls.pcolor(text, "FAIL")
+    def pfail(cls, text: str, **kwargs) -> None:
+        """Print failure text. kwargs are passed to print()."""
+        cls.pcolor(text, "FAIL", **kwargs)
 
     @classmethod
-    def pwarn(cls, text: str) -> None:
-        """Print warning text."""
-        cls.pcolor(text, "WARNING")
+    def pwarn(cls, text: str, **kwargs) -> None:
+        """Print warning text. kwargs are passed to print()."""
+        cls.pcolor(text, "WARNING", **kwargs)
 
     @classmethod
-    def pcolor(cls, text: str, color_name: TColorNames):
-        """Print text with any of the colors / styles listed in TColorNames."""
-        print(f"{cls.ansi_codes[color_name]}{text}{cls.ansi_codes['ENDC']}")
+    def pok(cls, text: str, **kwargs) -> None:
+        """Print green OK text. kwargs are passed to print()."""
+        cls.pcolor(text, "OKGREEN", **kwargs)
+
+    @classmethod
+    def pcolor(cls, text: str, color_name: TColorNames, **kwargs):
+        """
+        Print text with any of the colors / styles listed in TColorNames.
+
+        kwargs are passed to print().
+        """
+        print(f"{cls.ansi_codes[color_name]}{text}{cls.ansi_codes['ENDC']}", **kwargs)
 
 
 def prompt_date(
@@ -105,7 +114,7 @@ def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int,
         raise ValueError("'choices' may not be empty.")
     print(message)
     for i, choice in enumerate(choices):
-        print(f"\t{i+1}: {choice}")
+        PColor.pok(f"{i+1}: ", end=f"{choice}\n")
     selection = prompt_int(
         message="Selection",
         char_limit=None,
