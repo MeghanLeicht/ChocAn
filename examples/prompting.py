@@ -67,7 +67,7 @@ def ex_prompt_date():
         if answer is not None:
             print(
                 f"\tYou entered: {answer}."
-                "\n\tDay: {answer.day}, Month: {answer.month}, Year: {answer.year}"
+                f"\n\tDay: {answer.day}, Month: {answer.month}, Year: {answer.year}"
             )
     print("No answer given. Moving on.\n")
 

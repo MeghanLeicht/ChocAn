@@ -4,36 +4,41 @@ Functions related to interaction with the terminal.
 Examples for prompting functions available in examples/prompting.py
 """
 
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Literal
 from datetime import date, datetime
 
 
 class PColor:
     """Functions for printing in color."""
 
-    HEADER = "\033[95m"
-    OKBLUE = "\033[94m"
-    OKCYAN = "\033[96m"
-    OKGREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
+    # ANSI color codes. Source: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+    ansi_codes: Dict[str, str] = {
+        "HEADER": "\033[95m",
+        "OKBLUE": "\033[94m",
+        "OKCYAN": "\033[96m",
+        "OKGREEN": "\033[92m",
+        "WARNING": "\033[93m",
+        "FAIL": "\033[91m",
+        "ENDC": "\033[0m",
+        "BOLD": "\033[1m",
+        "UNDERLINE": "\033[4m",
+    }
+    TColorNames = Literal["HEADER", "OKGREEN", "WARNING", "FAIL", "BOLD", "UNDERLINE"]
 
     @classmethod
     def pfail(cls, text: str) -> None:
         """Print failure text."""
-        cls._print_with_color(text, cls.FAIL)
+        cls.pcolor(text, "FAIL")
 
     @classmethod
     def pwarn(cls, text: str) -> None:
         """Print warning text."""
-        cls._print_with_color(text, cls.WARNING)
+        cls.pcolor(text, "WARNING")
 
     @classmethod
-    def _print_with_color(cls, text: str, ansi_code: str):
-        print(f"{ansi_code}{text}{cls.ENDC}")
+    def pcolor(cls, text: str, color_name: TColorNames):
+        """Print text with any of the colors / styles listed in TColorNames."""
+        print(f"{cls.ansi_codes[color_name]}{text}{cls.ansi_codes['ENDC']}")
 
 
 def prompt_date(
