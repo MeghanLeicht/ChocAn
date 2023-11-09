@@ -5,6 +5,54 @@ This includes both user input and formatted display.
 """
 
 from typing import Optional, List, Tuple
+from datetime import date, datetime
+
+
+def prompt_date(
+    message: str, min_date: Optional[date] = None, max_date: Optional[date] = None
+) -> Optional[date]:
+    """
+    Prompt the user to enter a date in MM-DD-YYYY format.
+
+    Args-
+        message: Message to display before date input.
+        min_date: Optional minimum allowed date.
+        max_date: Optionam maximum date.
+    Returns-
+        date: Tuple containin the choice index and text
+        None: User pressed Ctrl+C
+    Raises-
+        ValueError: min_date is greater than max_date
+    """
+    result: Optional[date] = None
+    message = f"{message} (MM-DD-YYYY)"
+    # min_date can't be greater than max_date
+    if ((min_date is not None) and (max_date is not None)) and (min_date > max_date):
+        raise ValueError(
+            "min_date must be less than or equal to max_date "
+            f"({min_date}>{max_date})"
+        )
+
+    while result is None:
+        date_str = prompt_str(message)
+        if date_str is None:
+            return None
+        try:
+            result = datetime.strptime(date_str, "%m-%d-%Y").date()
+        except ValueError:
+            # Date incorrectly formatted
+            print(f"{date_str} is not in MM-DD-YYYY format.")
+            continue
+        # Date before min_date
+        if (min_date is not None) and (result < min_date):
+            print(f"Date must be on or after {min_date.strftime('%m-%d-%Y')}")
+            result = None
+
+        # Date after max_date
+        elif (max_date is not None) and (result > max_date):
+            print(f"Date must be on or before {max_date.strftime('%m-%d-%Y')}")
+            result = None
+    return result
 
 
 def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int, str]]:
@@ -15,10 +63,10 @@ def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int,
         message: Message to display before menu options.
 
     Returns-
-        Tuple[int, str]: Tuple containin the choice index and text
-
+        Tuple[int, str]: Tuple containing the choice index and text
+        None: User pressed Ctrl+C
     Raises-
-        ArgumentError: choices is empty
+        ValueError: choices is empty
     """
     if len(choices) == 0:
         raise ValueError("'choices' may not be empty.")
@@ -49,7 +97,8 @@ def prompt_int(
         numeric_limit: The (optional) numeric range of the input
 
     Returns-
-        Optional[int]: The user's input if 'Ctrl+C' was not pressed, otherwise None.
+        int: The user's input
+        None: User pressed Ctrl+C
     """
     result: Optional[int] = None
     if numeric_limit is not None:
@@ -82,7 +131,8 @@ def prompt_str(message: str, char_limit: Optional[range] = None) -> Optional[str
         char_limit: The range of acceptable character lengths for the input.
 
     Returns-
-        Optional[str]: The user's input if 'Ctrl+C' was not pressed, otherwise None.
+        str: The user's input
+        None: User pressed Ctrl+C
     """
     try:
         result: Optional[str] = None

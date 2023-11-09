@@ -1,11 +1,64 @@
 """Tests of the user_io module."""
+from datetime import date
 import pytest
 from choc_an_simulator.user_io import (
     prompt_str,
     prompt_int,
     prompt_menu_options,
+    prompt_date,
     _to_int_,
 )
+
+
+class TestPromptDate:
+    """Tests of the prompt_date function"""
+
+    test_parameters = [
+        # Normal input, leading zeros
+        (["02-01-2021"], None, None, date(2021, 2, 1)),
+        # Normal input, no leading zeros
+        (["2-1-2021"], None, None, date(2021, 2, 1)),
+        # Normal input, in range
+        (["2-1-2021"], date(2021, 1, 1), date(2021, 2, 1), date(2021, 2, 1)),
+        # Below parsing range
+        (["0-0-0000", "2-1-2021"], None, None, date(2021, 2, 1)),
+        # Above parsing range
+        (["0-0-10000", "2-1-2021"], None, None, date(2021, 2, 1)),
+        # Below min_date
+        (
+            ["1-1-2020", "2-1-2021"],
+            date(2021, 1, 1),
+            date(2022, 1, 1),
+            date(2021, 2, 1),
+        ),
+        # Above max_date
+        (
+            ["1-1-2023", "2-1-2021"],
+            date(2021, 1, 1),
+            date(2022, 1, 1),
+            date(2021, 2, 1),
+        ),
+        # Invalid
+        (["invalid", "2-1-2021"], None, None, date(2021, 2, 1)),
+    ]
+
+    @pytest.mark.parametrize("input_strs,min_date,max_date,expected", test_parameters)
+    def test_prompt_date(self, input_strs, min_date, max_date, expected, monkeypatch):
+        inputs = iter(input_strs)
+        monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+        result = prompt_date("Enter Date", min_date, max_date)
+        print(input_strs, "->", result)
+        assert result == expected
+
+    def test_prompt_date_ctrl_c(self, monkeypatch):
+        """Test that pressing 'Ctrl+C' returns None."""
+        monkeypatch.setattr("builtins.input", lambda _: exec("raise KeyboardInterrupt"))
+        assert prompt_date("Enter Date") is None
+
+    def test_prompt_date_min_date_greater(self):
+        """Test that using a min_date greater than max_date raises a ValueError"""
+        with pytest.raises(ValueError):
+            prompt_date("Enter Date", date(2022, 1, 1), date(2021, 1, 1))
 
 
 class TestPromptMenuOptions:
