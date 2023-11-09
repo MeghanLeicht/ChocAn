@@ -6,8 +6,21 @@ from choc_an_simulator.user_io import (
     prompt_int,
     prompt_menu_options,
     prompt_date,
+    PColor,
     _to_int_,
 )
+
+
+class TestPColor:
+    test_parameters = [(PColor.pfail, PColor.FAIL), (PColor.pwarn, PColor.WARNING)]
+
+    @pytest.mark.parametrize("func,ansi_code", test_parameters)
+    def test_pfuncs(self, func, ansi_code, capsys):
+        func("TEST")
+        captured = capsys.readouterr()
+        print(captured)
+        assert captured.out[:5] == ansi_code
+        assert captured.out[-5:-1] == PColor.ENDC
 
 
 class TestPromptDate:

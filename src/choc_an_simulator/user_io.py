@@ -23,8 +23,17 @@ class PColor:
 
     @classmethod
     def pfail(cls, text: str) -> None:
-        """Print text using the failure color (red)."""
-        print(f"{cls.FAIL}{text}{cls.ENDC}")
+        """Print failure text."""
+        cls._print_with_color(text, cls.FAIL)
+
+    @classmethod
+    def pwarn(cls, text: str) -> None:
+        """Print warning text."""
+        cls._print_with_color(text, cls.WARNING)
+
+    @classmethod
+    def _print_with_color(cls, text: str, ansi_code: str):
+        print(f"{ansi_code}{text}{cls.ENDC}")
 
 
 def prompt_date(
