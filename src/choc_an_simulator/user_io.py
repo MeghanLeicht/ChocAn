@@ -18,7 +18,7 @@ class PColor:
         
         Source: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
         """
-        
+
         HEADER = "\033[95m"
         OKBLUE = "\033[94m"
         OKCYAN = "\033[96m"
@@ -28,7 +28,7 @@ class PColor:
         BOLD = "\033[1m"
         UNDERLINE = "\033[4m"
     #ANSI color code to end a color
-    ENDC = "\033[0m"
+    _ENDC = "\033[0m"
 
     @classmethod
     def pfail(cls, text: str, **kwargs) -> None:
@@ -46,13 +46,13 @@ class PColor:
         cls.pcolor(text, AnsiColor.OKGREEN, **kwargs)
 
     @classmethod
-    def pcolor(cls, text: str, color_name: AnsiColor, **kwargs):
+    def pcolor(cls, text: str, color_code: AnsiColor, **kwargs):
         """
         Print text with any of the colors / styles listed in TColorNames.
 
         kwargs are passed to print().
         """
-        print(f"{cls.ansi_codes[color_name]}{text}{AnsiColor}", **kwargs)
+        print(f"{color_code}{text}{cls._ENDC}", **kwargs)
 
 
 def prompt_date(
