@@ -12,18 +12,23 @@ from choc_an_simulator.user_io import (
 
 
 class TestPColor:
+    """Tests of the PColor class."""
+
     test_parameters = [
-        (PColor.pfail, "FAIL"),
-        (PColor.pwarn, "WARNING"),
-        (PColor.pok, "OKGREEN"),
+        (PColor.pfail, PColor.AnsiColor.FAIL),
+        (PColor.pwarn, PColor.AnsiColor.WARNING),
+        (PColor.pok, PColor.AnsiColor.OKGREEN),
     ]
 
-    @pytest.mark.parametrize("func,ansi_code_name", test_parameters)
-    def test_pfuncs(self, func, ansi_code_name, capsys):
+    @pytest.mark.parametrize("func,ansi_code", test_parameters)
+    def test_pfuncs(self, func, ansi_code, capsys):
+        """Parameterized tests of the various p{color type} functions."""
         func("TEST")
         captured = capsys.readouterr()
-        assert captured.out[:5] == PColor.ansi_codes[ansi_code_name]
-        assert captured.out[-5:-1] == PColor.ansi_codes["ENDC"]
+        print(captured)
+        assert captured.out[:5] == ansi_code.value
+        assert captured.out[5:-5] == "TEST"
+        assert captured.out[-5:-1] == PColor._ENDC
 
 
 class TestPromptDate:
