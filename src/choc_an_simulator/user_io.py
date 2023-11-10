@@ -107,6 +107,7 @@ def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int,
     Returns-
         Tuple[int, str]: Tuple containing the choice index and text
         None: User pressed Ctrl+C
+
     Raises-
         ValueError: choices is empty
     """

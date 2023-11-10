@@ -22,7 +22,6 @@ class TestPColor:
     def test_pfuncs(self, func, ansi_code_name, capsys):
         func("TEST")
         captured = capsys.readouterr()
-        print(captured)
         assert captured.out[:5] == PColor.ansi_codes[ansi_code_name]
         assert captured.out[-5:-1] == PColor.ansi_codes["ENDC"]
 
@@ -64,7 +63,6 @@ class TestPromptDate:
         inputs = iter(input_strs)
         monkeypatch.setattr("builtins.input", lambda _: next(inputs))
         result = prompt_date("Enter Date", min_date, max_date)
-        print(input_strs, "->", result)
         assert result == expected
 
     def test_prompt_date_ctrl_c(self, monkeypatch):
