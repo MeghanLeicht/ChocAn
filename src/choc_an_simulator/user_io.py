@@ -4,50 +4,56 @@ Functions related to interaction with the terminal.
 Examples for prompting functions available in examples/prompting.py
 """
 
-from typing import Optional, List, Tuple, Dict, Literal
+from typing import Optional, List, Tuple
+from enum import Enum
 from datetime import date, datetime
 
 
 class PColor:
     """Functions for printing in color."""
 
-    # ANSI color codes. Source: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
-    ansi_codes: Dict[str, str] = {
-        "HEADER": "\033[95m",
-        "OKBLUE": "\033[94m",
-        "OKCYAN": "\033[96m",
-        "OKGREEN": "\033[92m",
-        "WARNING": "\033[93m",
-        "FAIL": "\033[91m",
-        "ENDC": "\033[0m",
-        "BOLD": "\033[1m",
-        "UNDERLINE": "\033[4m",
-    }
-    TColorNames = Literal["HEADER", "OKGREEN", "WARNING", "FAIL", "BOLD", "UNDERLINE"]
+    class AnsiColor(Enum):
+        """
+        ANSI color codes.
+
+        Source: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+        """
+
+        HEADER = "\033[95m"
+        OKBLUE = "\033[94m"
+        OKCYAN = "\033[96m"
+        OKGREEN = "\033[92m"
+        WARNING = "\033[93m"
+        FAIL = "\033[91m"
+        BOLD = "\033[1m"
+        UNDERLINE = "\033[4m"
+
+    # ANSI color code to end a color
+    _ENDC = "\033[0m"
 
     @classmethod
     def pfail(cls, text: str, **kwargs) -> None:
         """Print failure text. kwargs are passed to print()."""
-        cls.pcolor(text, "FAIL", **kwargs)
+        cls.pcolor(text, cls.AnsiColor.FAIL, **kwargs)
 
     @classmethod
     def pwarn(cls, text: str, **kwargs) -> None:
         """Print warning text. kwargs are passed to print()."""
-        cls.pcolor(text, "WARNING", **kwargs)
+        cls.pcolor(text, cls.AnsiColor.WARNING, **kwargs)
 
     @classmethod
     def pok(cls, text: str, **kwargs) -> None:
         """Print green OK text. kwargs are passed to print()."""
-        cls.pcolor(text, "OKGREEN", **kwargs)
+        cls.pcolor(text, cls.AnsiColor.OKGREEN, **kwargs)
 
     @classmethod
-    def pcolor(cls, text: str, color_name: TColorNames, **kwargs):
+    def pcolor(cls, text: str, color_code: AnsiColor, **kwargs):
         """
         Print text with any of the colors / styles listed in TColorNames.
 
         kwargs are passed to print().
         """
-        print(f"{cls.ansi_codes[color_name]}{text}{cls.ansi_codes['ENDC']}", **kwargs)
+        print(f"{color_code.value}{text}{cls._ENDC}", **kwargs)
 
 
 def prompt_date(
@@ -59,9 +65,9 @@ def prompt_date(
     Args-
         message: Message to display before date input.
         min_date: Optional minimum allowed date.
-        max_date: Optionam maximum date.
+        max_date: Optional maximum date.
     Returns-
-        date: Tuple containin the choice index and text
+        date: Tuple containing the choice index and text
         None: User pressed Ctrl+C
     Raises-
         ValueError: min_date is greater than max_date
@@ -107,6 +113,7 @@ def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int,
     Returns-
         Tuple[int, str]: Tuple containing the choice index and text
         None: User pressed Ctrl+C
+
     Raises-
         ValueError: choices is empty
     """
@@ -148,7 +155,7 @@ def prompt_int(
 
     while result is None:
         result_text = prompt_str(message, char_limit)
-        if result_text is None:  # user pressed ctrl+z
+        if result_text is None:  # user pressed ctrl+c
             return None
         result = _to_int_(result_text)
         if result is None:  # Result could not be converted
