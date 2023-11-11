@@ -1,4 +1,11 @@
-"""Functions related to database Input/Output."""
+"""
+Functions for database input/output operations in the ChocAn Simulator.
+
+Includes capabilities to add, load, update, and remove records in database files, as well as
+saving reports. The module works with Parquet and CSV file formats and ensures data integrity
+and schema compatibility.
+"""
+
 import os
 from datetime import date
 from dateutil.tz import tzlocal
@@ -16,18 +23,17 @@ _REPORT_DIR_ = str(files("choc_an_simulator") / "reports")
 
 def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
     """
-    Add records to a parquet file.
+    Add new records to an existing Parquet file based on the provided schema.
 
     Args-
-        records: The records to add to the file
-        table_info: Information for the table being added to
+        records (pd.DataFrame): DataFrame containing the new records to be added.
+        table_info (TableInfo): Object containing schema and other table-related information.
 
     Raises-
-        ValueError: Added entries cause duplicate entries in the first column
-        pyarrow.ArrowInvalid: Mismatch between the dataframe and the schema.
-        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
-        KeyError: Mismatch between schema & records, or schema & file.
-
+        ValueError: Added records result in duplicate entries in the index column.
+        pyarrow.ArrowInvalid: Mismatch between the DataFrame and the schema.
+        pyarrow.ArrowIOError: I/O error occurs (e.g., file permissions, file lock).
+        KeyError: Mismatch between schema & records, or schema & file's schema.
     """
     # Load file into memory
     try:
@@ -70,35 +76,36 @@ def load_records_from_file(
     gt_cols: Optional[Dict[str, Any]] = None,
 ) -> pd.DataFrame:
     """
-    Load and filter records from a file.
+    Load records from a Parquet file, optionally applying filters for record selection.
 
     Args-
-        table_info: Information for the table being loaded from
-        eq_cols: column name / value pairs that the returned records must be equal to.
-        lt_cols: column name / value pairs that the returned records must be less than.
-        gt_cols: column name / value pairs that the returned records must be greater than.
+        table_info (TableInfo): Object with schema and table details.
+        eq_cols (Optional[Dict[str, Any]]): Specifies columns and values for equality filtering.
+        lt_cols (Optional[Dict[str, Any]]): Specifies columns and values for less-than filtering.
+        gt_cols (Optional[Dict[str, Any]]): Specifies columns and values for greater-than filtering.
 
     Returns-
-        All matching records. If the file doesn't exist, returns an empty dataframe.
+        pd.DataFrame:
+            Records matching the specified filters, or all records if no filters are applied.
 
     Raises-
         KeyError: Mismatch between schema & records.
-        pyarrow.ArrowTypeError: Type mismatch between schema & added records.
-        pyarrow.ArrowInvalid: Mismatch between the dataframe and the schema.
-        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
-        TypeError: Unsupported type comparison with filter
+        pyarrow.ArrowTypeError: Type mismatch in the added records.
+        pyarrow.ArrowInvalid: Schema-dataframe mismatch.
+        pyarrow.ArrowIOError: I/O error occurs.
+        TypeError: Unsupported type comparisons in filters.
 
     Examples-
-        # Get all records, no filters:
+        #Ex 1. Get all records, no filters:
         records = load_records_from_file(example_table_info)
 
-        # Get all logs from the last month:
+        #Ex 2. Get all logs from the last month:
         records = load_records_from_file(
             table_info = example_table_info,
             gt_cols = {"date": datetime.now() - timedelta(days=31)}
         )
 
-        # Get all records with ID = 1234
+        #Ex 3. Get all records with ID = 1234
         records = load_records_from_file(
             table_info = example_table_info,
             eq_cols = {"ID" : 1234}
@@ -116,7 +123,7 @@ def load_records_from_file(
     if eq_cols is not None:
         for col, val in eq_cols.items():
             if col not in table_info.schema.names:
-                raise KeyError("eq_cols name {col} not found in schema.")
+                raise KeyError(f"eq_cols name {col} not found in schema.")
             try:
                 records = records[records[col] == val]
             except TypeError as err_type:
@@ -145,22 +152,22 @@ def load_records_from_file(
 
 def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
     """
-    Update a single record in a database file.
+    Update a specific record in a database file based on the provided index and changes.
 
     Args-
-        index: Value to match in the first column of the database
-        table_info: Information for the table to update
-        **kwargs: Key/value pairs to change
+        index (Any): The index value of the record to update.
+        table_info (TableInfo): Object with schema and table details.
+        **kwargs: Key-value pairs representing the fields to update and their new values.
 
     Returns-
-        The matching row with updated values
+        pd.Series: The updated record.
 
     Raises-
-        AssertionError: No key/value pairs given
-        IndexError: Index not found
-        KeyError: Mismatch between kwargs & schema
-        pyarrow.ArrowInvalid: Type mismatch between the updated table and the schema.
-        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
+        AssertionError: No key-value pairs provided for update.
+        IndexError: Specified index not found in the database.
+        KeyError: Mismatch between provided fields & schema.
+        pyarrow.ArrowInvalid: Type mismatch with the schema after update.
+        pyarrow.ArrowIOError: I/O error occurs.
 
     Examples-
         # Update the name of member 1234 to Martha
@@ -212,23 +219,21 @@ def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
 
 def remove_record(index: Any, table_info: TableInfo) -> bool:
     """
-    Remove a single record from a database file.
+    Remove a record from a database file based on the provided index.
 
     Args-
-        index: Value to match in the first column of the database. Row wit this index is removed.
-        table_info: Information for the table to remove from
+        index (Any): The index value of the record to be removed.
+        table_info (TableInfo): Object with schema and table details.
 
     Returns-
-        True: Row with matching index was removed
-        False: Index was not found.
+        bool: True if the record is successfully removed, False if the index is not found.
 
     Raises-
-        pyarrow.ArrowInvalid: Invalid file format
-        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
+        pyarrow.ArrowInvalid: Invalid file format.
+        pyarrow.ArrowIOError: I/O error occurs.
 
     Examples-
-        # Remove member 1234
-
+        #Ex 1. Remove member 1234
         if remove_record(1234,MEMBER_SCHEMA):
             print("Member 1234 Removed")
         else:
@@ -254,17 +259,17 @@ def remove_record(index: Any, table_info: TableInfo) -> bool:
 
 def save_report(table: pd.DataFrame, file_name: str) -> str:
     """
-    Save a table of information into a CSV file.
+    Save a DataFrame to a CSV file, converting dates and datetimes to local time strings.
 
     Args-
-        table: Data to write to the file
-        file_name: Name of the report (no directory or extension).
+        table (pd.DataFrame): DataFrame containing the data to be saved.
+        file_name (str): The name of the file (without directory or extension) to save the report.
 
     Returns-
-        Full path that the report was saved to
+        str: The full path where the report was saved.
 
     Raises-
-        IOError: Error while writing the report to file.
+        IOError: Error while writing the report to the file.
     """
     dttm_fmt = "%m-%d-%Y %H:%M"
     date_fmt = "%m-%d-%Y"
@@ -290,18 +295,20 @@ def save_report(table: pd.DataFrame, file_name: str) -> str:
 
 def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
     """
-    Load an entire parquet file into a dataframe.
-
-    If no file is found, returns an empty dataframe with the given schema.
+    Internal function to load all records from a Parquet file into a DataFrame.
 
     Args-
-        table_info: Information for the table to load from
+        table_info (TableInfo): Object with schema and table details.
+
     Returns-
-        All records in the file, or none if no file found.
+        pd.DataFrame:
+            DataFrame containing all records from the file, or an empty DataFrame
+            if the file is not found.
+
     Raises-
-        pyarrow.ArrowInvalid: File format is invalid
-        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.)
-        KeyError: File columns do not match schema
+        pyarrow.ArrowInvalid: File format is invalid.
+        pyarrow.ArrowIOError: I/O error occurs.
+        KeyError: File columns do not match schema.
     """
     path = _convert_parquet_name_to_path_(table_info.name)
     try:
@@ -321,16 +328,17 @@ def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
 
 def _overwrite_records_to_file_(records: pd.DataFrame, table_info: TableInfo) -> None:
     """
-    Overwrite a parquet file with new records.
+    Internal function to overwrite a Parquet file with new records.
 
     Args-
-        records: The records to write to file.
-        table_info: Information for the table to overwrite
+        records (pd.DataFrame): DataFrame containing the records to be written.
+        table_info (TableInfo): Object with schema and table details.
+
     Raises-
-        KeyError: Records & schema have mismatched columns
-        TypeError: Records have incorrect types
-        ArithmeticError: Records contain values outside of the table_info's limits
-        pyarrow.ArrowIOError: I/O-related error (e.g. permissions, file lock, etc.).
+        KeyError: Mismatch between records and schema columns.
+        TypeError: Incorrect types in records.
+        ArithmeticError: Values in records outside specified limits in table_info.
+        pyarrow.ArrowIOError: I/O error occurs.
 
     """
     try:
@@ -350,10 +358,28 @@ def _overwrite_records_to_file_(records: pd.DataFrame, table_info: TableInfo) ->
 
 
 def _convert_parquet_name_to_path_(name: str) -> str:
-    """Convert a parquet file's name to a full path."""
+    """
+    Internal function to convert a file name to a full path for Parquet files.
+
+    Args-
+        name (str): The base name of the file.
+
+    Returns-
+        str: The full path for the specified file name.
+
+    """
     return os.path.join(_PARQUET_DIR_, name + ".pkt")
 
 
 def _convert_report_name_to_path_(name: str) -> str:
-    """Convert a report file's name to a full path."""
+    """
+    Internal function to convert a file name to a full path for CSV files.
+
+    Args-
+        name (str): The base name of the file.
+
+    Returns-
+        str: The full path for the specified file name.
+
+    """
     return os.path.join(_REPORT_DIR_, name + ".csv")
