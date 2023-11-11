@@ -15,9 +15,9 @@ import pandas as pd
 import pyarrow as pa
 from .schemas import TableInfo
 
-# The directory where all parquet files are stored.
+# Directory where all parquet files are stored.
 _PARQUET_DIR_ = str(files("choc_an_simulator") / "storage")
-# The directory where report files are stored.
+# Directory where report files are stored.
 _REPORT_DIR_ = str(files("choc_an_simulator") / "reports")
 
 
@@ -26,7 +26,7 @@ def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
     Add new records to an existing Parquet file based on the provided schema.
 
     Args-
-        records (pd.DataFrame): DataFrame containing the new records to be added.
+        records (pd.DataFrame): New records to be added.
         table_info (TableInfo): Object containing schema and other table-related information.
 
     Raises-
@@ -120,6 +120,7 @@ def load_records_from_file(
     except KeyError as err_key:
         raise err_key
 
+    # Apply filters
     if eq_cols is not None:
         for col, val in eq_cols.items():
             if col not in table_info.schema.names:
@@ -155,12 +156,12 @@ def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
     Update a specific record in a database file based on the provided index and changes.
 
     Args-
-        index (Any): The index value of the record to update.
+        index (Any): Index value of the record to update.
         table_info (TableInfo): Object with schema and table details.
         **kwargs: Key-value pairs representing the fields to update and their new values.
 
     Returns-
-        pd.Series: The updated record.
+        pd.Series: Updated record.
 
     Raises-
         AssertionError: No key-value pairs provided for update.
@@ -182,7 +183,7 @@ def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
             PROVIDER_INFO,
             address_line_1 = "1600 Pennsylvania Avenue, NW",
             address_line_2 = "Unit 2",
-            zipcode = 97212
+            zipcode = 97212The
         )
     """
     assert len(kwargs) > 0, "Must provide at least one key/value pair to update"
@@ -222,7 +223,7 @@ def remove_record(index: Any, table_info: TableInfo) -> bool:
     Remove a record from a database file based on the provided index.
 
     Args-
-        index (Any): The index value of the record to be removed.
+        index (Any): Index value of the record to be removed.
         table_info (TableInfo): Object with schema and table details.
 
     Returns-
@@ -262,11 +263,11 @@ def save_report(table: pd.DataFrame, file_name: str) -> str:
     Save a DataFrame to a CSV file, converting dates and datetimes to local time strings.
 
     Args-
-        table (pd.DataFrame): DataFrame containing the data to be saved.
-        file_name (str): The name of the file (without directory or extension) to save the report.
+        table (pd.DataFrame): Data to be saved.
+        file_name (str): Name of the file (without directory or extension) to save the report.
 
     Returns-
-        str: The full path where the report was saved.
+        str: Full path where the report was saved.
 
     Raises-
         IOError: Error while writing the report to the file.
@@ -302,8 +303,7 @@ def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
 
     Returns-
         pd.DataFrame:
-            DataFrame containing all records from the file, or an empty DataFrame
-            if the file is not found.
+            DataFrame with all records from the file, or an empty DataFrame if no file was found.
 
     Raises-
         pyarrow.ArrowInvalid: File format is invalid.
@@ -328,17 +328,17 @@ def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
 
 def _overwrite_records_to_file_(records: pd.DataFrame, table_info: TableInfo) -> None:
     """
-    Internal function to overwrite a Parquet file with new records.
+        Internal function to overwrite a Parquet file with new records.
 
-    Args-
-        records (pd.DataFrame): DataFrame containing the records to be written.
-        table_info (TableInfo): Object with schema and table details.
-
-    Raises-
-        KeyError: Mismatch between records and schema columns.
-        TypeError: Incorrect types in records.
-        ArithmeticError: Values in records outside specified limits in table_info.
-        pyarrow.ArrowIOError: I/O error occurs.
+        Args-
+            records (pd.DataFrame): Records to be written.
+            table_info (TableInfo): Object with schema and table details.
+    The
+        Raises-
+            KeyError: Mismatch between records and schema columns.
+            TypeError: Incorrect types in records.
+            ArithmeticError: Values in records outside specified limits in table_info.
+            pyarrow.ArrowIOError: I/O error occurs.
 
     """
     try:
@@ -362,10 +362,10 @@ def _convert_parquet_name_to_path_(name: str) -> str:
     Internal function to convert a file name to a full path for Parquet files.
 
     Args-
-        name (str): The base name of the file.
+        name (str): Base name of the file.
 
     Returns-
-        str: The full path for the specified file name.
+        str: Full path for the specified file name.
 
     """
     return os.path.join(_PARQUET_DIR_, name + ".pkt")
@@ -376,10 +376,10 @@ def _convert_report_name_to_path_(name: str) -> str:
     Internal function to convert a file name to a full path for CSV files.
 
     Args-
-        name (str): The base name of the file.
+        name (str): Base name of the file.
 
     Returns-
-        str: The full path for the specified file name.
+        str: Full path for the specified file name.
 
     """
     return os.path.join(_REPORT_DIR_, name + ".csv")
