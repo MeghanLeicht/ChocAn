@@ -1,7 +1,12 @@
 """
-Functions related to interaction with the terminal.
+Provides a suite of functions for terminal-based user interactions.
 
-Examples for prompting functions available in examples/prompting.py
+Includes capabilities for prompting users for various types of input (dates, integers, strings,
+and menu selections) and displaying information with ANSI color codes. The module is designed to
+enhance user experience in command-line applications by facilitating easy and structured user input
+and colorful text output.
+
+See 'examples/prompting.py' for usage examples.
 """
 
 from typing import Optional, List, Tuple
@@ -10,12 +15,18 @@ from datetime import date, datetime
 
 
 class PColor:
-    """Functions for printing in color."""
+    """
+    Provides methods for printing text in various colors / styles in the terminal using ANSI codes.
+
+    This class encapsulates the functionality for color-coded output, making it easier to produce
+    visually distinct messages, such as warnings, errors, or confirmations.
+    """
 
     class AnsiColor(Enum):
         """
-        ANSI color codes.
+        Enumerates ANSI color codes for terminal text formatting.
 
+        These codes are used to change the color and style of text output in the terminal.
         Source: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
         """
 
@@ -33,25 +44,46 @@ class PColor:
 
     @classmethod
     def pfail(cls, text: str, **kwargs) -> None:
-        """Print failure text. kwargs are passed to print()."""
+        """
+        Prints text in red to indicate failure or error messages.
+
+        Args-
+            text: The text to be printed.
+            **kwargs: Additional keyword arguments passed to the built-in print function.
+        """
         cls.pcolor(text, cls.AnsiColor.FAIL, **kwargs)
 
     @classmethod
     def pwarn(cls, text: str, **kwargs) -> None:
-        """Print warning text. kwargs are passed to print()."""
+        """
+        Prints text in yellow to indicate warnings.
+
+        Args-
+            text: The text to be printed.
+            **kwargs: Additional keyword arguments passed to the built-in print function.
+        """
         cls.pcolor(text, cls.AnsiColor.WARNING, **kwargs)
 
     @classmethod
     def pok(cls, text: str, **kwargs) -> None:
-        """Print green OK text. kwargs are passed to print()."""
+        """
+        Prints text in green to indicate success or confirmation messages.
+
+        Args-
+            text: The text to be printed.
+            **kwargs: Additional keyword arguments passed to the built-in print function.
+        """
         cls.pcolor(text, cls.AnsiColor.OKGREEN, **kwargs)
 
     @classmethod
     def pcolor(cls, text: str, color_code: AnsiColor, **kwargs):
         """
-        Print text with any of the colors / styles listed in TColorNames.
+        Prints text in a specified color or style.
 
-        kwargs are passed to print().
+        Args-
+            text: The text to be printed.
+            color_code: The AnsiColor code defining the color or style of the text.
+            **kwargs: Additional keyword arguments passed to the built-in print function.
         """
         print(f"{color_code.value}{text}{cls._ENDC}", **kwargs)
 
@@ -60,17 +92,18 @@ def prompt_date(
     message: str, min_date: Optional[date] = None, max_date: Optional[date] = None
 ) -> Optional[date]:
     """
-    Prompt the user to enter a date in MM-DD-YYYY format.
+    Prompts the user to enter a date within an optional range.
 
     Args-
-        message: Message to display before date input.
-        min_date: Optional minimum allowed date.
-        max_date: Optional maximum date.
+        message: The prompt message displayed to the user.
+        min_date: The minimum allowable date (inclusive).
+        max_date: The maximum allowable date (inclusive).
+
     Returns-
-        date: Tuple containing the choice index and text
-        None: User pressed Ctrl+C
+        The date entered by the user, or None if the input is aborted.
+
     Raises-
-        ValueError: min_date is greater than max_date
+        ValueError: If min_date is greater than max_date.
     """
     result: Optional[date] = None
     message = f"{message} (MM-DD-YYYY)"
@@ -105,17 +138,17 @@ def prompt_date(
 
 def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int, str]]:
     """
-    Prompt the user to choose from a list of options.
+    Prompts the user to select an option from a list of choices.
 
     Args-
-        message: Message to display before menu options.
+        message: The prompt message displayed to the user.
+        choices: A list of string options to choose from.
 
     Returns-
-        Tuple[int, str]: Tuple containing the choice index and text
-        None: User pressed Ctrl+C
+        A tuple containing the index and text of the chosen option, or None if aborted.
 
     Raises-
-        ValueError: choices is empty
+        ValueError: If the 'choices' list is empty.
     """
     if len(choices) == 0:
         raise ValueError("'choices' may not be empty.")
@@ -138,16 +171,15 @@ def prompt_int(
     numeric_limit: Optional[range] = None,
 ) -> Optional[int]:
     """
-    Prompt the user for a number with a character limit. Returns 'None' if 'Ctrl+C' is pressed.
+    Prompts the user for an integer input within specified character and numeric limits.
 
     Args-
-        message: The message to display to the user.
-        char_limit: The range of acceptable # of digits for the input.
-        numeric_limit: The (optional) numeric range of the input
+        message: The prompt message displayed to the user.
+        char_limit: The range of acceptable character counts for the input.
+        numeric_limit: The numeric range of acceptable input values.
 
     Returns-
-        int: The user's input
-        None: User pressed Ctrl+C
+        The integer entered by the user, or None if the input is aborted.
     """
     result: Optional[int] = None
     if numeric_limit is not None:
@@ -173,15 +205,14 @@ def prompt_int(
 
 def prompt_str(message: str, char_limit: Optional[range] = None) -> Optional[str]:
     """
-    Prompt the user for input with a character limit. Returns 'None' if 'Ctrl+C' is pressed.
+    Prompts the user for a string input with an optional character limit.
 
     Args-
-        message: The message to display to the user.
+        message: The prompt message displayed to the user.
         char_limit: The range of acceptable character lengths for the input.
 
     Returns-
-        str: The user's input
-        None: User pressed Ctrl+C
+        The string entered by the user, or None if the input is aborted.
     """
     try:
         result: Optional[str] = None
@@ -203,14 +234,13 @@ def prompt_str(message: str, char_limit: Optional[range] = None) -> Optional[str
 
 def _to_int_(text: str) -> Optional[int]:
     """
-    Attempt to convert text to an integer.
+    Attempts to convert a string to an integer.
 
     Args-
-        text: text to convert
+        text: The text to be converted.
 
     Returns-
-        int: Successfully-converted text
-        None: Text is not valid int
+        The converted integer, or None if the conversion is not possible.
     """
     try:
         return int(text)
