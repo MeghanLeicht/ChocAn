@@ -1,9 +1,9 @@
 """Tests of the database_management module"""
 from datetime import datetime, date, timezone
-import pandas as pd
-import pyarrow as pa
 import os
 import pytest
+import pandas as pd
+import pyarrow as pa
 from choc_an_simulator.schemas import TableInfo
 from choc_an_simulator.database_management import (
     add_records_to_file,
@@ -85,7 +85,7 @@ def corrupted_test_file(test_file, test_table_info):
 
 
 class TestAddRecordsToFile:
-    """Tests for the add_records_to_file function."""
+    """Validate functionality and error handling of the add_records_to_file function."""
 
     def test_add_records_to_file_normal_conditions(
         self,
@@ -135,7 +135,7 @@ class TestAddRecordsToFile:
             ),
         ],
     )
-    def test_add_invalid_records_to_file(
+    def test_add_records_to_file_with_invalid_data(
         self, records, info, error_type, test_file, request
     ):
         """Test add duplicate entries."""
@@ -172,7 +172,7 @@ class TestAddRecordsToFile:
 
 
 class TestLoadRecordsFromFile:
-    """Tests of the load_records_from_file function."""
+    """Validate functionality and error handling of the load_records_from_file function."""
 
     def test_load_records_from_file_all_records(
         self, test_table_info, test_records, test_file
@@ -258,7 +258,7 @@ class TestLoadRecordsFromFile:
 
 
 class TestUpdateRecord:
-    """Tests of the update_record function."""
+    """Validate functionality and error handling of the update_record function."""
 
     def test_update_record_normal_update(self, test_table_info, test_file):
         """Test normal record update."""
@@ -316,7 +316,7 @@ class TestUpdateRecord:
 
 
 class TestRemoveRecord:
-    """Tests of the remove_record function"""
+    """Validate functionality and error handling of the remove_record function."""
 
     def test_remove_record_normal_removal(self, test_table_info, test_file):
         """Test normal removal"""
@@ -362,7 +362,7 @@ class TestRemoveRecord:
 
 
 class TestOverwriteRecordsToFile:
-    """Tests of the _overwrite_records_to_file_ function"""
+    """Validate functionality and error handling of the _overwrite_records_to_file_ function."""
 
     new_records = pd.DataFrame({"ID": [3, 4], "value": [2.0, 1.0]})
 
@@ -407,7 +407,7 @@ class TestOverwriteRecordsToFile:
 
 
 class TestSaveReport:
-    """Tests of the save_report function"""
+    """Validate functionality and error handling of the save_record function."""
 
     # Local timezone calculated using a different method than save_report
     local_timezone = datetime.now().astimezone().tzinfo
