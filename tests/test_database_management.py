@@ -19,7 +19,7 @@ from choc_an_simulator.database_management import (
 
 
 @pytest.fixture()
-def test_records(autouse=True):
+def test_records():
     return pd.DataFrame({"ID": [1, 2], "value": [1.1, 2.2]})
 
 
@@ -49,7 +49,7 @@ def test_records_out_of_range():
 
 
 @pytest.fixture()
-def test_table_info(autouse=True):
+def test_table_info():
     return TableInfo(
         name="test",
         schema=pa.schema([("ID", pa.int64()), ("value", pa.float64())]),
