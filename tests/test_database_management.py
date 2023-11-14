@@ -31,7 +31,7 @@ MISMATCHED_TEST_TABLE_INFO = TableInfo(
 )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def test_file():
     """Fixture to setup and teardown an test file"""
     _overwrite_records_to_file_(TEST_RECORDS, TEST_TABLE_INFO)
@@ -41,7 +41,7 @@ def test_file():
         os.remove(test_path)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def corrupted_test_file():
     """Fixture to setup and teardown an test file"""
     test_name = f"{TEST_NAME}"
@@ -58,6 +58,10 @@ class TestAddRecordsToFile:
     """Tests for the add_records_to_file function."""
 
     new_records = pd.DataFrame({"ID": [3, 4], "value": [1.1, 2.2]})
+    mismatched_records = pd.DataFrame({"mismatched": [3, 4], "test": [1.1, 2.2]})
+    mismatched_records_correct_index = pd.DataFrame({"ID": [3, 4], "test": [1.1, 2.2]})
+    wrong_type_records = pd.DataFrame({"ID": [3, 4], "value": ["1.1", "2.2"]})
+    out_of_range_records = pd.DataFrame({"ID": [3, 4], "value": [5.0, -1.0]})
 
     def test_add_records_to_file_normal_conditions(self, test_file):
         """Test normal add to file."""
@@ -70,37 +74,30 @@ class TestAddRecordsToFile:
             expected_records
         ), f"\n{expected_records}\n{updated_records}"
 
-    def test_add_records_to_file_duplicate_entries(self, test_file):
+    @pytest.mark.parametrize(
+        "records,info,error_type",
+        [
+            # Duplicate Entries.
+            (TEST_RECORDS, TEST_TABLE_INFO, ValueError),
+            # Records with mismatched columns, but correct index.
+            (mismatched_records_correct_index, TEST_TABLE_INFO, KeyError),
+            # Records with all mismatched columns.
+            (mismatched_records, TEST_TABLE_INFO, KeyError),
+            # Records with incorrect type defined by schema in TableInfo
+            (wrong_type_records, TEST_TABLE_INFO, TypeError),
+            # Records with values out of range defined by TableInfo
+            (out_of_range_records, TEST_TABLE_INFO, ArithmeticError),
+        ],
+    )
+    def test_add_invalid_records_to_file(self, records, info, error_type, test_file):
         """Test add duplicate entries."""
-        with pytest.raises(ValueError):
-            add_records_to_file(TEST_RECORDS, TEST_TABLE_INFO)
+        with pytest.raises(error_type):
+            add_records_to_file(records, info)
 
-    def test_add_records_to_file_corrupted_file(self, corrupted_test_file):
-        """Test add to a corrupted file."""
+    def test_add_records_to_corrupted_file(self, corrupted_test_file):
+        """Test adding records to an un-openable parquet file"""
         with pytest.raises(pa.ArrowInvalid):
             add_records_to_file(self.new_records, TEST_TABLE_INFO)
-
-    def test_add_records_to_file_mismatched_schema(self, test_file):
-        """Test add record with a mismatched schema."""
-        mismatched_records = pd.DataFrame({"mismatched": [3, 4], "test": [1.1, 2.2]})
-        mismatched_records_correct_index = pd.DataFrame(
-            {"ID": [3, 4], "test": [1.1, 2.2]}
-        )
-
-        wrong_type_records = pd.DataFrame({"ID": [3, 4], "value": ["1.1", "2.2"]})
-        out_of_range_records = pd.DataFrame({"ID": [3, 4], "value": [5.0, -1.0]})
-
-        # Test 1: Add records with incorrect columns
-        with pytest.raises(KeyError):
-            add_records_to_file(mismatched_records_correct_index, TEST_TABLE_INFO)
-        with pytest.raises(KeyError):
-            add_records_to_file(mismatched_records, TEST_TABLE_INFO)
-        # Test 2: Mismatched types
-        with pytest.raises(TypeError):
-            add_records_to_file(wrong_type_records, TEST_TABLE_INFO)
-        # Test 3: Out of range
-        with pytest.raises(ArithmeticError):
-            add_records_to_file(out_of_range_records, TEST_TABLE_INFO)
 
     def test_add_records_to_file_read_error(self, test_file, mocker):
         """Test adding records to an unreadable file."""
@@ -146,32 +143,41 @@ class TestLoadRecordsFromFile:
         lt_records = load_records_from_file(TEST_TABLE_INFO, gt_cols={"value": 2.0})
         assert TEST_RECORDS[TEST_RECORDS["value"] > 2.0].equals(lt_records)
 
-    def test_load_records_from_file_invalid_filters(self, test_file):
-        """Test loading with invalid filters"""
-        # Test 1: Invalid comparisons
+    def test_load_records_from_file_invalid_equality(self, test_file):
+        """Test loading records with an unsupported equality filter"""
+
+        class NoEq:
+            """Example of a class that doesn't support equality"""
+
+            def __eq__(self, other):
+                raise TypeError(
+                    "Equality between no_eq and {type(other)} not supported"
+                )
+
         with pytest.raises(TypeError):
-
-            class NoEq:
-                """Example of a class that doesn't support equality"""
-
-                def __eq__(self, other):
-                    raise TypeError(
-                        "Equality between no_eq and {type(other)} not supported"
-                    )
-
             load_records_from_file(TEST_TABLE_INFO, eq_cols={"ID": NoEq()})
-        with pytest.raises(TypeError):
-            load_records_from_file(TEST_TABLE_INFO, lt_cols={"value": "a"})
-        with pytest.raises(TypeError):
-            load_records_from_file(TEST_TABLE_INFO, gt_cols={"value": "a"})
 
-        # Test 2: Invalid columns
-        with pytest.raises(KeyError):
-            load_records_from_file(TEST_TABLE_INFO, eq_cols={"invalid": 1})
-        with pytest.raises(KeyError):
-            load_records_from_file(TEST_TABLE_INFO, lt_cols={"invalid": 1})
-        with pytest.raises(KeyError):
-            load_records_from_file(TEST_TABLE_INFO, gt_cols={"invalid": 1})
+    @pytest.mark.parametrize(
+        "kwargs,error_type",
+        [
+            # Less-than filter with invalid type
+            ({"lt_cols": {"value": "a"}}, TypeError),
+            # Greater-than filter with invalid type
+            ({"gt_cols": {"value": "a"}}, TypeError),
+            # Equality filter with invalid column name
+            ({"eq_cols": {"invalid": 1}}, KeyError),
+            # Less-than filter with invalid column name
+            ({"lt_cols": {"invalid": 1}}, KeyError),
+            # Greater-than filter with invalid column name.
+            ({"gt_cols": {"invalid": 1}}, KeyError),
+        ],
+    )
+    def test_load_records_from_file_invalid_filters(
+        self, kwargs, error_type, test_file
+    ):
+        """Test loading with invalid filters"""
+        with pytest.raises(error_type):
+            load_records_from_file(TEST_TABLE_INFO, **kwargs)
 
     def test_load_records_from_file_missing_file(self):
         """Test loading from a file that doesn't exist."""
@@ -195,31 +201,25 @@ class TestUpdateRecord:
         ]
         assert (updated_record == loaded_record).all()
 
-    def test_update_record_no_keywordargs(self, test_file):
-        """Test updating without providing any updates."""
-        with pytest.raises(AssertionError):
-            update_record(2, TEST_TABLE_INFO)
-
-    def test_update_record_invalid_index(self, test_file):
-        """Test updating an entry with an index that isn't in the dataset"""
-        with pytest.raises(IndexError):
-            update_record(3, TEST_TABLE_INFO, value=3.3)
-
-    def test_update_record_invalid_column(self, test_file):
-        """Test updating a field in column that isn't in the dataset"""
-        with pytest.raises(KeyError):
-            update_record(2, TEST_TABLE_INFO, bad_column_name="hello")
-
-    @pytest.mark.filterwarnings("ignore: Setting an item of incompatible dtype")
-    def test_update_record_type_mismatch(self, test_file):
-        """Test updating a field with a different type than in the schema"""
-        with pytest.raises(TypeError):
-            update_record(2, TEST_TABLE_INFO, value="hello")
-
-    def test_update_record_out_of_range(self, test_file):
-        """Test updating a field with a different type than in the schema"""
-        with pytest.raises(ArithmeticError):
-            update_record(2, TEST_TABLE_INFO, value=5.0)
+    @pytest.mark.parametrize(
+        "index,kwargs,error_type",
+        [
+            # No keyword arguments
+            (2, {}, AssertionError),
+            # Invalid index
+            (3, {"value": 3.3}, IndexError),
+            # Invalid column name
+            (2, {"bad_column_name": "hello"}, KeyError),
+            # Invalid type
+            (2, {"value": "hello"}, TypeError),
+            # Out of range
+            (2, {"value": 5.0}, ArithmeticError),
+        ],
+    )
+    def test_update_record_invalid(self, index, kwargs, error_type, test_file):
+        """Perform parametrized tests of various invalid keyword arguments"""
+        with pytest.raises(error_type):
+            update_record(index, TEST_TABLE_INFO, **kwargs)
 
     def test_update_record_mismatched_schema(self, test_file):
         """Test updating with mismatched file / schema"""
