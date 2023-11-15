@@ -1,9 +1,11 @@
 """
 Manager Sub-System.
 
-The manager sub-system of ChocAn allows managers to
-manage member, provider, and provider directory records.
-They also can generate member, provider, and summary reports.
+The manager sub-system allows managers to manage member, provider, and provider directory records.
+
+This includes being able to add, update and remove the members, providers, and provider directories.
+
+They can also generate member, provider, and summary reports.
 """
 
 
@@ -17,18 +19,6 @@ def manager_menu() -> None:
     Update Provider Directory.
     """
     raise NotImplementedError("manager_menu")
-
-
-'''
-def add_member() -> None:
-    """Adds a member."""
-    raise NotImplementedError("add_member")
-
-
-def remove_member() -> None:
-    """Removes a member."""
-    raise NotImplementedError("remove_member")
-'''
 
 
 def add_member_record() -> None:
