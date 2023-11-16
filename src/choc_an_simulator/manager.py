@@ -2,10 +2,6 @@
 Manager Sub-System.
 
 The manager sub-system allows managers to manage member, provider, and provider directory records.
-
-This includes being able to add, update and remove the members, providers, and provider directories.
-
-They can also generate member, provider, and summary reports.
 """
 
 
@@ -13,10 +9,18 @@ def manager_menu() -> None:
     """
     The Manager menu provides access to the following key functionalities.
 
-    Request Report
-    Update Provider
+    Add Member
     Update Member
-    Update Provider Directory.
+    Remove Member
+    Add Provider
+    Update Provider
+    Remove Provider
+    Add Provider Directory
+    Update Provider Directory
+    Remove Provider Directory
+    Generate Member Report
+    Generate Provider Report
+    Generate Summary Report
     """
     raise NotImplementedError("manager_menu")
 
