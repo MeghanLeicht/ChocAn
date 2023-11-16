@@ -15,7 +15,7 @@ def show_provider_menu() -> None:
     Present the provider with a range of menu options, allowing access to various functionalities
     of the Provider Component, like requesting the provider directory or recording service entries.
     """
-    pass
+    raise NotImplementedError("show_provider_menu")
 
 
 def prompt_member_id() -> int:
@@ -29,7 +29,7 @@ def prompt_member_id() -> int:
     Returns-
         int: The entered member ID.
     """
-    pass
+    raise NotImplementedError("prompt_member_id")
 
 
 def display_member_information(member_id: int) -> None:
@@ -42,7 +42,7 @@ def display_member_information(member_id: int) -> None:
     Args-
         member_id (int): ID of the member whose information is to be displayed.
     """
-    pass
+    raise NotImplementedError("display_member_information")
 
 
 def record_service_billing_entry(member_id: int) -> None:
@@ -56,9 +56,9 @@ def record_service_billing_entry(member_id: int) -> None:
     Args-
         member_id (int): The member ID for whom the service billing entry is being recorded.
     """
-    pass
+    raise NotImplementedError("records_service_billing_entry")
 
 
 def request_provider_directory() -> None:
     """Save the provider directory to a CSV file, and display the path it was saved to."""
-    pass
+    raise NotImplementedError("request_provider_directory")
