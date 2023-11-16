@@ -40,9 +40,9 @@ def check_in_member() -> None:
     raise NotImplementedError("check_in_member")
 
 
-def display_member_information(member_id: int) -> None:
+def display_member_information() -> None:
     """
-    Fetch and display information about a member from the member database.
+    Prompt a member's id, then fetch and display information about a member from the database.
 
     The displayed data includes the member's name, ID, and status, aiding providers in
     verifying member eligibility and record accuracy.
@@ -50,7 +50,7 @@ def display_member_information(member_id: int) -> None:
     Args-
         member_id (int): ID of the member whose information is to be displayed.
     """
-    pass
+    raise NotImplementedError("display_member_information")
 
 
 def record_service_billing_entry() -> None:
@@ -61,9 +61,9 @@ def record_service_billing_entry() -> None:
     validating the member's status, collecting service details, and saving the information
     in the service logs.
     """
-    pass
+    raise NotImplementedError("record_service_billing_entry")
 
 
 def request_provider_directory() -> None:
     """Save the provider directory to a CSV file, and display the path it was saved to."""
-    pass
+    raise NotImplementedError("request_provider_directory")

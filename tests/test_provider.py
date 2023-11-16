@@ -1,6 +1,12 @@
 """Tests of functions in the provider module."""
 import pytest
-from choc_an_simulator.provider import show_provider_menu
+from choc_an_simulator.provider import (
+    show_provider_menu,
+    check_in_member,
+    display_member_information,
+    record_service_billing_entry,
+    request_provider_directory,
+)
 
 
 @pytest.mark.parametrize(
@@ -22,3 +28,23 @@ def test_show_provider_menu(
 ):
     """Paramaterized test that show_provider_menu reaches the correct endpoints"""
     show_provider_menu()
+
+
+def test_check_in_member():
+    with pytest.raises(NotImplementedError):
+        check_in_member()
+
+
+def test_display_member_information():
+    with pytest.raises(NotImplementedError):
+        display_member_information()
+
+
+def test_record_service_billing_entry():
+    with pytest.raises(NotImplementedError):
+        record_service_billing_entry()
+
+
+def test_request_provider_directory() -> None:
+    with pytest.raises(NotImplementedError):
+        request_provider_directory()

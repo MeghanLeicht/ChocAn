@@ -110,10 +110,8 @@ def assert_menu_endpoint(
         """Searches stdout for the given text, and returns the number at the start of the line."""
         pattern = re.compile(r"(\d+):.*?" + re.escape(text))
         match = pattern.search(output)
-        if match:
-            return match.group(1)
-        else:
-            raise ValueError("Option text not found in menu output")
+        assert match is not None, "Option text not found in menu output"
+        return match.group(1)
 
     # Mock the input function to automatically select the correct option
     def mock_input(_):
