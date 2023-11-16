@@ -40,20 +40,6 @@ def check_in_member() -> None:
     raise NotImplementedError("check_in_member")
 
 
-def prompt_member_id() -> int:
-    """
-    Prompt for a valid member ID from keycard reader or terminal.
-
-    Initiates a prompt for the user to enter a member ID, which can be entered through a
-    keycard reader or manually via the terminal. The function returns the entered member ID,
-    which is used in subsequent operations like service billing or member status checks.
-
-    Returns-
-        int: The entered member ID.
-    """
-    pass
-
-
 def display_member_information(member_id: int) -> None:
     """
     Fetch and display information about a member from the member database.

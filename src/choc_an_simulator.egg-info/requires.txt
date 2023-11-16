@@ -1,0 +1,9 @@
+numpy
+pandas
+pyarrow
+
+[dev]
+pre-commit
+pytest
+black
+coverage
