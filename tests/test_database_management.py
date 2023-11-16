@@ -407,7 +407,7 @@ class TestOverwriteRecordsToFile:
 
 
 class TestSaveReport:
-    """Validate functionality and error handling of the save_record function."""
+    """Validate functionality and error handling of the save_report function."""
 
     # Local timezone calculated using a different method than save_report
     local_timezone = datetime.now().astimezone().tzinfo
