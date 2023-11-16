@@ -94,15 +94,7 @@ def assert_menu_endpoint(
         def test_example_menu(
             option_text, endpoint_function_name, mocker, capsys, monkeypatch
         ):
-            # Parameterized tests of each endpoint in example_menu.
-            assert_menu_endpoint(
-                menu_func=example_menu,
-                endpoint_function_name=endpoint_function_name,
-                option_text=option_text,
-                mocker=mocker,
-                capsys=capsys,
-                monkeypatch=monkeypatch,
-            )
+            example_menu()
 
     """
 
