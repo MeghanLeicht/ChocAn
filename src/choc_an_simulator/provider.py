@@ -15,7 +15,19 @@ def show_provider_menu() -> None:
     Present the provider with a range of menu options, allowing access to various functionalities
     of the Provider Component, like requesting the provider directory or recording service entries.
     """
-    raise NotImplementedError("show_provider_menu")
+    # https://en.wikipedia.org/wiki/ANSI_escape_code
+    # 1 means bold, 32 means green, 31 means red
+    provider_terminal = "\033[1mProvider Terminal\033[m"
+    request_provider_directory = "\033[1;32mRequest Provider Directory\033[m"
+    record_service_entry = "\033[1;32mRecord Service Entry\033[m"
+    exit = "\033[1;31mExit\033[m"
+
+    print(f"\n{provider_terminal}\n")
+    print(
+        f"Press 1 to {request_provider_directory}  |  "
+        f"2 to {record_service_entry}  |  "
+        f"3 to {exit}\n\n"
+    )
 
 
 def prompt_member_id() -> int:
