@@ -20,36 +20,43 @@ from choc_an_simulator.database_management import (
 
 @pytest.fixture()
 def test_records():
+    """Fixture of a record that is valid for test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "value": [1.1, 2.2]})
 
 
 @pytest.fixture()
 def test_records_additional():
+    """Fixture of an additional valid record for test_table_info."""
     return pd.DataFrame({"ID": [3], "value": [3.0]})
 
 
 @pytest.fixture()
 def test_records_wrong_columns():
+    """Fixture of a record with wrong column names for test_table_info."""
     return pd.DataFrame({"mismatched": [1, 2], "records": [1.1, 2.2]})
 
 
 @pytest.fixture()
 def test_records_wrong_columns_right_index():
+    """Fixture of a record with the right index name, but wrong other names for test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "records": [1.1, 2.2]})
 
 
 @pytest.fixture()
 def test_records_wrong_type():
+    """Fixture of a record with the wrong data types for test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "value": ["a", "b"]})
 
 
 @pytest.fixture()
 def test_records_out_of_range():
+    """Fixture of a record that exceeds the numeric range of test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "value": [5, 1]})
 
 
 @pytest.fixture()
 def test_table_info():
+    """Fixture of a TableInfo object, to be tested with the above test records."""
     return TableInfo(
         name="test",
         schema=pa.schema([("ID", pa.int64()), ("value", pa.float64())]),
@@ -59,6 +66,7 @@ def test_table_info():
 
 @pytest.fixture
 def test_table_info_wrong_columns():
+    """Fixture TableInfo object with the same name as test_table_info, but different columns."""
     return TableInfo(
         name="test",
         schema=pa.schema([("mismatched", pa.int64()), ("records", pa.float64())]),
