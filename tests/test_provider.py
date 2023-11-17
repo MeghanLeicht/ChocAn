@@ -31,20 +31,24 @@ def test_show_provider_menu(
 
 
 def test_check_in_member():
+    """Verify input validation & database lookups for check_in_member."""
     with pytest.raises(NotImplementedError):
         check_in_member()
 
 
 def test_display_member_information():
+    """Verify input validation & database lookups for display_member_information."""
     with pytest.raises(NotImplementedError):
         display_member_information()
 
 
 def test_record_service_billing_entry():
+    """Verify input validation & database lookups / additions for record_service_billing_entry."""
     with pytest.raises(NotImplementedError):
         record_service_billing_entry()
 
 
 def test_request_provider_directory() -> None:
+    """Verify correct file creation for request_provider_directory."""
     with pytest.raises(NotImplementedError):
         request_provider_directory()
