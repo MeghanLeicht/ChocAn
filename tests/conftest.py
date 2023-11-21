@@ -54,7 +54,8 @@ def assert_menu_endpoint(
     """
     Assert that an option chosen by user_io.prompt_menu_options reaches the right endpoint.
 
-    This function is meant to be called by pytest functions in order to test a menu.
+    This function is meant to be called by pytest functions in order to test a menu. Works with
+    looped and non-looped menus.
 
     Args-
         menu_func (Callable):
@@ -106,10 +107,21 @@ def assert_menu_endpoint(
         return match.group(1)
 
     # Mock the input function to automatically select the correct option
+    call_count = 0
+
     def mock_input(_):
-        captured = capsys.readouterr()
-        option_number = extract_option_number(captured.out, option_text)
-        return option_number
+        """
+        Searches terminal text for the option text, and returns the matching menu number.
+
+        On the second call, exits the menu with a keyboard interrupt.
+        """
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            captured = capsys.readouterr()
+            option_number = extract_option_number(captured.out, option_text)
+            return option_number
+        raise KeyboardInterrupt
 
     patch = mocker.patch(endpoint_func_name)
     monkeypatch.setattr("builtins.input", mock_input)

@@ -16,16 +16,21 @@ def show_provider_menu() -> None:
     Present the provider with a range of menu options, allowing access to various functionalities
     of the Provider Component, like requesting the provider directory or recording service entries.
     """
-    match prompt_menu_options(
-        "Provider Menu",
-        ["Request Provider Directory", "Record a Service", "Member Check-In"],
-    ):
-        case (_, "Request Provider Directory"):
-            request_provider_directory()
-        case (_, "Record a Service"):
-            record_service_billing_entry()
-        case (_, "Member Check-In"):
-            check_in_member()
+    user_exit = False
+    while user_exit is False:
+        match prompt_menu_options(
+            "Provider Menu",
+            ["Request Provider Directory", "Record a Service", "Member Check-In"],
+        ):
+            case (_, "Request Provider Directory"):
+                request_provider_directory()
+            case (_, "Record a Service"):
+                record_service_billing_entry()
+            case (_, "Member Check-In"):
+                check_in_member()
+            case None:
+                user_exit = True
+
     pass
 
 
