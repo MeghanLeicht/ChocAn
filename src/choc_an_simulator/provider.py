@@ -31,7 +31,6 @@ def show_provider_menu() -> None:
             case None:
                 user_exit = True
 
-    pass
 
 
 def check_in_member() -> None:
