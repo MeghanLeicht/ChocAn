@@ -4,6 +4,7 @@ Manager Sub-System.
 The manager sub-system allows managers to manage member, provider, and provider directory records.
 """
 
+from choc_an_simulator.user_io import prompt_menu_options
 
 def manager_menu() -> None:
     """
@@ -22,7 +23,46 @@ def manager_menu() -> None:
     Generate Provider Report
     Generate Summary Report
     """
-    raise NotImplementedError("manager_menu")
+    user_exit = False
+    message = "Manger Terminal"
+    choices = ["Member", "Provider", "Provider Directory", "Reports"]
+    
+    while user_exit is False:
+        match prompt_menu_options(message, choices):
+            case (_, "Member"):
+                match prompt_menu_options("Member Options", ["Add", "Update", "Remove"]):
+                    case (_, "Add"):
+                        add_member_record()
+                    case (_, "Update"):
+                        update_member_record()
+                    case (_, "Remove"):
+                        remove_member_record()
+            case (_, "Provider"):
+                match prompt_menu_options("Provider Options", ["Add", "Update", "Remove"]):
+                    case (_, "Add"):
+                        add_provider_record()
+                    case (_, "Update"):
+                        update_provider_record()
+                    case (_, "Remove"):
+                        remove_provider_record()
+            case (_, "Provider Directory"):
+                match prompt_menu_options("Provider Directory Options", ["Add", "Update", "Remove"]):
+                    case (_, "Add"):
+                        add_provider_directory_record()
+                    case (_, "Update"):
+                        update_provider_directory_record()
+                    case (_, "Remove"):
+                        remove_provider_directory_record()
+            case (_, "Reports"):
+                match prompt_menu_options("Reports Options", ["Member", "Provider", "Summary"]):
+                    case (_, "Member"):
+                        generate_member_report()
+                    case (_, "Provider"):
+                        generate_provider_report()
+                    case (_, "Summary"):
+                        generate_summary_report()
+            case None:
+                user_exit = True
 
 
 def add_member_record() -> None:
