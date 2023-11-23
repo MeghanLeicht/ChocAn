@@ -161,10 +161,10 @@ PROVIDER_DIRECTORY_INFO = TableInfo(
     name="provider_directory",
     schema=pa.schema(
         [
-            pa.field("service_id", pa.uint32(), nullable=False),
+            pa.field("service_id", pa.int64(), nullable=False),
             pa.field("service_name", pa.string(), nullable=False),
-            pa.field("price_dollars", pa.uint32(), nullable=False),
-            pa.field("price_cents", pa.uint32(), nullable=False),
+            pa.field("price_dollars", pa.int64(), nullable=False),
+            pa.field("price_cents", pa.int64(), nullable=False),
         ]
     ),
     character_limits={"service_id": range(6, 6), "service_name": range(1, 20)},
@@ -176,17 +176,17 @@ MEMBER_INFO = TableInfo(
     name="members",
     schema=pa.schema(
         [
-            pa.field("member_id", pa.uint32(), nullable=False),
+            pa.field("member_id", pa.int64(), nullable=False),
             pa.field("name", pa.string(), nullable=False),
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.uint32(), nullable=False),
+            pa.field("zipcode", pa.int64(), nullable=False),
             pa.field("suspended", pa.bool_(), nullable=False),
         ]
     ),
     character_limits={
-        "member_id": range(11, 11),
+        "member_id": range(9, 9),
         "name": range(1, 25),
         "address": range(1, 25),
         "city": range(1, 14),
@@ -200,12 +200,13 @@ USER_INFO = TableInfo(
     name="providers",
     schema=pa.schema(
         [
-            pa.field("id", pa.uint32(), nullable=False),
+            pa.field("id", pa.int64(), nullable=False),
+            pa.field("user_type", pa.int64(), nullable=False),
             pa.field("name", pa.string(), nullable=False),
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.uint32(), nullable=False),
+            pa.field("zipcode", pa.int64(), nullable=False),
             pa.field("password_hash", pa.binary(256), nullable=False),
         ]
     ),
@@ -217,6 +218,7 @@ USER_INFO = TableInfo(
         "state": range(2, 2),
         "zipcode": range(5, 5),
     },
+    numeric_limits={"user_type": range(0, 1)},
 )
 
 """Record of all services logged"""
@@ -226,9 +228,9 @@ SERVICE_LOG_INFO = TableInfo(
         [
             pa.field("entry_datetime_utc", pa.date64(), nullable=False),
             pa.field("service_date_utc", pa.date32(), nullable=False),
-            pa.field("provider_id", pa.uint32(), nullable=False),
-            pa.field("member_id", pa.uint32(), nullable=False),
-            pa.field("service_id", pa.uint32(), nullable=False),
+            pa.field("provider_id", pa.int64(), nullable=False),
+            pa.field("member_id", pa.int64(), nullable=False),
+            pa.field("service_id", pa.int64(), nullable=False),
             pa.field("comments", pa.string(), nullable=True),
         ]
     ),
