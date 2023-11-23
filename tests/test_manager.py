@@ -90,6 +90,8 @@ def test_remove_member_record():
 
 
 class TestAddProviderRecord:
+    """Tests of the add_provider_record function"""
+
     @pytest.mark.parametrize(
         "input_strs", [["Donald", "1234 NE Street st.", "Portland", "OR", "97212"]]
     )
