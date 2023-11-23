@@ -21,6 +21,8 @@ from choc_an_simulator.manager import (
 
 
 class TestGenerateUserID:
+    """Tests of the _generate_user_id function"""
+
     @pytest.mark.parametrize(
         "existing_ids",
         [
