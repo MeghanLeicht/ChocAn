@@ -3,6 +3,8 @@ Manager Sub-System.
 
 The manager sub-system allows managers to manage member, provider, and provider directory records.
 """
+from .database_management import load_records_from_file
+from .schemas import USER_INFO
 
 
 def manager_menu() -> None:
@@ -58,6 +60,43 @@ def remove_member_record() -> None:
     raise NotImplementedError("remove_member_record")
 
 
+def _generate_user_id(id_prefix: int) -> int:
+    """
+    Generate a unique 11-digit user ID, with the given id_prefix as the leftmost digit.
+
+    ID's increment by 1 with each new user.
+
+    Args-
+        id_prefix(int): The first digit of the user ID. Current supported prefixes:
+            1: Provider
+            2: Manager
+
+    Returns-
+        The generated ID
+
+    Raises-
+        IndexError: User ID limit exceeded.
+    """
+    assert 1 <= id_prefix <= 9, "ID prefix must be a single digit greater than 0."
+    providers_df = load_records_from_file(USER_INFO)
+    first_id = id_prefix * pow(10, USER_INFO.character_limits["id"].stop - 1)
+    last_id = first_id + pow(10, USER_INFO.character_limits["id"].stop - 1)
+    # Get all current ID's in the database with the given prefix
+    ids_with_prefix = providers_df[
+        (first_id <= providers_df["id"]) | (providers_df["id"] <= last_id)
+    ]["id"]
+    if ids_with_prefix.empty:
+        return first_id
+    new_user_id = ids_with_prefix.max() + 1
+
+    if new_user_id >= (id_prefix + 1) * id_prefix * pow(
+        10, USER_INFO.character_limits["id"].stop - 1
+    ):
+        raise IndexError(f"Maxumum users reached for ID prefix {id_prefix}")
+
+    return new_user_id
+
+
 def add_provider_record() -> None:
     """
     Manager is prompted to enter provider information.
@@ -67,7 +106,6 @@ def add_provider_record() -> None:
 
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("add_provider_record")
 
 
 def update_provider_record() -> None:
