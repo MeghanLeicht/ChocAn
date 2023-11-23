@@ -203,6 +203,7 @@ USER_INFO = TableInfo(
     schema=pa.schema(
         [
             pa.field("id", pa.int64(), nullable=False),
+            pa.field("type", pa.int64(), nullable=False),  # 0 = manager, 1 = provider.
             pa.field("name", pa.string(), nullable=False),
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
@@ -219,6 +220,7 @@ USER_INFO = TableInfo(
         "state": range(2, 2),
         "zipcode": range(5, 5),
     },
+    numeric_limits={"type": range(0, 1)},
 )
 
 """Record of all services logged"""

@@ -103,6 +103,7 @@ def add_provider_record() -> None:
     provider_df = pd.DataFrame(
         {
             "id": provider_id,
+            "type": 1,
             "name": prompt_str("Name", USER_INFO.character_limits["name"]),
             "address": prompt_str("Address", USER_INFO.character_limits["address"]),
             "city": prompt_str("City", USER_INFO.character_limits["city"]),
