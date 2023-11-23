@@ -106,6 +106,7 @@ def add_provider_record() -> None:
 
     This prompt repeats until the user chooses to exit.
     """
+    raise NotImplementedError("add_provider_record")
 
 
 def update_provider_record() -> None:
