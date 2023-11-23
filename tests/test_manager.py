@@ -28,9 +28,9 @@ class TestGenerateUserID:
         "existing_ids",
         [
             # First valid ID
-            [10000000000],
+            [1000000000],
             # Second to last valid ID
-            [19999999998],
+            [9999999998],
             # Empty
             [],
         ],
@@ -42,27 +42,17 @@ class TestGenerateUserID:
             return_value=pd.DataFrame({"id": existing_ids}),
         )
         # print(load_records_from_file(None))
-        new_id = _generate_user_id(1)
-        assert new_id == max(existing_ids, default=9999999999) + 1
+        new_id = _generate_user_id()
+        assert new_id == max(existing_ids, default=999999999) + 1
 
-    def test_generate_user_id_out_of_range(self, mocker):
+    def test_generate_user_id_out_of_range(self, mocker, capsys):
         """Test generating a user ID that exceeds the max value"""
         mocker.patch(
             "choc_an_simulator.manager.load_records_from_file",
-            return_value=pd.DataFrame({"id": [19999999999]}),
+            return_value=pd.DataFrame({"id": [9999999999]}),
         )
         with pytest.raises(IndexError):
-            _ = _generate_user_id(1)
-
-    @pytest.mark.parametrize("id_prefix", [-1, 0, 10])
-    def test_generate_user_id_bad_prefix(self, mocker, id_prefix):
-        """Test generating a user ID with an ID prefix that's out of range"""
-        mocker.patch(
-            "choc_an_simulator.manager.load_records_from_file",
-            return_value=pd.DataFrame({"id": []}),
-        )
-        with pytest.raises(AssertionError):
-            _ = _generate_user_id(id_prefix)
+            _ = _generate_user_id()
 
 
 def test_manager_menu():
@@ -133,8 +123,8 @@ class TestAddProviderRecord:
             "choc_an_simulator.manager._generate_user_id",
             side_effect=IndexError,
         )
-        with pytest.raises(IndexError):
-            add_provider_record()
+        add_provider_record()
+        assert "No new user added." in capsys.readouterr().out
 
 
 def test_update_provider_record():
