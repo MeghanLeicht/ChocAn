@@ -3,8 +3,11 @@ Manager Sub-System.
 
 The manager sub-system allows managers to manage member, provider, and provider directory records.
 """
-from .database_management import load_records_from_file
+import pandas as pd
+from pyarrow import ArrowIOError
+from .database_management import load_records_from_file, add_records_to_file
 from .schemas import USER_INFO
+from .user_io import prompt_str, prompt_int, PColor
 
 
 def manager_menu() -> None:
@@ -105,8 +108,38 @@ def add_provider_record() -> None:
     Provider number is generated from _generate_provider_id.
 
     This prompt repeats until the user chooses to exit.
+
+    Raises-
+        IndexError: Maximum number of providers exceeded
     """
-    raise NotImplementedError("add_provider_record")
+    try:
+        provider_id = _generate_user_id(1)
+    except IndexError as err_index:
+        raise err_index
+
+    provider_df = pd.DataFrame(
+        {
+            "id": provider_id,
+            "name": prompt_str("Name", USER_INFO.character_limits["name"]),
+            "address": prompt_str("Address", USER_INFO.character_limits["address"]),
+            "city": prompt_str("City", USER_INFO.character_limits["city"]),
+            "state": prompt_str("State", USER_INFO.character_limits["state"]),
+            "zipcode": prompt_int("Zipcode", USER_INFO.character_limits["zipcode"]),
+            "password_hash": bytes(0),
+        },
+        index=[0],
+    )
+    if provider_df.isna().values.any():
+        return
+    try:
+        add_records_to_file(provider_df, USER_INFO)
+    except ArrowIOError:
+        PColor.pwarn(
+            "There was an issue accessing the database. Provider was not added."
+        )
+        return
+    # value / type errors are impossible due to checks during prompting.
+    PColor.pok(f"Provider #{provider_id} Added.")
 
 
 def update_provider_record() -> None:

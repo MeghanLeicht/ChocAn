@@ -2,6 +2,7 @@
 
 import pytest
 import pandas as pd
+import pyarrow as pa
 from choc_an_simulator.manager import (
     _generate_user_id,
     manager_menu,
@@ -86,10 +87,50 @@ def test_remove_member_record():
         remove_member_record()
 
 
-def test_add_provider_record():
-    """Test of the add_provider_record function."""
-    with pytest.raises(NotImplementedError):
+class TestAddProviderRecord:
+    @pytest.mark.parametrize(
+        "input_strs", [["Donald", "1234 NE Street st.", "Portland", "OR", "97212"]]
+    )
+    @pytest.mark.usefixtures("mock_input_series")
+    def test_add_provider_record_valid(self, mocker, mock_input_series):
+        """Test of the add_provider_record function with valid input"""
+        mocker.patch("choc_an_simulator.manager.add_records_to_file", return_value=None)
         add_provider_record()
+
+    @pytest.mark.parametrize(
+        "input_strs", [["Donald", "1234 NE Street st.", "Portland", "OR", "97212"]]
+    )
+    @pytest.mark.usefixtures("mock_input_series")
+    def test_add_provider_record_io_error(self, mocker, mock_input_series, capsys):
+        """Test of the add_provider_record function with an IO error"""
+        mocker.patch(
+            "choc_an_simulator.manager.add_records_to_file",
+            side_effect=pa.ArrowIOError,
+        )
+        add_provider_record()
+        assert (
+            "There was an issue accessing the database. Provider was not added."
+            in capsys.readouterr().out
+        )
+
+    @pytest.mark.usefixtures("mock_input_ctrl_c")
+    def test_add_provider_record_user_exit(self, mocker, mock_input_ctrl_c, capsys):
+        """Test of the add_provider_record function with user exit."""
+        mock_add_records = mocker.patch("choc_an_simulator.manager.add_records_to_file")
+        add_provider_record()
+        mock_add_records.assert_not_called()
+
+    def test_add_provider_record_bad_user_id(self, mocker, capsys):
+        """
+        Test of the add_provider_record function when the system has reached the maximum
+        number of providers.
+        """
+        mocker.patch(
+            "choc_an_simulator.manager._generate_user_id",
+            side_effect=IndexError,
+        )
+        with pytest.raises(IndexError):
+            add_provider_record()
 
 
 def test_update_provider_record():
