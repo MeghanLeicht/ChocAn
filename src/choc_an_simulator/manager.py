@@ -48,7 +48,7 @@ def _prompt_member_options() -> None:
     choices = ["Add", "Update", "Remove"]
 
     while user_exit is False:
-        match prompt_menu_options("Member Options", ["Add", "Update", "Remove"]):
+        match prompt_menu_options(message, choices):
             case (_, "Add"):
                 add_member_record()
             case (_, "Update"):
@@ -64,8 +64,8 @@ def _prompt_provider_options() -> None:
     message = "Provider Options"
     choices = ["Add", "Update", "Remove"]
 
-    while user_exit is False: 
-        match prompt_menu_options("Provider Options", ["Add", "Update", "Remove"]):
+    while user_exit is False:
+        match prompt_menu_options(message, choices):
             case (_, "Add"):
                 add_provider_record()
             case (_, "Update"):
@@ -73,7 +73,7 @@ def _prompt_provider_options() -> None:
             case (_, "Remove"):
                 remove_provider_record()
             case None:
-                    user_exit = True
+                user_exit = True
 
 
 def _prompt_provider_directory_options() -> None:
@@ -82,9 +82,7 @@ def _prompt_provider_directory_options() -> None:
     choices = ["Add", "Update", "Remove"]
 
     while user_exit is False:
-        match prompt_menu_options(
-            "Provider Directory Options", ["Add", "Update", "Remove"]
-        ):
+        match prompt_menu_options(message, choices):
             case (_, "Add"):
                 add_provider_directory_record()
             case (_, "Update"):
@@ -101,7 +99,7 @@ def _prompt_report_options() -> None:
     choices = ["Member", "Provider", "Summary"]
 
     while user_exit is False:
-        match prompt_menu_options("Reports Options", ["Member", "Provider", "Summary"]):
+        match prompt_menu_options(message, choices):
             case (_, "Member"):
                 generate_member_report()
             case (_, "Provider"):

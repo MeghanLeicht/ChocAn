@@ -26,7 +26,10 @@ from choc_an_simulator.manager import (
     [
         ("Member", "choc_an_simulator.manager._prompt_member_options"),
         ("Provider", "choc_an_simulator.manager._prompt_provider_options"),
-        ("Provider Directory", "choc_an_simulator.manager._prompt_provider_directory_options"),
+        (
+            "Provider Directory",
+            "choc_an_simulator.manager._prompt_provider_directory_options",
+        ),
         ("Reports", "choc_an_simulator.manager._prompt_report_options"),
     ],
 )
@@ -37,6 +40,7 @@ def test_manager_menu(
     option_text: str,
 ):
     manager_menu()
+
 
 @pytest.mark.parametrize(
     "option_text,endpoint_func_name",
@@ -54,6 +58,7 @@ def test_prompt_member_options(
 ):
     _prompt_member_options()
 
+
 @pytest.mark.parametrize(
     "option_text,endpoint_func_name",
     [
@@ -69,6 +74,7 @@ def test_prompt_provider_options(
     option_text: str,
 ):
     _prompt_provider_options()
+
 
 @pytest.mark.parametrize(
     "option_text,endpoint_func_name",
@@ -92,6 +98,7 @@ def test_prompt_provider_directory_options(
 ):
     _prompt_provider_directory_options()
 
+
 @pytest.mark.parametrize(
     "option_text,endpoint_func_name",
     [
@@ -107,6 +114,7 @@ def test_prompt_report_options(
     option_text: str,
 ):
     _prompt_report_options()
+
 
 """
         @pytest.mark.parametrize(
