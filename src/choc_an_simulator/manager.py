@@ -9,6 +9,8 @@ from .database_management import load_records_from_file, add_records_to_file
 from .schemas import USER_INFO
 from .user_io import prompt_str, prompt_int, PColor
 
+from choc_an_simulator.user_io import prompt_menu_options
+
 
 def manager_menu() -> None:
     """
@@ -27,7 +29,122 @@ def manager_menu() -> None:
     Generate Provider Report
     Generate Summary Report
     """
-    raise NotImplementedError("manager_menu")
+    user_exit = False
+    message = "Manger Terminal"
+    choices = ["Member", "Provider", "Provider Directory", "Reports"]
+
+    while user_exit is False:
+        match prompt_menu_options(message, choices):
+            case (_, "Member"):
+                _prompt_member_options()
+            case (_, "Provider"):
+                _prompt_provider_options()
+            case (_, "Provider Directory"):
+                _prompt_provider_directory_options()
+            case (_, "Reports"):
+                _prompt_report_options()
+            case None:
+                user_exit = True
+
+
+def _prompt_member_options() -> None:
+    """
+    Display member options menu to the manager.
+
+    The member options menu provides access to the following key functionalities.
+    Add Member
+    Update Member
+    Remove Member
+    """
+    user_exit = False
+    message = "Member Options"
+    choices = ["Add", "Update", "Remove"]
+
+    while user_exit is False:
+        match prompt_menu_options(message, choices):
+            case (_, "Add"):
+                add_member_record()
+            case (_, "Update"):
+                update_member_record()
+            case (_, "Remove"):
+                remove_member_record()
+            case None:
+                user_exit = True
+
+
+def _prompt_provider_options() -> None:
+    """
+    Display provider options menu to the manager.
+
+    The provider options menu provides access to the following key functionalities.
+    Add Provider
+    Update Provider
+    Remove Provider
+    """
+    user_exit = False
+    message = "Provider Options"
+    choices = ["Add", "Update", "Remove"]
+
+    while user_exit is False:
+        match prompt_menu_options(message, choices):
+            case (_, "Add"):
+                add_provider_record()
+            case (_, "Update"):
+                update_provider_record()
+            case (_, "Remove"):
+                remove_provider_record()
+            case None:
+                user_exit = True
+
+
+def _prompt_provider_directory_options() -> None:
+    """
+    Display provider directory options menu to the manager.
+
+    The provider directory options menu provides access to the following key functionalities.
+    Add Provider Directory
+    Update Provider Directory
+    Remove Provider Directory
+    """
+    user_exit = False
+    message = "Provider Directory Options"
+    choices = ["Add", "Update", "Remove"]
+
+    while user_exit is False:
+        match prompt_menu_options(message, choices):
+            case (_, "Add"):
+                add_provider_directory_record()
+            case (_, "Update"):
+                update_provider_directory_record()
+            case (_, "Remove"):
+                remove_provider_directory_record()
+            case None:
+                user_exit = True
+
+
+def _prompt_report_options() -> None:
+    """
+    Display report options menu to the manager.
+
+    The report options menu provides access to the following key functionalities.
+    Generate Member Report
+    Generate Provider Report
+    Generate Summary Report
+    """
+    user_exit = False
+    message = "Reports Options"
+    choices = ["Member", "Provider", "Summary"]
+
+    while user_exit is False:
+        match prompt_menu_options(message, choices):
+            case (_, "Member"):
+                generate_member_report()
+            case (_, "Provider"):
+                generate_provider_report()
+            case (_, "Summary"):
+                generate_summary_report()
+            case None:
+                user_exit = True
 
 
 def add_member_record() -> None:
