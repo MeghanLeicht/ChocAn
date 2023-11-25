@@ -11,10 +11,16 @@ from choc_an_simulator.database_management import (
     update_record,
     remove_record,
     save_report,
-    _load_all_records_from_file_,
+)
+from choc_an_simulator.database_management._write_records import (
     _overwrite_records_to_file_,
-    _PARQUET_DIR_,
+)
+from choc_an_simulator.database_management.load_records import (
+    _load_all_records_from_file_,
+)
+from choc_an_simulator.database_management._parquet_utils import (
     _convert_parquet_name_to_path_,
+    _PARQUET_DIR_,
 )
 
 
@@ -282,7 +288,7 @@ class TestUpdateRecord:
             # No keyword arguments
             (2, {}, AssertionError),
             # Invalid index
-            (3, {"value": 3.3}, IndexError),
+            (3, {"value": 2.0}, IndexError),
             # Invalid column name
             (2, {"bad_column_name": "hello"}, KeyError),
             # Invalid type
