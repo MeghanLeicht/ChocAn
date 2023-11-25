@@ -43,6 +43,14 @@ def manager_menu() -> None:
 
 
 def _prompt_member_options() -> None:
+    """
+    Display member options menu to the manager.
+
+    The member options menu provides access to the following key functionalities.
+    Add Member
+    Update Member
+    Remove Member
+    """
     user_exit = False
     message = "Member Options"
     choices = ["Add", "Update", "Remove"]
@@ -60,6 +68,14 @@ def _prompt_member_options() -> None:
 
 
 def _prompt_provider_options() -> None:
+    """
+    Display provider options menu to the manager.
+
+    The provider options menu provides access to the following key functionalities.
+    Add Provider
+    Update Provider
+    Remove Provider
+    """
     user_exit = False
     message = "Provider Options"
     choices = ["Add", "Update", "Remove"]
@@ -77,6 +93,14 @@ def _prompt_provider_options() -> None:
 
 
 def _prompt_provider_directory_options() -> None:
+    """
+    Display provider directory options menu to the manager.
+
+    The provider directory options menu provides access to the following key functionalities.
+    Add Provider Directory
+    Update Provider Directory
+    Remove Provider Directory
+    """
     user_exit = False
     message = "Provider Directory Options"
     choices = ["Add", "Update", "Remove"]
@@ -94,6 +118,14 @@ def _prompt_provider_directory_options() -> None:
 
 
 def _prompt_report_options() -> None:
+    """
+    Display report options menu to the manager.
+
+    The report options menu provides access to the following key functionalities.
+    Generate Member Report
+    Generate Provider Report
+    Generate Summary Report
+    """
     user_exit = False
     message = "Reports Options"
     choices = ["Member", "Provider", "Summary"]
