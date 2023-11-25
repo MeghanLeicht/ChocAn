@@ -36,6 +36,7 @@ CAS_MGR_PATH = "choc_an_simulator.manager"
 def test_manager_menu(
     assert_menu_endpoint,
 ):
+    """Paramaterized test that manager_menu reaches the correct endpoints"""
     manager_menu()
 
 
@@ -51,6 +52,7 @@ def test_manager_menu(
 def test_prompt_member_options(
     assert_menu_endpoint,
 ):
+    """Paramaterized test that _prompt_member_options reaches the correct endpoints"""
     _prompt_member_options()
 
 
@@ -66,6 +68,7 @@ def test_prompt_member_options(
 def test_prompt_provider_options(
     assert_menu_endpoint,
 ):
+    """Paramaterized test that _prompt_provider_options reaches the correct endpoints"""
     _prompt_provider_options()
 
 
@@ -81,6 +84,7 @@ def test_prompt_provider_options(
 def test_prompt_provider_directory_options(
     assert_menu_endpoint,
 ):
+    """Paramaterized test that _prompt_provider_directory_options reaches the correct endpoints"""
     _prompt_provider_directory_options()
 
 
@@ -96,6 +100,7 @@ def test_prompt_provider_directory_options(
 def test_prompt_report_options(
     assert_menu_endpoint,
 ):
+    """Paramaterized test that _prompt_report_options reaches the correct endpoints"""
     _prompt_report_options()
 
 
