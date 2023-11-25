@@ -18,17 +18,20 @@ from choc_an_simulator.manager import (
 
 
 @pytest.mark.parametrize(
-    "menu_option",
+    "option_text,endpoint_func_name",
     [
-        ("Member"),
-        ("Provider"),
-        ("Provider Directory"),
-        ("Reports"),
+        ("Member", "choc_an_simulator.manager._prompt_member_options"),
+        # ("Provider"),
+        # ("Provider Directory"),
+        # ("Reports"),
     ],
 )
-def test_manager_menu(menu_option):
-    if menu_option == "Member":
+@pytest.mark.usefixtures("assert_menu_endpoint")
+def test_manager_menu(assert_menu_endpoint):
+    manager_menu()
 
+
+"""
         @pytest.mark.parametrize(
             "option_text,endpoint_func_name",
             [
@@ -37,7 +40,6 @@ def test_manager_menu(menu_option):
                 ("Remove", "choc_an_simulator.manager.remove_member_record"),
             ],
         )
-        @pytest.mark.usefixtures("assert_menu_endpoint")
         def test_member_option(
             assert_menu_endpoint,
             endpoint_func_name: str,
@@ -104,6 +106,7 @@ def test_manager_menu(menu_option):
             option_text: str,
         ):
             manager_menu()
+"""
 
 
 def test_add_member_record():
