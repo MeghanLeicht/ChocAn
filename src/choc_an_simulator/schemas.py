@@ -134,16 +134,18 @@ class TableInfo:
         # Check for type compatibility
         try:
             _ = pa.array([value], type=field.type)
-        except pa.ArrowInvalid:
+        except pa.ArrowInvalid as err_invalid:
             raise TypeError(
-                f"Value {value} has wrong type for column "
-                f"{field_name} ({type(value)} -> {field.type})"
+                f"Value {value} has wrong type for column. \n"
+                f"{field_name} ({type(value)} -> {field.type})\n"
+                f"{err_invalid}"
             )
 
         if field_name in self.character_limits.keys():
             val_len = len(str(value))
             limit_range = self.character_limits[field_name]
             if (val_len < limit_range.start) or (val_len > limit_range.stop):
+                print(type(value))
                 raise ArithmeticError(
                     f"{field_name} value {value} is outside character limit {limit_range} "
                 )
@@ -161,10 +163,10 @@ PROVIDER_DIRECTORY_INFO = TableInfo(
     name="provider_directory",
     schema=pa.schema(
         [
-            pa.field("service_id", pa.uint32(), nullable=False),
+            pa.field("service_id", pa.int64(), nullable=False),
             pa.field("service_name", pa.string(), nullable=False),
-            pa.field("price_dollars", pa.uint32(), nullable=False),
-            pa.field("price_cents", pa.uint32(), nullable=False),
+            pa.field("price_dollars", pa.int32(), nullable=False),
+            pa.field("price_cents", pa.int32(), nullable=False),
         ]
     ),
     character_limits={"service_id": range(6, 6), "service_name": range(1, 20)},
@@ -176,12 +178,12 @@ MEMBER_INFO = TableInfo(
     name="members",
     schema=pa.schema(
         [
-            pa.field("member_id", pa.uint32(), nullable=False),
+            pa.field("member_id", pa.int64(), nullable=False),
             pa.field("name", pa.string(), nullable=False),
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.uint32(), nullable=False),
+            pa.field("zipcode", pa.int32(), nullable=False),
             pa.field("suspended", pa.bool_(), nullable=False),
         ]
     ),
@@ -200,13 +202,14 @@ USER_INFO = TableInfo(
     name="providers",
     schema=pa.schema(
         [
-            pa.field("id", pa.uint32(), nullable=False),
+            pa.field("id", pa.int64(), nullable=False),
+            pa.field("type", pa.int64(), nullable=False),  # 0 = manager, 1 = provider.
             pa.field("name", pa.string(), nullable=False),
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.uint32(), nullable=False),
-            pa.field("password_hash", pa.binary(256), nullable=False),
+            pa.field("zipcode", pa.int32(), nullable=False),
+            pa.field("password_hash", pa.binary(), nullable=False),
         ]
     ),
     character_limits={
@@ -217,6 +220,7 @@ USER_INFO = TableInfo(
         "state": range(2, 2),
         "zipcode": range(5, 5),
     },
+    numeric_limits={"type": range(0, 1)},
 )
 
 """Record of all services logged"""
@@ -226,9 +230,9 @@ SERVICE_LOG_INFO = TableInfo(
         [
             pa.field("entry_datetime_utc", pa.date64(), nullable=False),
             pa.field("service_date_utc", pa.date32(), nullable=False),
-            pa.field("provider_id", pa.uint32(), nullable=False),
-            pa.field("member_id", pa.uint32(), nullable=False),
-            pa.field("service_id", pa.uint32(), nullable=False),
+            pa.field("provider_id", pa.int32(), nullable=False),
+            pa.field("member_id", pa.int32(), nullable=False),
+            pa.field("service_id", pa.int32(), nullable=False),
             pa.field("comments", pa.string(), nullable=True),
         ]
     ),
