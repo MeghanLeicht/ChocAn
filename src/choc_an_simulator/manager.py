@@ -43,45 +43,73 @@ def manager_menu() -> None:
 
 
 def _prompt_member_options() -> None:
-    match prompt_menu_options("Member Options", ["Add", "Update", "Remove"]):
-        case (_, "Add"):
-            add_member_record()
-        case (_, "Update"):
-            update_member_record()
-        case (_, "Remove"):
-            remove_member_record()
+    user_exit = False
+    message = "Member Options"
+    choices = ["Add", "Update", "Remove"]
+
+    while user_exit is False:
+        match prompt_menu_options("Member Options", ["Add", "Update", "Remove"]):
+            case (_, "Add"):
+                add_member_record()
+            case (_, "Update"):
+                update_member_record()
+            case (_, "Remove"):
+                remove_member_record()
+            case None:
+                user_exit = True
 
 
 def _prompt_provider_options() -> None:
-    match prompt_menu_options("Provider Options", ["Add", "Update", "Remove"]):
-        case (_, "Add"):
-            add_provider_record()
-        case (_, "Update"):
-            update_provider_record()
-        case (_, "Remove"):
-            remove_provider_record()
+    user_exit = False
+    message = "Provider Options"
+    choices = ["Add", "Update", "Remove"]
+
+    while user_exit is False: 
+        match prompt_menu_options("Provider Options", ["Add", "Update", "Remove"]):
+            case (_, "Add"):
+                add_provider_record()
+            case (_, "Update"):
+                update_provider_record()
+            case (_, "Remove"):
+                remove_provider_record()
+            case None:
+                    user_exit = True
 
 
 def _prompt_provider_directory_options() -> None:
-    match prompt_menu_options(
-        "Provider Directory Options", ["Add", "Update", "Remove"]
-    ):
-        case (_, "Add"):
-            add_provider_directory_record()
-        case (_, "Update"):
-            update_provider_directory_record()
-        case (_, "Remove"):
-            remove_provider_directory_record()
+    user_exit = False
+    message = "Provider Directory Options"
+    choices = ["Add", "Update", "Remove"]
+
+    while user_exit is False:
+        match prompt_menu_options(
+            "Provider Directory Options", ["Add", "Update", "Remove"]
+        ):
+            case (_, "Add"):
+                add_provider_directory_record()
+            case (_, "Update"):
+                update_provider_directory_record()
+            case (_, "Remove"):
+                remove_provider_directory_record()
+            case None:
+                user_exit = True
 
 
 def _prompt_report_options() -> None:
-    match prompt_menu_options("Reports Options", ["Member", "Provider", "Summary"]):
-        case (_, "Member"):
-            generate_member_report()
-        case (_, "Provider"):
-            generate_provider_report()
-        case (_, "Summary"):
-            generate_summary_report()
+    user_exit = False
+    message = "Reports Options"
+    choices = ["Member", "Provider", "Summary"]
+
+    while user_exit is False:
+        match prompt_menu_options("Reports Options", ["Member", "Provider", "Summary"]):
+            case (_, "Member"):
+                generate_member_report()
+            case (_, "Provider"):
+                generate_provider_report()
+            case (_, "Summary"):
+                generate_summary_report()
+            case None:
+                user_exit = True
 
 
 def add_member_record() -> None:
