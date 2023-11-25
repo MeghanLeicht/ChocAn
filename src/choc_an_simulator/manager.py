@@ -4,7 +4,9 @@ Manager Sub-System.
 The manager sub-system allows managers to manage member, provider, and provider directory records.
 """
 
-from choc_an_simulator.user_io import prompt_menu_options
+from choc_an_simulator.user_io import prompt_menu_options, prompt_str, prompt_int
+from choc_an_simulator.database_management import load_records_from_file, update_record
+from choc_an_simulator.schemas import MEMBER_INFO
 
 
 def manager_menu() -> None:
@@ -103,14 +105,41 @@ def update_member_record() -> None:
     Prompts the user for a member ID, then prompts for which field to change.
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("update_member_record")
+    # prompt member ID
+    # use load_records to get that member's info
+    # display the info
+    # use prompt_menu to ask which field to update
+    # use prompt_str to get new value
+    member_id = prompt_int("Member ID")
+    member_record = load_records_from_file(
+        MEMBER_INFO, eq_cols={"member_id": member_id}
+    )
+    if member_record.empty:
+        # errror: no records found
+        pass
+    member_record = member_record.iloc[0]
+
+    print("Here are the member's current values")
+    options = []
+    for field in member_record.index.values[1:]:
+        options.append(f"{field}: {member_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "zipcode":
+        new_value = prompt_int(f"New value for {field_to_update}")
+    else:
+        new_value = prompt_str(f"New value for {field_to_update}")
+
+    update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
 
 
 def remove_member_record() -> None:
     """
     Prompt the user to remove the member's information.
 
-    Prompts the user for a member ID, then prompts for which field to remove.
+    Prompts the user for a member ID, then removes the matching row.
 
     This prompt repeats until the user chooses to exit.
     """

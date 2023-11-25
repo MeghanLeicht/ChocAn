@@ -3,7 +3,6 @@ import pytest
 from choc_an_simulator.manager import (
     manager_menu,
     add_member_record,
-    update_member_record,
     remove_member_record,
     add_provider_record,
     update_provider_record,
@@ -112,11 +111,6 @@ def test_manager_menu(assert_menu_endpoint):
 def test_add_member_record():
     with pytest.raises(NotImplementedError):
         add_member_record()
-
-
-def test_update_member_record():
-    with pytest.raises(NotImplementedError):
-        update_member_record()
 
 
 def test_remove_member_record():
