@@ -5,8 +5,9 @@ The manager sub-system allows managers to manage member, provider, and provider 
 """
 import pandas as pd
 from pyarrow import ArrowIOError
+from pandas.api.types import is_numeric_dtype
 from .database_management import load_records_from_file, add_records_to_file
-from .schemas import USER_INFO, TableInfo
+from .schemas import USER_INFO, MEMBER_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor
 
 
@@ -42,7 +43,9 @@ def add_member_record() -> None:
     try:
         member_id = _generate_user_id(MEMBER_INFO)
     except IndexError:
-        PColor.pfail("The maximum number of members has been reached. No new member added.")
+        PColor.pfail(
+            "The maximum number of members has been reached. No new member added."
+        )
         return
 
     member_df = pd.DataFrame(
@@ -62,11 +65,9 @@ def add_member_record() -> None:
     try:
         add_records_to_file(member_df, MEMBER_INFO)
     except ArrowIOError:
-        PColor.pwarn(
-            "There was an issue accessing the database. Member was not added."
-        )
+        PColor.pwarn("There was an issue accessing the database. Member was not added.")
         return
-    PColor.pok(f"Provider #{provider_id} Added.")
+    PColor.pok(f"Member #{member_id} Added.")
 
 
 def update_member_record() -> None:
@@ -105,7 +106,7 @@ def _generate_user_id(table_info: TableInfo) -> int:
         return 1000000000
 
     id = df.iloc[:, 0]
-    if not isinstance(id, int):
+    if not is_numeric_dtype(id):
         raise TypeError("Only integers are allowed.")
 
     max_id = id.max()
