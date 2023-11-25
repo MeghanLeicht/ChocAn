@@ -165,8 +165,8 @@ PROVIDER_DIRECTORY_INFO = TableInfo(
         [
             pa.field("service_id", pa.int64(), nullable=False),
             pa.field("service_name", pa.string(), nullable=False),
-            pa.field("price_dollars", pa.int32(), nullable=False),
-            pa.field("price_cents", pa.int32(), nullable=False),
+            pa.field("price_dollars", pa.int64(), nullable=False),
+            pa.field("price_cents", pa.int64(), nullable=False),
         ]
     ),
     character_limits={"service_id": range(6, 6), "service_name": range(1, 20)},
@@ -183,7 +183,7 @@ MEMBER_INFO = TableInfo(
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.int32(), nullable=False),
+            pa.field("zipcode", pa.int64(), nullable=False),
             pa.field("suspended", pa.bool_(), nullable=False),
         ]
     ),
@@ -208,7 +208,7 @@ USER_INFO = TableInfo(
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.int32(), nullable=False),
+            pa.field("zipcode", pa.int64(), nullable=False),
             pa.field("password_hash", pa.binary(), nullable=False),
         ]
     ),
@@ -230,9 +230,9 @@ SERVICE_LOG_INFO = TableInfo(
         [
             pa.field("entry_datetime_utc", pa.date64(), nullable=False),
             pa.field("service_date_utc", pa.date32(), nullable=False),
-            pa.field("provider_id", pa.int32(), nullable=False),
-            pa.field("member_id", pa.int32(), nullable=False),
-            pa.field("service_id", pa.int32(), nullable=False),
+            pa.field("provider_id", pa.int64(), nullable=False),
+            pa.field("member_id", pa.int64(), nullable=False),
+            pa.field("service_id", pa.int64(), nullable=False),
             pa.field("comments", pa.string(), nullable=True),
         ]
     ),
