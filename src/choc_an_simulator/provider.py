@@ -58,8 +58,6 @@ def check_in_member() -> None:
     else:
         PColor.pok("Valid")
 
-    return
-
 
 def display_member_information() -> None:
     """
