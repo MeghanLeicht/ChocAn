@@ -11,7 +11,6 @@ from choc_an_simulator.provider import (
     request_provider_directory,
 )
 
-import choc_an_simulator.user_io, choc_an_simulator.database_management
 
 @pytest.mark.parametrize(
     "option_text,endpoint_func_name",
@@ -33,35 +32,54 @@ def test_show_provider_menu(
     """Paramaterized test that show_provider_menu reaches the correct endpoints"""
     show_provider_menu()
 
+
 @pytest.mark.parametrize(
     "member_info,member_id,expected_out",
     [
         # Valid Member
         (
-            DataFrame({"member_id": [123456789], "name": ["Name"], "address": ["Street"], "city": ["Portland"], "state": ["OR"], "zipcode": [97211], "suspended": [False]}),
+            DataFrame(
+                {
+                    "member_id": [123456789],
+                    "name": ["Name"],
+                    "address": ["Street"],
+                    "city": ["Portland"],
+                    "state": ["OR"],
+                    "zipcode": [97211],
+                    "suspended": [False],
+                }
+            ),
             123456789,
-            "\033[92mValid\033[0m\n"
+            "\033[92mValid\033[0m\n",
         ),
         # Suspended Member
         (
-            DataFrame({"member_id": [123456789], "name": ["Name"], "address": ["Street"], "city": ["Portland"], "state": ["OR"], "zipcode": [97211], "suspended": [True]}),
+            DataFrame(
+                {
+                    "member_id": [123456789],
+                    "name": ["Name"],
+                    "address": ["Street"],
+                    "city": ["Portland"],
+                    "state": ["OR"],
+                    "zipcode": [97211],
+                    "suspended": [True],
+                }
+            ),
             123456789,
-            "\033[93mSuspended\033[0m\n"
+            "\033[93mSuspended\033[0m\n",
         ),
         # Invalid Member
-        (
-            DataFrame(),
-            123456789,
-            "\033[91mInvalid\033[0m\n"
-        )
-    ]
+        (DataFrame(), 123456789, "\033[91mInvalid\033[0m\n"),
+    ],
 )
 def test_check_in_member(member_info, member_id, expected_out, capsys, mocker):
     """Tests the check_in_member function."""
     mocker.patch("choc_an_simulator.provider.prompt_int", return_value=member_id)
-    mocker.patch("choc_an_simulator.provider.load_records_from_file", return_value=member_info)
+    mocker.patch(
+        "choc_an_simulator.provider.load_records_from_file", return_value=member_info
+    )
     check_in_member()
-    captured_out = capsys.readouterr()
+    captured_out, _ = capsys.readouterr()
     assert captured_out == expected_out
 
 

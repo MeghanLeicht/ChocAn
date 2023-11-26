@@ -11,6 +11,7 @@ from choc_an_simulator.user_io import prompt_menu_options, PColor, prompt_int
 from .database_management import load_records_from_file
 from .schemas import MEMBER_INFO
 
+
 def show_provider_menu() -> None:
     """
     Display the provider menu to the user.
@@ -34,7 +35,6 @@ def show_provider_menu() -> None:
                 user_exit = True
 
 
-
 def check_in_member() -> None:
     """
     Prompt for a member's ID and display their status.
@@ -44,18 +44,16 @@ def check_in_member() -> None:
     or "Invalid"
     """
     member_id = prompt_int(
-        "Please enter Member ID",
-        char_limit= MEMBER_INFO.character_limits["member_id"]
+        "Please enter Member ID", char_limit=MEMBER_INFO.character_limits["member_id"]
     )
 
     query_response = load_records_from_file(
-        table_info = MEMBER_INFO, 
-        eq_cols = {"member_id" : member_id}
+        table_info=MEMBER_INFO, eq_cols={"member_id": member_id}
     )
 
     if query_response.empty:
         PColor.pfail("Invalid")
-    elif query_response.at[0, "suspended"] == True:
+    elif query_response.at[0, "suspended"]:
         PColor.pwarn("Suspended")
     else:
         PColor.pok("Valid")
