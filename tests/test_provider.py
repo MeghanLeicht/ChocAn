@@ -61,8 +61,8 @@ def test_check_in_member(member_info, member_id, expected_out, capsys, mocker):
     mocker.patch("choc_an_simulator.provider.prompt_int", return_value=member_id)
     mocker.patch("choc_an_simulator.provider.load_records_from_file", return_value=member_info)
     check_in_member()
-    out, err = capsys.readouterr()
-    assert out == expected_out
+    captured_out = capsys.readouterr()
+    assert captured_out == expected_out
 
 
 def test_display_member_information():

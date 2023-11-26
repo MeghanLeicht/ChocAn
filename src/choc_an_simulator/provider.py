@@ -45,7 +45,7 @@ def check_in_member() -> None:
     """
     member_id = prompt_int(
         "Please enter Member ID",
-        char_limit= range(9, 9)
+        char_limit= MEMBER_INFO.character_limits["member_id"]
     )
 
     query_response = load_records_from_file(
