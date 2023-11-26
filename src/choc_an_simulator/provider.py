@@ -55,13 +55,11 @@ def check_in_member() -> None:
 
     if query_response.empty:
         PColor.pfail("Invalid")
-        return
-    
-    if query_response.at[0, "suspended"] == True:
+    elif query_response.at[0, "suspended"] == True:
         PColor.pwarn("Suspended")
-        return
-    
-    PColor.pok("Valid")
+    else:
+        PColor.pok("Valid")
+
     return
 
 
