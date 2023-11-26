@@ -6,8 +6,10 @@ It encompasses functions for displaying menus, prompting for member IDs, recordi
 billing entries, and managing provider directories. These functions collectively support
 billing, service verification, and data retrieval processes in the ChocAn system.
 """
-from choc_an_simulator.user_io import prompt_menu_options
+from choc_an_simulator.user_io import prompt_menu_options, PColor, prompt_int
 
+from .database_management import load_records_from_file
+from .schemas import MEMBER_INFO
 
 def show_provider_menu() -> None:
     """
@@ -41,7 +43,26 @@ def check_in_member() -> None:
     keycard reader or manually via the terminal. Then, displays either "Valid", "Suspended"
     or "Invalid"
     """
-    raise NotImplementedError("check_in_member")
+    member_id = prompt_int(
+        "Please enter Member ID",
+        char_limit= range(9, 9)
+    )
+
+    query_response = load_records_from_file(
+        table_info = MEMBER_INFO, 
+        eq_cols = {"member_id" : member_id}
+    )
+
+    if query_response.empty:
+        PColor.pfail("Invalid")
+        return
+    
+    if query_response.at[0, "suspended"] == True:
+        PColor.pwarn("Suspended")
+        return
+    
+    PColor.pok("Valid")
+    return
 
 
 def display_member_information() -> None:
