@@ -1,5 +1,6 @@
 """Tests of functions in the provider module."""
 import pytest
+import os
 from choc_an_simulator.provider import (
     show_provider_menu,
     check_in_member,
@@ -48,7 +49,28 @@ def test_record_service_billing_entry():
         record_service_billing_entry()
 
 
-def test_request_provider_directory() -> None:
-    """Verify correct file creation for request_provider_directory."""
-    with pytest.raises(NotImplementedError):
-        request_provider_directory()
+def test_request_provider_directory(mocker, capsys, tmp_path) -> None:
+    """Verify correct file creation for request_provider_directory and output of filepath"""
+    mock_directory = tmp_path / "mock_reports"
+    mock_directory.mkdir()
+    mock_file_path = mock_directory / "test_provider_directory.csv"
+
+    mocker.patch(
+        "choc_an_simulator.provider.load_records_from_file",
+        return_value="mock_dataframe",
+    )
+
+    with open(mock_file_path, "w"):
+        mocker.patch(
+            "choc_an_simulator.provider.save_report", return_value=mock_file_path
+        )
+
+    request_provider_directory()
+
+    assert os.path.exists(mock_file_path), f"file does not exist at {mock_file_path}"
+
+    captured = capsys.readouterr()
+    expected_output = str(mock_file_path) + "\n"
+    assert (
+        captured.out == expected_output
+    ), f"file path not found in captured output: {captured.out}"
