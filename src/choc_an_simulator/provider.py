@@ -73,7 +73,5 @@ def record_service_billing_entry() -> None:
 def request_provider_directory() -> None:
     """Save the provider directory to a CSV file, and display the path it was saved to."""
     provider_directory_df = load_records_from_file(PROVIDER_DIRECTORY_INFO)
-    # if provider_directory_df.empty:
-    #     raise ValueError("DataFrame is empty")
     provider_directory_report = save_report(provider_directory_df, "provider_directory")
     print(provider_directory_report)
