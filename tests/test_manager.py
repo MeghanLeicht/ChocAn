@@ -86,7 +86,7 @@ def test_manager_menu():
 
 
 class TestAddMemberRecord:
-    """Tests of the add_provider_record function"""
+    """Tests of the add_member_record function"""
 
     @pytest.mark.parametrize(
         "input_strs", [["Donald", "1234 NE Street st.", "Portland", "OR", "97212"]]
