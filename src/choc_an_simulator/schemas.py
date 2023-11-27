@@ -188,7 +188,7 @@ MEMBER_INFO = TableInfo(
         ]
     ),
     character_limits={
-        "member_id": range(11, 11),
+        "member_id": range(9, 9),
         "name": range(1, 25),
         "address": range(1, 25),
         "city": range(1, 14),
