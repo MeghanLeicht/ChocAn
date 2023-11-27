@@ -3,9 +3,12 @@ Manager Sub-System.
 
 The manager sub-system allows managers to manage member, provider, and provider directory records.
 """
-from .database_management import load_records_from_file, update_record
-from .schemas import USER_INFO, MEMBER_INFO
-from .user_io import prompt_str, prompt_int, prompt_menu_options
+import pandas as pd
+from pyarrow import ArrowIOError
+from pandas.api.types import is_numeric_dtype
+from .database_management import load_records_from_file, add_records_to_file
+from .schemas import USER_INFO, MEMBER_INFO, TableInfo
+from .user_io import prompt_str, prompt_int, PColor
 
 
 def manager_menu() -> None:
@@ -32,12 +35,37 @@ def add_member_record() -> None:
     """
     Manager is prompted to enter member information.
 
-    The required member information: name, street address, city, state, zip code, and email address.
-    The member number will be generated from _generate_member_id().
-
-    This prompt repeats until the user chooses to exit.
+    Member information: member id, name, street address, city, state, zip code, and suspended.
+    The member number will be generated from _generate_user_id().
     """
-    raise NotImplementedError("add_member_record")
+    try:
+        member_id = _generate_user_id(MEMBER_INFO)
+    except IndexError:
+        PColor.pfail(
+            "The maximum number of members has been reached. No new member added."
+        )
+        return
+
+    member_df = pd.DataFrame(
+        {
+            "member_id": member_id,
+            "name": prompt_str("Name", MEMBER_INFO.character_limits["name"]),
+            "address": prompt_str("Address", MEMBER_INFO.character_limits["address"]),
+            "city": prompt_str("City", MEMBER_INFO.character_limits["city"]),
+            "state": prompt_str("State", MEMBER_INFO.character_limits["state"]),
+            "zipcode": prompt_int("Zipcode", MEMBER_INFO.character_limits["zipcode"]),
+            "suspended": False,
+        },
+        index=[0],
+    )
+    if member_df.isna().values.any():
+        return
+    try:
+        add_records_to_file(member_df, MEMBER_INFO)
+    except ArrowIOError:
+        PColor.pwarn("There was an issue accessing the database. Member was not added.")
+        return
+    PColor.pok(f"Member #{member_id} Added.")
 
 
 def update_member_record() -> None:
@@ -81,27 +109,30 @@ def remove_member_record() -> None:
     """
     Prompt the user to remove the member's information.
 
-    Prompts the user for a member ID, then removes the matching row.
-
-    This prompt repeats until the user chooses to exit.
+    Prompts the user for a member ID, then prompts for which field to remove.
     """
     raise NotImplementedError("remove_member_record")
 
 
-def _generate_user_id() -> int:
+def _generate_user_id(table_info: TableInfo) -> int:
     """
-    Generate a unique 9-digit-digit user ID. User ID's increment by 1 for each new user.
+    Generate a unique 9 digit ID. ID's increment by 1.
 
     Returns-
         int: The generated ID.
 
     Raises-
-        IndexError: User ID limit exceeded.
+        IndexError: ID limit exceeded.
     """
-    providers_df = load_records_from_file(USER_INFO)
-    if providers_df.empty:
+    df = load_records_from_file(table_info)
+    if df.empty:
         return 1000000000
-    max_id = providers_df["id"].max()
+
+    id = df.iloc[:, 0]
+    if not is_numeric_dtype(id):
+        raise TypeError("Only integers are allowed.")
+
+    max_id = id.max()
     if max_id >= 9999999999:
         raise IndexError("User Limit Exceeded.")
     return max_id + 1
@@ -119,7 +150,36 @@ def add_provider_record() -> None:
     Raises-
         IndexError: Maximum number of providers exceeded
     """
-    raise NotImplementedError
+    try:
+        provider_id = _generate_user_id(USER_INFO)
+    except IndexError:
+        PColor.pfail("The maximum number of users has been reached. No new user added.")
+        return
+
+    provider_df = pd.DataFrame(
+        {
+            "id": provider_id,
+            "type": 1,
+            "name": prompt_str("Name", USER_INFO.character_limits["name"]),
+            "address": prompt_str("Address", USER_INFO.character_limits["address"]),
+            "city": prompt_str("City", USER_INFO.character_limits["city"]),
+            "state": prompt_str("State", USER_INFO.character_limits["state"]),
+            "zipcode": prompt_int("Zipcode", USER_INFO.character_limits["zipcode"]),
+            "password_hash": bytes(0),
+        },
+        index=[0],
+    )
+    if provider_df.isna().values.any():
+        return
+    try:
+        add_records_to_file(provider_df, USER_INFO)
+    except ArrowIOError:
+        PColor.pwarn(
+            "There was an issue accessing the database. Provider was not added."
+        )
+        return
+    # value / type errors are impossible due to checks during prompting.
+    PColor.pok(f"Provider #{provider_id} Added.")
 
 
 def update_provider_record() -> None:
