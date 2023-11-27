@@ -5,6 +5,10 @@ import pandas as pd
 import pyarrow as pa
 from choc_an_simulator.manager import (
     generate_unique_id,
+    _prompt_provider_options,
+    _prompt_provider_directory_options,
+    _prompt_report_options,
+    _prompt_member_options,
     manager_menu,
     add_member_record,
     update_member_record,
@@ -166,12 +170,6 @@ class TestGenerateUniqueID:
         )
         with pytest.raises(TypeError):
             _ = generate_unique_id(table_info)
-
-
-def test_manager_menu():
-    """Test of the manager_menu function."""
-    with pytest.raises(NotImplementedError):
-        manager_menu()
 
 
 class TestAddMemberRecord:
