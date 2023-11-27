@@ -7,8 +7,7 @@ cd src/scripts
 python3 csv_to_database_file.py example_provider_directory.csv provider_directory
 
 """
-
-
+import pytest
 import pandas as pd
 import sys
 from choc_an_simulator.database_management import add_records_to_file
@@ -70,3 +69,17 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+@pytest.mark.parametrize(
+    "name", ["members", "providers", "provider_directory", "service_log"]
+)
+def test_match_name_to_database(name: str):
+    """Test match_name_to_database with all schema names."""
+    assert match_name_to_table_info(name).name == name
+
+
+def test_match_name_to_database_nomatch():
+    """Test match_name_to_database with a name that doesn't exist."""
+    with pytest.raises(ValueError):
+        match_name_to_table_info("missing_name")
