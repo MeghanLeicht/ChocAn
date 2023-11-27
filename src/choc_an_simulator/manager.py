@@ -36,10 +36,10 @@ def add_member_record() -> None:
     Manager is prompted to enter member information.
 
     Member information: member id, name, street address, city, state, zip code, and suspended.
-    The member number will be generated from _generate_user_id().
+    The member number will be generated from generate_unique_id().
     """
     try:
-        member_id = _generate_user_id(MEMBER_INFO)
+        member_id = generate_unique_id(MEMBER_INFO)
     except IndexError:
         PColor.pfail(
             "The maximum number of members has been reached. No new member added."
@@ -87,7 +87,7 @@ def remove_member_record() -> None:
     raise NotImplementedError("remove_member_record")
 
 
-def _generate_user_id(table_info: TableInfo) -> int:
+def generate_unique_id(table_info: TableInfo) -> int:
     """
     Generate a unique 9 digit ID. ID's increment by 1.
 
@@ -124,7 +124,7 @@ def add_provider_record() -> None:
         IndexError: Maximum number of providers exceeded
     """
     try:
-        provider_id = _generate_user_id(USER_INFO)
+        provider_id = generate_unique_id(USER_INFO)
     except IndexError:
         PColor.pfail("The maximum number of users has been reached. No new user added.")
         return

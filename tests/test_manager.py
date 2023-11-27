@@ -4,7 +4,7 @@ import pytest
 import pandas as pd
 import pyarrow as pa
 from choc_an_simulator.manager import (
-    _generate_user_id,
+    generate_unique_id,
     manager_menu,
     add_member_record,
     update_member_record,
@@ -22,8 +22,8 @@ from choc_an_simulator.manager import (
 from choc_an_simulator.schemas import MEMBER_INFO, USER_INFO, PROVIDER_DIRECTORY_INFO
 
 
-class TestGenerateUserID:
-    """Tests of the _generate_user_id function"""
+class TestGenerateUniqueID:
+    """Tests of the generate_unique_id function"""
 
     @pytest.mark.parametrize(
         "existing_ids,table_info",
@@ -48,41 +48,41 @@ class TestGenerateUserID:
             ([], PROVIDER_DIRECTORY_INFO),
         ],
     )
-    def test_generate_user_id_valid(self, mocker, existing_ids, table_info):
+    def testgenerate_unique_id_valid(self, mocker, existing_ids, table_info):
         """Test generating a valid user ID"""
         mocker.patch(
             "choc_an_simulator.manager.load_records_from_file",
             return_value=pd.DataFrame({"id": existing_ids}),
         )
         # print(load_records_from_file(None))
-        new_id = _generate_user_id(table_info)
+        new_id = generate_unique_id(table_info)
         assert new_id == max(existing_ids, default=999999999) + 1
 
     @pytest.mark.parametrize(
         "table_info",
         [USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO],
     )
-    def test_generate_user_id_out_of_range(self, mocker, table_info):
+    def testgenerate_unique_id_out_of_range(self, mocker, table_info):
         """Test generating a user ID that exceeds the max value"""
         mocker.patch(
             "choc_an_simulator.manager.load_records_from_file",
             return_value=pd.DataFrame({"id": [9999999999]}),
         )
         with pytest.raises(IndexError):
-            _ = _generate_user_id(table_info)
+            _ = generate_unique_id(table_info)
 
     @pytest.mark.parametrize(
         "table_info",
         [USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO],
     )
-    def test_generate_user_id_nonnumeric_id(self, mocker, table_info):
+    def testgenerate_unique_id_nonnumeric_id(self, mocker, table_info):
         """Test generating a user ID that exceeds the max value"""
         mocker.patch(
             "choc_an_simulator.manager.load_records_from_file",
             return_value=pd.DataFrame({"id": ["hello"]}),
         )
         with pytest.raises(TypeError):
-            _ = _generate_user_id(table_info)
+            _ = generate_unique_id(table_info)
 
 
 def test_manager_menu():
@@ -132,7 +132,7 @@ class TestAddMemberRecord:
         number of members.
         """
         mocker.patch(
-            "choc_an_simulator.manager._generate_user_id",
+            "choc_an_simulator.manager.generate_unique_id",
             side_effect=IndexError,
         )
         add_member_record()
@@ -192,7 +192,7 @@ class TestAddProviderRecord:
         number of providers.
         """
         mocker.patch(
-            "choc_an_simulator.manager._generate_user_id",
+            "choc_an_simulator.manager.generate_unique_id",
             side_effect=IndexError,
         )
         add_provider_record()
