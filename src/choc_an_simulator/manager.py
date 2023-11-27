@@ -5,8 +5,12 @@ The manager sub-system allows managers to manage member, provider, and provider 
 """
 import pandas as pd
 from pyarrow import ArrowIOError
-from .database_management import load_records_from_file, add_records_to_file
-from .schemas import USER_INFO
+from .database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    remove_record,
+)
+from .schemas import USER_INFO, PROVIDER_DIRECTORY_INFO
 from .user_io import prompt_str, prompt_int, PColor
 
 from choc_an_simulator.user_io import prompt_menu_options
@@ -284,12 +288,13 @@ def update_provider_directory_record() -> None:
 
 
 def remove_provider_directory_record() -> None:
-    """
-    Manager is prompted for a service id to be removed, and a lookup is performed.
+    """Manager is prompted for a service id to be removed, and a lookup is performed."""
+    service_id = prompt_int("Service ID")
 
-    This prompt repeats until the user chooses to exit.
-    """
-    raise NotImplementedError("remove_provider_directory_record")
+    if remove_record(service_id, PROVIDER_DIRECTORY_INFO):
+        print(f"Service {service_id} Removed")
+    else:
+        print(f"Service {service_id} Not Found.")
 
 
 def generate_member_report() -> None:
