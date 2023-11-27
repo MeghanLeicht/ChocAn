@@ -35,10 +35,8 @@ def add_member_record() -> None:
     """
     Manager is prompted to enter member information.
 
-    The required member information: name, street address, city, state, zip code, and email address.
-    The member number will be generated from _generate_member_id().
-
-    This prompt repeats until the user chooses to exit.
+    Member information: member id, name, street address, city, state, zip code, and suspended.
+    The member number will be generated from _generate_user_id().
     """
     try:
         member_id = _generate_user_id(MEMBER_INFO)
@@ -85,8 +83,6 @@ def remove_member_record() -> None:
     Prompt the user to remove the member's information.
 
     Prompts the user for a member ID, then prompts for which field to remove.
-
-    This prompt repeats until the user chooses to exit.
     """
     raise NotImplementedError("remove_member_record")
 
