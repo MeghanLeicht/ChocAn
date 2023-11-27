@@ -151,7 +151,7 @@ def update_provider_record() -> None:
     if selection is None:
         return
     field_to_update = selection[1]
-    if field_to_update == "zipcode":
+    if field_to_update == "type" or field_to_update == "zipcode":
         new_value = prompt_int(f"New value for {field_to_update}")
     else:
         new_value = prompt_str(f"New value for {field_to_update}")
