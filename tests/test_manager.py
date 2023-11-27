@@ -48,7 +48,7 @@ class TestGenerateUniqueID:
             ([], PROVIDER_DIRECTORY_INFO),
         ],
     )
-    def testgenerate_unique_id_valid(self, mocker, existing_ids, table_info):
+    def test_generate_unique_id_valid(self, mocker, existing_ids, table_info):
         """Test generating a valid user ID"""
         mocker.patch(
             "choc_an_simulator.manager.load_records_from_file",
@@ -62,7 +62,7 @@ class TestGenerateUniqueID:
         "table_info",
         [USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO],
     )
-    def testgenerate_unique_id_out_of_range(self, mocker, table_info):
+    def test_generate_unique_id_out_of_range(self, mocker, table_info):
         """Test generating a user ID that exceeds the max value"""
         mocker.patch(
             "choc_an_simulator.manager.load_records_from_file",
@@ -75,7 +75,7 @@ class TestGenerateUniqueID:
         "table_info",
         [USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO],
     )
-    def testgenerate_unique_id_nonnumeric_id(self, mocker, table_info):
+    def test_generate_unique_id_nonnumeric_id(self, mocker, table_info):
         """Test generating a user ID that exceeds the max value"""
         mocker.patch(
             "choc_an_simulator.manager.load_records_from_file",
