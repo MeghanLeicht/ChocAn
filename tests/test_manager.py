@@ -19,7 +19,7 @@ from choc_an_simulator.manager import (
     generate_provider_report,
     generate_summary_report,
 )
-from choc_an_simulator.schemas import MEMBER_INFO, USER_INFO
+from choc_an_simulator.schemas import MEMBER_INFO, USER_INFO, PROVIDER_DIRECTORY_INFO
 
 
 class TestGenerateUserID:
@@ -40,6 +40,12 @@ class TestGenerateUserID:
             ([9999999998], USER_INFO),
             # Empty
             ([], USER_INFO),
+            # First valid ID
+            ([1000000000], PROVIDER_DIRECTORY_INFO),
+            # Second to last valid ID
+            ([9999999998], PROVIDER_DIRECTORY_INFO),
+            # Empty
+            ([], PROVIDER_DIRECTORY_INFO),
         ],
     )
     def test_generate_user_id_valid(self, mocker, existing_ids, table_info):
@@ -54,7 +60,7 @@ class TestGenerateUserID:
 
     @pytest.mark.parametrize(
         "table_info",
-        [USER_INFO, MEMBER_INFO],
+        [USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO],
     )
     def test_generate_user_id_out_of_range(self, mocker, table_info):
         """Test generating a user ID that exceeds the max value"""
@@ -67,7 +73,7 @@ class TestGenerateUserID:
 
     @pytest.mark.parametrize(
         "table_info",
-        [USER_INFO, MEMBER_INFO],
+        [USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO],
     )
     def test_generate_user_id_nonnumeric_id(self, mocker, table_info):
         """Test generating a user ID that exceeds the max value"""
