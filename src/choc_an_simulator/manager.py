@@ -135,13 +135,7 @@ def update_provider_record() -> None:
     Prompt the user to update the provider's information.
 
     Prompts the user for a provider ID, then prompts for which field to change.
-    This prompt repeats until the user chooses to exit.
     """
-    # prompt ID
-    # use load_records to get that member's info
-    # display the info
-    # use prompt_menu to ask which field to update
-    # use prompt_str to get new value
     provider_id = prompt_int("Provider ID")
     provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
     if provider_record.empty:
