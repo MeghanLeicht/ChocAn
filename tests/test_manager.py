@@ -21,6 +21,89 @@ from choc_an_simulator.manager import (
 )
 from choc_an_simulator.schemas import MEMBER_INFO, USER_INFO, PROVIDER_DIRECTORY_INFO
 
+CAS_MGR_PATH = "choc_an_simulator.manager"
+
+
+@pytest.mark.parametrize(
+    "option_text,endpoint_func_name",
+    [
+        ("Member", f"{CAS_MGR_PATH}._prompt_member_options"),
+        ("Provider", f"{CAS_MGR_PATH}._prompt_provider_options"),
+        ("Provider Directory", f"{CAS_MGR_PATH}._prompt_provider_directory_options"),
+        ("Reports", f"{CAS_MGR_PATH}._prompt_report_options"),
+    ],
+)
+@pytest.mark.usefixtures("assert_menu_endpoint")
+def test_manager_menu(
+    assert_menu_endpoint,
+):
+    """Paramaterized test that manager_menu reaches the correct endpoints"""
+    manager_menu()
+
+
+@pytest.mark.parametrize(
+    "option_text,endpoint_func_name",
+    [
+        ("Add", f"{CAS_MGR_PATH}.add_member_record"),
+        ("Update", f"{CAS_MGR_PATH}.update_member_record"),
+        ("Remove", f"{CAS_MGR_PATH}.remove_member_record"),
+    ],
+)
+@pytest.mark.usefixtures("assert_menu_endpoint")
+def test_prompt_member_options(
+    assert_menu_endpoint,
+):
+    """Paramaterized test that _prompt_member_options reaches the correct endpoints"""
+    _prompt_member_options()
+
+
+@pytest.mark.parametrize(
+    "option_text,endpoint_func_name",
+    [
+        ("Add", f"{CAS_MGR_PATH}.add_provider_record"),
+        ("Update", f"{CAS_MGR_PATH}.update_provider_record"),
+        ("Remove", f"{CAS_MGR_PATH}.remove_provider_record"),
+    ],
+)
+@pytest.mark.usefixtures("assert_menu_endpoint")
+def test_prompt_provider_options(
+    assert_menu_endpoint,
+):
+    """Paramaterized test that _prompt_provider_options reaches the correct endpoints"""
+    _prompt_provider_options()
+
+
+@pytest.mark.parametrize(
+    "option_text,endpoint_func_name",
+    [
+        ("Add", f"{CAS_MGR_PATH}.add_provider_directory_record"),
+        ("Update", f"{CAS_MGR_PATH}.update_provider_directory_record"),
+        ("Remove", f"{CAS_MGR_PATH}.remove_provider_directory_record"),
+    ],
+)
+@pytest.mark.usefixtures("assert_menu_endpoint")
+def test_prompt_provider_directory_options(
+    assert_menu_endpoint,
+):
+    """Paramaterized test that _prompt_provider_directory_options reaches the correct endpoints"""
+    _prompt_provider_directory_options()
+
+
+@pytest.mark.parametrize(
+    "option_text,endpoint_func_name",
+    [
+        ("Member", f"{CAS_MGR_PATH}.generate_member_report"),
+        ("Provider", f"{CAS_MGR_PATH}.generate_provider_report"),
+        ("Summary", f"{CAS_MGR_PATH}.generate_summary_report"),
+    ],
+)
+@pytest.mark.usefixtures("assert_menu_endpoint")
+def test_prompt_report_options(
+    assert_menu_endpoint,
+):
+    """Paramaterized test that _prompt_report_options reaches the correct endpoints"""
+    _prompt_report_options()
+
 
 class TestGenerateUniqueID:
     """Tests of the generate_unique_id function"""
