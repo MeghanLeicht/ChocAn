@@ -10,7 +10,6 @@ from choc_an_simulator.manager import (
     update_member_record,
     remove_member_record,
     add_provider_record,
-    update_provider_record,
     remove_provider_record,
     add_provider_directory_record,
     update_provider_directory_record,
@@ -125,12 +124,6 @@ class TestAddProviderRecord:
         )
         add_provider_record()
         assert "No new user added." in capsys.readouterr().out
-
-
-def test_update_provider_record():
-    """Test of the update_provider_record function."""
-    with pytest.raises(NotImplementedError):
-        update_provider_record()
 
 
 def test_remove_provider_record():

@@ -5,9 +5,13 @@ The manager sub-system allows managers to manage member, provider, and provider 
 """
 import pandas as pd
 from pyarrow import ArrowIOError
-from .database_management import load_records_from_file, add_records_to_file
+from .database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    update_record,
+)
 from .schemas import USER_INFO
-from .user_io import prompt_str, prompt_int, PColor
+from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
 
 
 def manager_menu() -> None:
@@ -133,7 +137,32 @@ def update_provider_record() -> None:
     Prompts the user for a provider ID, then prompts for which field to change.
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("update_provider_record")
+    # prompt ID
+    # use load_records to get that member's info
+    # display the info
+    # use prompt_menu to ask which field to update
+    # use prompt_str to get new value
+    provider_id = prompt_int("Provider ID")
+    provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
+    if provider_record.empty:
+        # error: no records found
+        pass
+    provider_record = provider_record.iloc[0]
+
+    print("Here are the provider's current values")
+    options = []
+    for field in provider_record.index.values[1:]:
+        options.append(f"{field}: {provider_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "zipcode":
+        new_value = prompt_int(f"New value for {field_to_update}")
+    else:
+        new_value = prompt_str(f"New value for {field_to_update}")
+
+    update_record(provider_id, USER_INFO, **{field_to_update: new_value})
 
 
 def remove_provider_record() -> None:
