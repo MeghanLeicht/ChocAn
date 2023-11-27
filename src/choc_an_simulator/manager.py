@@ -233,7 +233,7 @@ def add_provider_record() -> None:
     Manager is prompted to enter provider information.
 
     Provider information: name, street address, city, state, zip code, and email address.
-    Provider number is generated from _generate_provider_id.
+    Provider number is generated from generate_unique_id().
 
     This prompt repeats until the user chooses to exit.
 
