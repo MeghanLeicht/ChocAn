@@ -11,7 +11,6 @@ from choc_an_simulator.manager import (
     remove_member_record,
     add_provider_record,
     update_provider_record,
-    remove_provider_record,
     add_provider_directory_record,
     update_provider_directory_record,
     remove_provider_directory_record,
@@ -131,12 +130,6 @@ def test_update_provider_record():
     """Test of the update_provider_record function."""
     with pytest.raises(NotImplementedError):
         update_provider_record()
-
-
-def test_remove_provider_record():
-    """Test of the remove_provider_record function."""
-    with pytest.raises(NotImplementedError):
-        remove_provider_record()
 
 
 def test_add_provider_directory_record():

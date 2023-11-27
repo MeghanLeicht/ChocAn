@@ -32,7 +32,6 @@ def show_provider_menu() -> None:
                 user_exit = True
 
 
-
 def check_in_member() -> None:
     """
     Prompt for a member's ID and display their status.

@@ -5,7 +5,11 @@ The manager sub-system allows managers to manage member, provider, and provider 
 """
 import pandas as pd
 from pyarrow import ArrowIOError
-from .database_management import load_records_from_file, add_records_to_file
+from .database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    remove_record,
+)
 from .schemas import USER_INFO
 from .user_io import prompt_str, prompt_int, PColor
 
@@ -143,7 +147,12 @@ def remove_provider_record() -> None:
     Prompts the user for a provider ID, then prompts for which field to remove.
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("remove_provider_record")
+    provider_id = prompt_int("Provider ID")
+
+    if remove_record(provider_id, USER_INFO):
+        print(f"Provider {provider_id} Removed")
+    else:
+        print(f"Provider {provider_id} Not Found.")
 
 
 def add_provider_directory_record() -> None:
