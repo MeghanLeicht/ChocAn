@@ -6,10 +6,10 @@ It encompasses functions for displaying menus, prompting for member IDs, recordi
 billing entries, and managing provider directories. These functions collectively support
 billing, service verification, and data retrieval processes in the ChocAn system.
 """
-
+from pyarrow import ArrowIOError
 from .database_management import load_records_from_file, save_report
 from .schemas import PROVIDER_DIRECTORY_INFO
-from choc_an_simulator.user_io import prompt_menu_options
+from .user_io import prompt_menu_options, PColor
 
 
 def show_provider_menu() -> None:
@@ -72,6 +72,10 @@ def record_service_billing_entry() -> None:
 
 def request_provider_directory() -> None:
     """Save the provider directory to a CSV file, and display the path it was saved to."""
-    provider_directory_df = load_records_from_file(PROVIDER_DIRECTORY_INFO)
+    try:
+        provider_directory_df = load_records_from_file(PROVIDER_DIRECTORY_INFO)
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the provider directory.")
+        return
     provider_directory_report = save_report(provider_directory_df, "provider_directory")
     print(provider_directory_report)
