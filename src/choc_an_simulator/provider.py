@@ -96,4 +96,5 @@ def request_provider_directory() -> None:
         )
     except IOError:
         PColor.pfail("There was an error saving the provider directory report.")
+        return
     print("Report saved to", provider_directory_report)
