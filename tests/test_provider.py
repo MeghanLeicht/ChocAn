@@ -72,9 +72,7 @@ def test_show_provider_menu(
 def test_check_in_member(member_info, member_id, expected_out, capsys, mocker):
     """Tests the check_in_member function."""
     mocker.patch("choc_an_simulator.provider.prompt_int", return_value=member_id)
-    mocker.patch(
-        "choc_an_simulator.provider.load_records_from_file", return_value=member_info
-    )
+    mocker.patch("choc_an_simulator.provider.load_records_from_file", return_value=member_info)
     check_in_member()
     captured_out, _ = capsys.readouterr()
     assert captured_out == expected_out
@@ -124,9 +122,7 @@ def test_request_provider_directory_with_load_io_error(mocker, capsys) -> None:
         side_effect=pa.ArrowIOError,
     )
     request_provider_directory()
-    assert (
-        "There was an error loading the provider directory." in capsys.readouterr().out
-    )
+    assert "There was an error loading the provider directory." in capsys.readouterr().out
 
 
 def test_request_provider_directory_with_save_io_error(mocker, capsys) -> None:
@@ -136,7 +132,4 @@ def test_request_provider_directory_with_save_io_error(mocker, capsys) -> None:
         side_effect=IOError,
     )
     request_provider_directory()
-    assert (
-        "There was an error saving the provider directory report."
-        in capsys.readouterr().out
-    )
+    assert "There was an error saving the provider directory report." in capsys.readouterr().out
