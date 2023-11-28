@@ -43,7 +43,20 @@ def check_in_member() -> None:
     keycard reader or manually via the terminal. Then, displays either "Valid", "Suspended"
     or "Invalid"
     """
-    raise NotImplementedError("check_in_member")
+    member_id = prompt_int(
+        "Please enter Member ID", char_limit=MEMBER_INFO.character_limits["member_id"]
+    )
+
+    query_response = load_records_from_file(
+        table_info=MEMBER_INFO, eq_cols={"member_id": member_id}
+    )
+
+    if query_response.empty:
+        PColor.pfail("Invalid")
+    elif query_response.at[0, "suspended"]:
+        PColor.pwarn("Suspended")
+    else:
+        PColor.pok("Valid")
 
 
 def display_member_information() -> None:
