@@ -17,7 +17,7 @@ def login_menu() -> None:
     raise NotImplementedError("login_menu")
 
 
-def generate_secure_password(password: str) -> (str, str):
+def generate_secure_password(password: str) -> (bytes, str):
     """
     Generates a secure user password.
 
@@ -38,9 +38,9 @@ def secure_password_verifiction(salt: str, hashed_password: str) -> bool:
 
 def user_type_authorization() -> None:
     """
-    Determines the user type based on the user ID.
+    Determines the user type.
 
-    If the ID starts with a 0, then the user has manager authorization.
-    If the ID starts with a 1, then the user has provider authorization.
+    If the user type = 0, then the user has manager authorization.
+    If the user type = 1, then the user has provider authorization.
     """
     raise NotImplementedError("user_type_authorization")
