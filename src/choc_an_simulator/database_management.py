@@ -34,6 +34,7 @@ def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
         pyarrow.ArrowInvalid: Mismatch between the DataFrame and the schema.
         pyarrow.ArrowIOError: I/O error occurs (e.g., file permissions, file lock).
         KeyError: Mismatch between schema & records, or schema & file's schema.
+        TypeError: Unsupported type.
     """
     # Load file into memory
     try:
