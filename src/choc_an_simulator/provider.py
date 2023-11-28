@@ -8,8 +8,8 @@ billing, service verification, and data retrieval processes in the ChocAn system
 """
 from pyarrow import ArrowIOError
 from .database_management import load_records_from_file, save_report
-from .schemas import PROVIDER_DIRECTORY_INFO
-from .user_io import prompt_menu_options, PColor
+from .schemas import PROVIDER_DIRECTORY_INFO, MEMBER_INFO
+from .user_io import prompt_menu_options, PColor, prompt_int
 
 
 def show_provider_menu() -> None:
