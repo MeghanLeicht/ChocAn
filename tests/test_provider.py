@@ -1,8 +1,8 @@
 """Tests of functions in the provider module."""
 import pytest
-
-from pandas import DataFrame
-
+from pandas import DataFrame, read_csv
+import pyarrow as pa
+import os
 from choc_an_simulator.provider import (
     show_provider_menu,
     check_in_member,
@@ -92,7 +92,51 @@ def test_record_service_billing_entry():
         record_service_billing_entry()
 
 
-def test_request_provider_directory() -> None:
-    """Verify correct file creation for request_provider_directory."""
-    with pytest.raises(NotImplementedError):
-        request_provider_directory()
+def test_request_provider_directory(mocker, capsys) -> None:
+    """Verify correct file creation for request_provider_directory and output of filepath"""
+    expected_save_path = "src/choc_an_simulator/reports/provider_directory.csv"
+    mock_df = DataFrame({"service_id": [0, 1], "service_name": ["name 0", "name 1"]})
+
+    mocker.patch(
+        "choc_an_simulator.provider.load_records_from_file",
+        return_value=mock_df,
+    )
+
+    request_provider_directory()
+
+    assert os.path.exists(expected_save_path)
+
+    captured = capsys.readouterr()
+    expected_output = expected_save_path + "\n"
+    assert (
+        expected_output in captured.out
+    ), f"file path not found in captured output: {captured.out}"
+
+    saved_df = read_csv(expected_save_path)
+    assert saved_df.equals(mock_df)
+    os.remove(expected_save_path)
+
+
+def test_request_provider_directory_with_load_io_error(mocker, capsys) -> None:
+    """Test request_provider_directory function with load IO error"""
+    mocker.patch(
+        "choc_an_simulator.provider.load_records_from_file",
+        side_effect=pa.ArrowIOError,
+    )
+    request_provider_directory()
+    assert (
+        "There was an error loading the provider directory." in capsys.readouterr().out
+    )
+
+
+def test_request_provider_directory_with_save_io_error(mocker, capsys) -> None:
+    """Test request_provider_directory function with save IO error"""
+    mocker.patch(
+        "choc_an_simulator.provider.save_report",
+        side_effect=IOError,
+    )
+    request_provider_directory()
+    assert (
+        "There was an error saving the provider directory report."
+        in capsys.readouterr().out
+    )
