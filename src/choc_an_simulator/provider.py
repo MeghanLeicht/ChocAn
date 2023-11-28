@@ -90,5 +90,8 @@ def request_provider_directory() -> None:
     except ArrowIOError:
         PColor.pfail("There was an error loading the provider directory.")
         return
-    provider_directory_report = save_report(provider_directory_df, "provider_directory")
-    print(provider_directory_report)
+    try:
+        provider_directory_report = save_report(provider_directory_df, "provider_directory")
+    except IOError:
+        PColor.pfail("There was an error saving the provider directory report.")
+    print("Report saved to", provider_directory_report)
