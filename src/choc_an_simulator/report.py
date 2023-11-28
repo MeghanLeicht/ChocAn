@@ -9,9 +9,10 @@ import pandas as pd
 import pyarrow as pa
 from pandas.errors import MergeError
 
-from .database_management import load_records_from_file, save_report
-from .user_io import PColor
-from .schemas import MEMBER_INFO, PROVIDER_DIRECTORY_INFO, SERVICE_LOG_INFO, TableInfo, USER_INFO
+from choc_an_simulator.database_management.load_records import load_records_from_file
+from choc_an_simulator.database_management.reports import save_report
+from choc_an_simulator.user_io import PColor
+from choc_an_simulator.schemas import MEMBER_INFO, PROVIDER_DIRECTORY_INFO, SERVICE_LOG_INFO, TableInfo, USER_INFO
 
 
 def error_handler(func):
@@ -27,19 +28,26 @@ def error_handler(func):
         try:
             func(*args, **kwargs)
         except KeyError as err_key:
-            raise
+            PColor.pfail(f"KeyError: {err_key}")
+            return
         except pa.ArrowTypeError as err_type:
-            raise
+            PColor.pfail(f"ArrowTypeError: {err_type}")
+            return
         except pa.ArrowInvalid as err_invalid:
-            raise
+            PColor.pfail(f"ArrowInvalid: {err_invalid}")
+            return
         except pa.ArrowIOError as err_io:
-            raise
+            PColor.pfail(f"ArrowIOError: {err_io}")
+            return
         except TypeError as err_type:
-            raise
+            PColor.pfail(f"TypeError: {err_type}")
+            return
         except MergeError as err_merge:
-            raise
+            PColor.pfail(f"MergeError: {err_merge}")
+            return
         except ValueError as err_value:
-            raise
+            PColor.pfail(f"ValueError: {err_value}")
+            return
 
     return wrapper
 

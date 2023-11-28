@@ -150,68 +150,82 @@ def test_generate_member_report_no_members(mock_load_records_from_file, mock_loa
 
 
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=KeyError)
-def test_generate_member_report_key_error(mock_load_records_from_file):
+def test_generate_member_report_key_error(mock_load_records_from_file, capfd):
     """
     Test the generate_member_report function with a KeyError.
     """
-    with pytest.raises(KeyError):
-        generate_member_report()
+    expected = '\x1b[91mKeyError: \x1b[0m\n'
+    generate_member_report()
+    captured = capfd.readouterr()
+    assert (captured.out == expected)
 
 
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=pyarrow.ArrowTypeError)
-def test_generate_member_report_arrow_type_error(mock_load_records_from_file):
+def test_generate_member_report_arrow_type_error(mock_load_records_from_file, capfd):
     """
     Test the generate_member_report function with a ArrowTypeError.
     """
-    with pytest.raises(pyarrow.ArrowTypeError):
-        generate_member_report()
+    expected = '\x1b[91mArrowTypeError: \x1b[0m\n'
+    generate_member_report()
+    captured = capfd.readouterr()
+    assert (captured.out == expected)
 
 
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=pyarrow.ArrowInvalid)
-def test_generate_member_report_arrow_invalid(mock_load_records_from_file):
+def test_generate_member_report_arrow_invalid(mock_load_records_from_file, capfd):
     """
     Test the generate_member_report function with a ArrowInvalid.
     """
-    with pytest.raises(pyarrow.ArrowInvalid):
-        generate_member_report()
+    expected = '\x1b[91mArrowInvalid: \x1b[0m\n'
+    generate_member_report()
+    captured = capfd.readouterr()
+    assert (captured.out == expected)
 
 
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=pyarrow.ArrowIOError)
-def test_generate_member_report_arrow_io_error(mock_load_records_from_file):
+def test_generate_member_report_arrow_io_error(mock_load_records_from_file, capfd):
     """
     Test the generate_member_report function with a ArrowIOError.
     """
-    with pytest.raises(pyarrow.ArrowIOError):
-        generate_member_report()
+    expected = '\x1b[91mArrowIOError: \x1b[0m\n'
+    generate_member_report()
+    captured = capfd.readouterr()
+    assert (captured.out == expected)
 
 
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=TypeError)
-def test_generate_member_report_type_error(mock_load_records_from_file):
+def test_generate_member_report_type_error(mock_load_records_from_file, capfd):
     """
     Test the generate_member_report function with a TypeError.
     """
-    with pytest.raises(TypeError):
-        generate_member_report()
+    expected = '\x1b[91mTypeError: \x1b[0m\n'
+    generate_member_report()
+    captured = capfd.readouterr()
+    assert (captured.out == expected)
 
 
 @patch("choc_an_simulator.report.pd.merge", side_effect=MergeError)
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=load_records_from_file_side_effect)
-def test_generate_member_report_merge_error(mock_load_records_from_file, mock_merge):
+def test_generate_member_report_merge_error(mock_load_records_from_file, mock_merge, capfd):
     """
     Test the generate_member_report function with a MergeError.
     """
-    with pytest.raises(MergeError):
-        generate_member_report()
+    expected = '\x1b[91mMergeError: \x1b[0m\n'
+    generate_member_report()
+    captured = capfd.readouterr()
+    assert (captured.out == expected)
 
 
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=load_records_from_file_side_effect)
 @patch("choc_an_simulator.report.pd.merge", side_effect=ValueError)
-def test_generate_member_report_value_error(mock_load_records_from_file, mock_merge):
+def test_generate_member_report_value_error(mock_load_records_from_file, mock_merge, capfd):
     """
     Test the generate_member_report function with a ValueError.
     """
-    with pytest.raises(ValueError):
-        generate_member_report()
+    expected = '\x1b[91mValueError: \x1b[0m\n'
+    generate_member_report()
+    captured = capfd.readouterr()
+    assert (captured.out == expected)
 
 
 kept_cols = ["member_id", "name", "address", "city", "state", "zipcode", "suspended"]
