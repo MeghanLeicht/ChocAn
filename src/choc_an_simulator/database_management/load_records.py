@@ -119,8 +119,10 @@ def _load_all_records_from_file_(table_info: TableInfo) -> pd.DataFrame:
         records = pd.read_parquet(path)
     except FileNotFoundError:
         return pa.Table.from_pylist([], schema=table_info.schema).to_pandas()
-    except (pa.ArrowInvalid, pa.ArrowIOError) as err_arrow:
-        raise err_arrow
+    except pa.ArrowIOError as err_io:
+        raise err_io
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
 
     try:
         table_info.check_dataframe(records)

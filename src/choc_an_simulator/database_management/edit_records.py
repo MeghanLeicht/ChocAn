@@ -211,6 +211,22 @@ def _validate_and_update_field(
     updated_value: Any,
     table_info: TableInfo,
 ) -> pd.Series:
+    """Check that a field is valid, and then write it to its location in a dataframe.
+
+    Args:
+        row (pd.Series): Row containing the data to change.
+        field_name (str): Field within row to change.
+        updated_value (Any): Value to set.
+        table_info (TableInfo): Validation information for the row.
+
+    Raises:
+        KeyError: Field is not in row.
+        TypeError: Type of updated_value is incorrect.
+        ArithmeticError: updated_value is out of numeric or character range.
+
+    Returns:
+        pd.Series: row with updated field.
+    """
     try:
         table_info.check_field(updated_value, field_name)
     except KeyError as err_key:
