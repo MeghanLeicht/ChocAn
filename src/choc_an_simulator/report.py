@@ -17,14 +17,7 @@ from choc_an_simulator.schemas import (
 
 
 def generate_member_report() -> None:
-    """
-    Generate a report for each member who has consulted with a ChocAn provider.
-
-    A 'date' filter will be added to 'gt_cols' to retrieve members that have
-    had services provided to them in the last 7 days.The members are listed in
-    the order of the service date. After a report is generated, the path to it
-    is printed to the consoles.
-    """
+    """Generate report for each member who has used a service & display save paths."""
     gt_cols = {"service_date_utc": datetime.now() - timedelta(days=7)}
     service_log_cols = ["service_date_utc", "member_id", "provider_id", "service_id"]
     member_cols = ["member_id", "name", "address", "city", "state", "zipcode"]
