@@ -10,8 +10,13 @@ install:  requirements-dev.txt requirements.txt
 	$(PYTHON) -m pip install -Ur requirements-dev.txt
 	$(PYTHON) -m pip install -e .
 
-test:
-	$(COVERAGE) run -m pytest
+unittest:
+	$(COVERAGE) run -m pytest -v tests/unit
+	$(COVERAGE) report
+	rm .coverage
+
+systest:
+	$(COVERAGE) run -m pytest -v tests/system
 	$(COVERAGE) report
 	rm .coverage
 
