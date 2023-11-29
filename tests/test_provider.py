@@ -6,8 +6,6 @@ from datetime import datetime
 
 from choc_an_simulator.provider import record_service_billing_entry
 
-# from choc_an_simulator.schemas import SERVICE_LOG_INFO, PROVIDER_DIRECTORY_INFO
-
 
 def mock_prompt_date(message):
     return datetime.strptime("11-26-2023", "%m-%d-%Y")
@@ -33,11 +31,11 @@ mock_services_df = pd.DataFrame(
 
 
 class TestRecordServiceBillingEntry:
-    @patch("choc_an_simulator.user_io.prompt_str", return_value="Test service")
-    @patch("choc_an_simulator.user_io.prompt_date", side_effect=mock_prompt_date)
-    @patch("choc_an_simulator.user_io.prompt_int", side_effect=mock_prompt_int)
-    @patch("choc_an_simulator.database_management.load_records_from_file")
-    @patch("choc_an_simulator.database_management.add_records_to_file")
+    @patch("choc_an_simulator.provider.prompt_str", return_value="Test service")
+    @patch("choc_an_simulator.provider.prompt_date", side_effect=mock_prompt_date)
+    @patch("choc_an_simulator.provider.prompt_int", side_effect=mock_prompt_int)
+    @patch("choc_an_simulator.provider.load_records_from_file")
+    @patch("choc_an_simulator.provider.add_records_to_file")
     @patch("builtins.input", return_value="yes")
     def test_valid_input(
         self,
@@ -50,7 +48,6 @@ class TestRecordServiceBillingEntry:
         capsys,
     ):
         mock_load_records.side_effect = [mock_providers_df, mock_services_df]
-
         member_id = 987654321
         record_service_billing_entry(member_id)
 
