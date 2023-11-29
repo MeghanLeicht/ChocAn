@@ -289,12 +289,15 @@ def update_provider_directory_record() -> None:
 
 def remove_provider_directory_record() -> None:
     """Manager is prompted for a service id to be removed, and a lookup is performed."""
-    service_id = prompt_int("Service ID")
-
-    if remove_record(service_id, PROVIDER_DIRECTORY_INFO):
-        print(f"Service {service_id} Removed")
-    else:
-        print(f"Service {service_id} Not Found.")
+    try:
+        service_id = prompt_int("Service ID")
+        if remove_record(service_id, PROVIDER_DIRECTORY_INFO):
+            print(f"Service {service_id} Removed")
+        else:
+            print(f"Service {service_id} Not Found.")
+    except ArrowIOError:
+        PColor.pfail("Service was not removed!")
+        return
 
 
 def generate_member_report() -> None:
