@@ -5,6 +5,8 @@ This module ensures secure access for providers and managers.
 It includes functions for display the login menu, generating a secure password,
 secure password verification, and user type authorization.
 """
+from .user_io import prompt_int, PColor
+import getpass
 
 
 def login_menu() -> None:
@@ -13,8 +15,29 @@ def login_menu() -> None:
 
     This function prompts the user for their ID (manager ID or provider ID) and password.
     """
-    # use getpass.getpass() so the password is not typed on the screen.
-    raise NotImplementedError("login_menu")
+    user_verified = False
+    try:
+        while user_verified is False:
+            try:
+                user_id = prompt_int("User ID")
+            except OSError:
+                print()
+                return
+            
+            hashed_password = generate_secure_password(
+                getpass.getpass(prompt="Password: ")
+            )
+
+            user_verified = secure_password_verifiction(
+                hashed_password[0], hashed_password[1]
+            )
+            if user_verified is False:
+                print("Password is incorrect. Try again.")
+    except KeyboardInterrupt:
+        return None
+
+    user_type_authorization(user_id)
+    
 
 
 def generate_secure_password(password: str) -> (bytes, str):
@@ -36,7 +59,7 @@ def secure_password_verifiction(salt: str, hashed_password: str) -> bool:
     raise NotImplementedError("secure_password_verification")
 
 
-def user_type_authorization() -> None:
+def user_type_authorization(user_id: int) -> None:
     """
     Determines the user type.
 
