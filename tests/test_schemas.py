@@ -1,4 +1,6 @@
 """Tests of the TableInfo class and schema constants in the schemas module."""
+from typing import Dict
+
 import pytest
 import pandas as pd
 import pyarrow as pa
@@ -6,31 +8,33 @@ from choc_an_simulator.schemas import TableInfo
 
 
 @pytest.fixture()
-def test_schema():
+def test_schema() -> pa.schema:
+    """Generate a basic schema for testing"""
     return pa.schema([pa.field("number", pa.uint32()), pa.field("text", pa.string())])
 
 
 @pytest.fixture()
-def test_character_limit():
+def test_character_limit() -> Dict[str, range]:
+    """Generate a basic character limit for testing"""
     return {"number": range(3, 5), "text": range(3, 10)}
 
 
 @pytest.fixture()
-def test_numeric_limit():
+def test_numeric_limit() -> Dict[str, range]:
+    """Generate a basic numeric limit for testing"""
     return {"number": range(200, 50000)}
 
 
 @pytest.fixture()
-def test_info(test_schema, test_character_limit, test_numeric_limit):
+def test_info(test_schema, test_character_limit, test_numeric_limit) -> TableInfo:
+    """Generate a basic TableInfo object for testing"""
     return TableInfo("test", test_schema, test_character_limit, test_numeric_limit)
 
 
 class TestTableInfo:
     """Validate functionality and error handling of all TableInfo functions."""
 
-    def test_table_info_initialization(
-        self, test_schema, test_character_limit, test_numeric_limit
-    ):
+    def test_table_info_initialization(self, test_schema, test_character_limit, test_numeric_limit):
         """Test initialization of the TableInfo class"""
         # Test 1: Normal Init
         test_table_info = TableInfo(
@@ -51,9 +55,7 @@ class TestTableInfo:
             ({}, {"missing column": range(1, 1)}),
         ],
     )
-    def test_table_info_initialization_invalid(
-        self, test_schema, character_limits, numeric_limits
-    ):
+    def test_table_info_initialization_invalid(self, test_schema, character_limits, numeric_limits):
         with pytest.raises(KeyError):
             TableInfo(
                 name="test",
