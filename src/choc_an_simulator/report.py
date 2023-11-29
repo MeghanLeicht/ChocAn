@@ -1,6 +1,4 @@
-"""
-Functions for generating reports.
-"""
+"""Functions for generating reports."""
 
 from datetime import datetime, timedelta
 
@@ -21,6 +19,7 @@ from choc_an_simulator.schemas import (
 def generate_member_report() -> None:
     """
     Generate a report for each member who has consulted with a ChocAn provider.
+
     A 'date' filter will be added to 'gt_cols' to retrieve members that have
     had services provided to them in the last 7 days.The members are listed in
     the order of the service date. After a report is generated, the path to it
@@ -32,13 +31,19 @@ def generate_member_report() -> None:
     user_cols = ["name", "id"]
     provider_dir_cols = ["service_name", "service_id"]
     try:
-        service_log = load_records_from_file(SERVICE_LOG_INFO, gt_cols=gt_cols)[service_log_cols]
-        if service_log.empty:  # Return immediately if empty - no need to load the other data.
+        service_log = load_records_from_file(SERVICE_LOG_INFO, gt_cols=gt_cols)[
+            service_log_cols
+        ]
+        if (
+            service_log.empty
+        ):  # Return immediately if empty - no need to load the other data.
             print("No records found within the last 7 days.")
             return
         member_info = load_records_from_file(MEMBER_INFO)[member_cols]
         user_info = load_records_from_file(USER_INFO)[user_cols]
-        provder_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[provider_dir_cols]
+        provder_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[
+            provider_dir_cols
+        ]
     except pa.ArrowIOError as err_io:
         PColor.pwarn(f"There was an issue accessing the database.\n\tError: {err_io}")
         return
@@ -56,6 +61,21 @@ def generate_member_report() -> None:
             "service_date_utc": "Service Date (Local Time)",
         }
     )
+    records = records[
+        [
+            "Name",
+            "Member Number",
+            "address",
+            "city",
+            "state",
+            "zipcode",
+            "Provider Name",
+            "provider_id",
+            "service_id",
+            "service_name",
+            "Service Date (Local Time)",
+        ]
+    ]
     for member_id in records["Member Number"].unique():
         member_records = records[records["Member Number"] == member_id]
         member_name = member_records["Name"].iloc[0]
@@ -64,7 +84,5 @@ def generate_member_report() -> None:
 
 
 def _current_date() -> str:
-    """
-    Returns the current date in the format MM-DD-YYYY.
-    """
+    """Returns the current date in the format MM-DD-YYYY."""
     return datetime.now().strftime("%m-%d-%Y")
