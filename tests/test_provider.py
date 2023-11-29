@@ -36,7 +36,7 @@ class TestRecordServiceBillingEntry:
     @patch("choc_an_simulator.provider.prompt_int", side_effect=mock_prompt_int)
     @patch("choc_an_simulator.provider.load_records_from_file")
     @patch("choc_an_simulator.provider.add_records_to_file")
-    @patch("builtins.input", return_value="yes")
+    @patch("choc_an_simulator.provider.input", return_value="yes")
     def test_valid_input(
         self,
         mock_input,
