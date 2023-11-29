@@ -39,8 +39,5 @@ def secure_password_verifiction(salt: str, hashed_password: str) -> bool:
 def user_type_authorization() -> None:
     """
     Determines the user type.
-
-    If the user type = 0, then the user has manager authorization.
-    If the user type = 1, then the user has provider authorization.
     """
     raise NotImplementedError("user_type_authorization")
