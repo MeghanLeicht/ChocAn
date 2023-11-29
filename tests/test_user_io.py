@@ -68,7 +68,7 @@ class TestPromptDate:
     )
     @pytest.mark.usefixtures("mock_input_series")
     def test_prompt_date(self, mock_input_series, min_date, max_date, expected):
-        """Test prompt_date() with a valid date entry"""
+        """Test prompt_date() with a valid date entry."""
         result = prompt_date("Enter Date", min_date, max_date)
         assert result == expected
 
@@ -77,7 +77,7 @@ class TestPromptDate:
         assert prompt_date("Enter Date") is None
 
     def test_prompt_date_min_date_greater(self):
-        """Test that using a min_date greater than max_date raises a ValueError"""
+        """Test that using a min_date greater than max_date raises a ValueError."""
         with pytest.raises(ValueError):
             prompt_date("Enter Date", date(2022, 1, 1), date(2021, 1, 1))
 
@@ -97,10 +97,8 @@ class TestPromptMenuOptions:
         ],
     )
     @pytest.mark.usefixtures("mock_input_series")
-    def test_prompt_menu_options_valid_choice(
-        self, mock_input_series, choices, expected
-    ):
-        """Test prompt_menu_options using a list of parameters"""
+    def test_prompt_menu_options_valid_choice(self, mock_input_series, choices, expected):
+        """Test prompt_menu_options using a list of parameters."""
         result = prompt_menu_options("Choose an option:", choices)
         assert result == expected
 
@@ -136,6 +134,7 @@ class TestToInt:
         ],
     )
     def test_to_int_valid(self, input, expected_output):
+        """Test of _to_int_ with valid integer string input."""
         assert _to_int_(input) == expected_output
 
 
@@ -163,7 +162,7 @@ class TestPromptInt:
     )
     @pytest.mark.usefixtures("mock_input_series")
     def test_prompt_int(self, mock_input_series, expected, char_limit, numeric_limit):
-        """Test prompt_int using a list of parameters"""
+        """Test prompt_int using a list of parameters."""
         assert prompt_int("Enter a number", char_limit, numeric_limit) == expected
 
     @pytest.mark.usefixtures("mock_input_ctrl_c")
@@ -190,10 +189,10 @@ class TestPromptString:
     )
     @pytest.mark.usefixtures("mock_input_series")
     def test_prompt_string(self, mock_input_series, expected, char_limit):
-        """Test prompt_string using a list of parameters"""
+        """Test prompt_string using a list of parameters."""
         assert prompt_str("Input", char_limit) == expected
 
     @pytest.mark.usefixtures("mock_input_ctrl_c")
     def test_prompt_string_ctrl_c(self, mock_input_ctrl_c):
-        """Test when the user presses 'Ctrl+C'"""
+        """Test when the user presses 'Ctrl+C'."""
         assert prompt_str("Enter your input", range(1, 9)) is None
