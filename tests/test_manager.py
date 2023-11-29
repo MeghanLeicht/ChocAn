@@ -11,6 +11,7 @@ from choc_an_simulator.manager import (
     remove_member_record,
     add_provider_record,
     update_provider_record,
+    remove_provider_record,
     add_provider_directory_record,
     update_provider_directory_record,
     remove_provider_directory_record,
@@ -130,6 +131,19 @@ def test_update_provider_record():
     """Test of the update_provider_record function."""
     with pytest.raises(NotImplementedError):
         update_provider_record()
+
+
+class TestRemoveProviderRecord:
+    """Test of the remove_member_record function."""
+
+    def test_remove_provider_io_error(self, mocker, capsys) -> None:
+        """Test remove_provider_record function with load IO error."""
+        mocker.patch(
+            "choc_an_simulator.manager.remove_record",
+            side_effect=pa.ArrowIOError,
+        )
+        remove_provider_record()
+        assert "Provider was not removed!" in capsys.readouterr().out
 
 
 def test_add_provider_directory_record():
