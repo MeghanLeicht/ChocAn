@@ -2,9 +2,9 @@
 Login Sub-System.
 
 This module ensures secure access for providers and managers.
-It includes functions for display the login menu, generating a secure password, secure password verification, and user type authorization.
+It includes functions for display the login menu, generating a secure password,
+secure password verification, and user type authorization.
 """
-from .schemas import USER_INFO
 
 
 def login_menu() -> None:
