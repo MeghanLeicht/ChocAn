@@ -6,8 +6,12 @@ The manager sub-system allows managers to manage member, provider, and provider 
 import pandas as pd
 from pyarrow import ArrowIOError
 from pandas.api.types import is_numeric_dtype
-from .database_management import load_records_from_file, add_records_to_file
-from .schemas import USER_INFO, MEMBER_INFO, TableInfo
+from .database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    remove_record,
+)
+from .schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor
 
 from choc_an_simulator.user_io import prompt_menu_options
