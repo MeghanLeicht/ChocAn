@@ -211,7 +211,8 @@ def _validate_and_update_field(
     updated_value: Any,
     table_info: TableInfo,
 ) -> pd.Series:
-    """Check that a field is valid, and then write it to its location in a dataframe.
+    """
+    Check that a field is valid, and then write it to its location in a dataframe.
 
     Args-
         row (pd.Series): Row containing the data to change.

@@ -111,8 +111,12 @@ class TestAddRecordsToFile:
         """Test normal add to file."""
         add_records_to_file(test_records_additional, test_table_info)
         updated_records = load_records_from_file(test_table_info)
-        expected_records = pd.concat([test_records, test_records_additional]).reset_index(drop=True)
-        assert updated_records.equals(expected_records), f"\n{expected_records}\n{updated_records}"
+        expected_records = pd.concat(
+            [test_records, test_records_additional]
+        ).reset_index(drop=True)
+        assert updated_records.equals(
+            expected_records
+        ), f"\n{expected_records}\n{updated_records}"
 
     @pytest.mark.parametrize(
         "records,info,error_type",
@@ -150,7 +154,9 @@ class TestAddRecordsToFile:
     ):
         """Test add duplicate entries."""
         with pytest.raises(error_type):
-            add_records_to_file(request.getfixturevalue(records), request.getfixturevalue(info))
+            add_records_to_file(
+                request.getfixturevalue(records), request.getfixturevalue(info)
+            )
 
     def test_add_records_to_corrupted_file(
         self,
@@ -182,12 +188,16 @@ class TestAddRecordsToFile:
 class TestLoadRecordsFromFile:
     """Validate functionality and error handling of the load_records_from_file function."""
 
-    def test_load_records_from_file_all_records(self, test_table_info, test_records, test_file):
+    def test_load_records_from_file_all_records(
+        self, test_table_info, test_records, test_file
+    ):
         """Test loading with no filters"""
         all_records = load_records_from_file(test_table_info)
         assert test_records.equals(all_records)
 
-    def test_load_records_from_file_corrupted_file(self, test_table_info, corrupted_test_file):
+    def test_load_records_from_file_corrupted_file(
+        self, test_table_info, corrupted_test_file
+    ):
         """Test loading a corrupted file"""
         with pytest.raises(pa.ArrowInvalid):
             load_records_from_file(test_table_info)
@@ -198,7 +208,9 @@ class TestLoadRecordsFromFile:
         with pytest.raises(pa.ArrowIOError):
             load_records_from_file(test_table_info)
 
-    def test_load_records_from_file_valid_filters(self, test_table_info, test_records, test_file):
+    def test_load_records_from_file_valid_filters(
+        self, test_table_info, test_records, test_file
+    ):
         """Test loading with valid filters"""
         # Test 1: Equality filter
         eq_records = load_records_from_file(test_table_info, eq_cols={"ID": 1})
@@ -218,7 +230,9 @@ class TestLoadRecordsFromFile:
 
             def __eq__(self, other):
                 """Equality operator overridden to always fail."""
-                raise TypeError(f"Equality between no_eq and {type(other)} not supported")
+                raise TypeError(
+                    f"Equality between no_eq and {type(other)} not supported"
+                )
 
         with pytest.raises(TypeError):
             load_records_from_file(test_table_info, eq_cols={"ID": NoEq()})
@@ -264,7 +278,9 @@ class TestUpdateRecord:
     def test_update_record_normal_update(self, test_table_info, test_file):
         """Test normal record update."""
         updated_record = update_record(2, test_table_info, value=2.3)
-        loaded_record = load_records_from_file(test_table_info, eq_cols={"ID": 2}).iloc[0]
+        loaded_record = load_records_from_file(test_table_info, eq_cols={"ID": 2}).iloc[
+            0
+        ]
         assert (updated_record == loaded_record).all()
 
     @pytest.mark.parametrize(
@@ -282,12 +298,16 @@ class TestUpdateRecord:
             (2, {"value": 5.0}, ArithmeticError),
         ],
     )
-    def test_update_record_invalid(self, index, kwargs, error_type, test_table_info, test_file):
+    def test_update_record_invalid(
+        self, index, kwargs, error_type, test_table_info, test_file
+    ):
         """Perform parametrized tests of various invalid keyword arguments"""
         with pytest.raises(error_type):
             update_record(index, test_table_info, **kwargs)
 
-    def test_update_record_mismatched_schema(self, test_table_info_wrong_columns, test_file):
+    def test_update_record_mismatched_schema(
+        self, test_table_info_wrong_columns, test_file
+    ):
         """Test updating with mismatched file / schema"""
         with pytest.raises(KeyError):
             update_record(2, test_table_info_wrong_columns, value=2.2)
@@ -348,7 +368,9 @@ class TestRemoveRecord:
         with pytest.raises(pa.ArrowIOError):
             remove_record(1, test_table_info)
 
-    def test_remove_record_mismatched_schema(self, test_table_info_wrong_columns, test_file):
+    def test_remove_record_mismatched_schema(
+        self, test_table_info_wrong_columns, test_file
+    ):
         """Test removing from a file with a mismatched schema"""
         with pytest.raises(KeyError):
             remove_record(1, test_table_info_wrong_columns)
@@ -360,7 +382,9 @@ class TestOverwriteRecordsToFile:
     # Records to overwrite old records with
     new_records = pd.DataFrame({"ID": [3, 4], "value": [2.0, 1.0]})
 
-    def test_overwrite_records_to_file_normal_overwrite(self, test_table_info, test_file):
+    def test_overwrite_records_to_file_normal_overwrite(
+        self, test_table_info, test_file
+    ):
         """Tests of the overwrite_records_to_file_ function"""
         _overwrite_records_to_file_(self.new_records, test_table_info)
         updated_records = _load_all_records_from_file_(test_table_info)
@@ -368,7 +392,9 @@ class TestOverwriteRecordsToFile:
             "\n" + str(self.new_records) + "\n" + str(updated_records)
         )
 
-    def test_overwrite_records_to_file_mismatched_schema(self, test_table_info, test_file):
+    def test_overwrite_records_to_file_mismatched_schema(
+        self, test_table_info, test_file
+    ):
         """Test overwrite record with a mismatched schema"""
         mismatched_records = pd.DataFrame({"mismatched": [3, 4], "test": [1.1, 2.2]})
 
@@ -387,7 +413,9 @@ class TestOverwriteRecordsToFile:
         with pytest.raises(TypeError):
             _overwrite_records_to_file_(wrong_type_records, test_table_info)
 
-    def test_overwrite_records_to_file_io_error(self, test_table_info, test_file, mocker):
+    def test_overwrite_records_to_file_io_error(
+        self, test_table_info, test_file, mocker
+    ):
         """Test overwrite records with an I/O error"""
         mocker.patch("pyarrow.parquet.write_table", side_effect=pa.ArrowIOError)
         with pytest.raises(pa.ArrowIOError):
@@ -450,4 +478,6 @@ class TestSaveReport:
 
 def test_convert_name_to_path():
     """Test of the _convert_name_to_path_ function"""
-    assert _convert_parquet_name_to_path_("name") == os.path.join(_PARQUET_DIR_, "name.pkt")
+    assert _convert_parquet_name_to_path_("name") == os.path.join(
+        _PARQUET_DIR_, "name.pkt"
+    )

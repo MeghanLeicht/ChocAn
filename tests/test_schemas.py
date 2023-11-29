@@ -34,7 +34,9 @@ def test_info(test_schema, test_character_limit, test_numeric_limit) -> TableInf
 class TestTableInfo:
     """Validate functionality and error handling of all TableInfo functions."""
 
-    def test_table_info_initialization(self, test_schema, test_character_limit, test_numeric_limit):
+    def test_table_info_initialization(
+        self, test_schema, test_character_limit, test_numeric_limit
+    ):
         """Test initialization of the TableInfo class"""
         # Test 1: Normal Init
         test_table_info = TableInfo(
@@ -55,7 +57,9 @@ class TestTableInfo:
             ({}, {"missing column": range(1, 1)}),
         ],
     )
-    def test_table_info_initialization_invalid(self, test_schema, character_limits, numeric_limits):
+    def test_table_info_initialization_invalid(
+        self, test_schema, character_limits, numeric_limits
+    ):
         """Test table_info initialization with valid inputs."""
         with pytest.raises(KeyError):
             TableInfo(

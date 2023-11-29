@@ -97,7 +97,9 @@ class TestPromptMenuOptions:
         ],
     )
     @pytest.mark.usefixtures("mock_input_series")
-    def test_prompt_menu_options_valid_choice(self, mock_input_series, choices, expected):
+    def test_prompt_menu_options_valid_choice(
+        self, mock_input_series, choices, expected
+    ):
         """Test prompt_menu_options using a list of parameters."""
         result = prompt_menu_options("Choose an option:", choices)
         assert result == expected
