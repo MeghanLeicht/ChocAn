@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 import pandas as pd
 import pyarrow as pa
-import pytest
 
 from choc_an_simulator.report import generate_member_report
 from choc_an_simulator.schemas import TableInfo
@@ -31,11 +30,25 @@ test_user_info = pd.DataFrame(
             "1213 Maple St",
             "1415 Cedar St",
         ],
-        "city": ["Chicago", "New York", "Los Angeles", "Portland", "Sandy", "Muscle Shoals"],
+        "city": [
+            "Chicago",
+            "New York",
+            "Los Angeles",
+            "Portland",
+            "Sandy",
+            "Muscle Shoals",
+        ],
         "state": ["IL", "NY", "CA", "OR", "OR", "AL"],
         "zipcode": [15603, 38322, 84524, 64198, 34268, 73952],
         "password_hash": pa.array(
-            ["password1", "password2", "password3", "password4", "password5", "password6"],
+            [
+                "password1",
+                "password2",
+                "password3",
+                "password4",
+                "password5",
+                "password6",
+            ],
             type=pa.binary(),
         ),
     }
@@ -60,7 +73,14 @@ test_member_info = pd.DataFrame(
             "1213 Maple St",
             "1415 Cedar St",
         ],
-        "city": ["Chicago", "New York", "Los Angeles", "Portland", "Sandy", "Muscle Shoals"],
+        "city": [
+            "Chicago",
+            "New York",
+            "Los Angeles",
+            "Portland",
+            "Sandy",
+            "Muscle Shoals",
+        ],
         "state": ["IL", "NY", "CA", "OR", "OR", "AL"],
         "zipcode": [15603, 38322, 84524, 64198, 34268, 73952],
         "suspended": [False, False, False, False, True, False],
@@ -87,7 +107,14 @@ test_service_log_info = pd.DataFrame(
             datetime(2023, 11, 24),
         ],
         "member_id": [367868907, 752880910, 367868907, 989635272, 752880910, 137002632],
-        "provider_id": [483185890, 483185890, 940672921, 385685178, 385685178, 637066975],
+        "provider_id": [
+            483185890,
+            483185890,
+            940672921,
+            385685178,
+            385685178,
+            637066975,
+        ],
         "service_id": [889804, 951175, 495644, 805554, 427757, 708195],
         "comments": [
             "",
@@ -172,25 +199,29 @@ def test_generate_member_report(mock_load_records_from_file, mock_save_report, c
             f"Report saved to /path/to/report/John Doe_{current_date}.csv\n",
         ]
     )
-    expected_keys = [
-        "Name",
-        "Member Number",
-        "address",
-        "city",
-        "state",
-        "zipcode",
-        "service_id",
-        "Provider Name",
-        "provider_id",
-        "Service Date (Local Time)",
-        "service_name",
-    ]
-
+    expected_first_member_df = pd.DataFrame(
+        {
+            "Name": "Bob Henderson",
+            "Member Number": 367868907,
+            "address": "1011 Pine St",
+            "city": "Portland",
+            "state": "OR",
+            "zipcode": 64198,
+            "Provider Name": ["Karla Tanners", "Case Hall"],
+            "provider_id": [483185890, 940672921],
+            "service_id": [889804, 495644],
+            "service_name": ["Service 1", "Service 3"],
+            "Service Date (Local Time)": [
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 26),
+            ],
+        }
+    )
     generate_member_report()
     captured = capsys.readouterr()
-    assert captured.out == expected_output, captured.out + " -> " + expected_output
-    actual_df = mock_save_report.call_args_list[0][0][0]
-    assert set(actual_df.columns) == set(expected_keys)
+    assert captured.out == expected_output
+    actual_first_member_df = mock_save_report.call_args_list[0][0][0]
+    assert actual_first_member_df.equals(expected_first_member_df)
 
 
 @patch(
