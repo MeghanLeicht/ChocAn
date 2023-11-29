@@ -37,7 +37,5 @@ def secure_password_verifiction(salt: str, hashed_password: str) -> bool:
 
 
 def user_type_authorization() -> None:
-    """
-    Determines the user type.
-    """
+    """Determines the user type."""
     raise NotImplementedError("user_type_authorization")
