@@ -21,9 +21,9 @@ def login_menu() -> None:
             try:
                 user_id = prompt_int("User ID")
             except OSError:
-                print()
+                PColor.pfail("There was an error with that user ID.")
                 return
-            
+
             hashed_password = generate_secure_password(
                 getpass.getpass(prompt="Password: ")
             )
@@ -37,7 +37,6 @@ def login_menu() -> None:
         return None
 
     user_type_authorization(user_id)
-    
 
 
 def generate_secure_password(password: str) -> (bytes, str):
