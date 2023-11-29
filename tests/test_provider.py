@@ -1,5 +1,8 @@
 """Tests of functions in the provider module."""
 # import pytest
+import io
+import sys
+import unittest
 from unittest.mock import patch
 import pandas as pd
 from datetime import datetime
@@ -30,27 +33,41 @@ mock_services_df = pd.DataFrame(
 )
 
 
-class TestRecordServiceBillingEntry:
-    @patch("choc_an_simulator.provider.prompt_str", return_value="Test service")
-    @patch("choc_an_simulator.provider.prompt_date", side_effect=mock_prompt_date)
-    @patch("choc_an_simulator.provider.prompt_int", side_effect=mock_prompt_int)
-    @patch("choc_an_simulator.provider.load_records_from_file")
+class TestRecordServiceBillingEntry(unittest.TestCase):
     @patch("choc_an_simulator.provider.add_records_to_file")
-    @patch("choc_an_simulator.provider.input", return_value="yes")
+    @patch("choc_an_simulator.provider.prompt_str")
+    @patch("choc_an_simulator.provider.prompt_str")
+    @patch("choc_an_simulator.provider.prompt_int")
+    @patch("choc_an_simulator.provider.prompt_date")
+    @patch("choc_an_simulator.provider.prompt_int")
+    @patch("choc_an_simulator.provider.load_records_from_file")
     def test_valid_input(
         self,
-        mock_input,
         mock_add_records,
-        mock_load_records,
-        mock_prompt_int,
+        mock_prompt_str_comments,
+        mock_prompt_str_confirm,
+        mock_prompt_int_provider_id,
         mock_prompt_date,
-        mock_prompt_str,
+        mock_prompt_int_service_code,
+        mock_load_records,
         capsys,
     ):
         mock_load_records.side_effect = [mock_providers_df, mock_services_df]
+        mock_prompt_str_confirm.return_value = "yes"
+        mock_prompt_str_comments.return_value = "Test comment"
+
         member_id = 987654321
         record_service_billing_entry(member_id)
 
-        captured = capsys.readouterr()
-        assert "Service Billing Entry Recorded Successfully" in captured.out
+        original_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+
+        record_service_billing_entry(member_id)
+
+        # Capture output and revert stdout
+        output = sys.stdout.getvalue()
+        sys.stdout = original_stdout
+
+        self.assertIn("Service Billing Entry Recorded Successfully", output)
+
         mock_add_records.assert_called_once()

@@ -112,7 +112,7 @@ def record_service_billing_entry(member_id: int) -> None:
         "service_name"
     ].iloc[0]
     PColor.pok(f"Service name: {service_name}")
-    confirmation = input("Confirm service (yes/no): ").strip().lower()
+    confirmation = prompt_str("Confirm service (yes/no): ").strip().lower()
     if confirmation in ["y", "yes"]:
         PColor.pok("Service Confirmed")
     else:
