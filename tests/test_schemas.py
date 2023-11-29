@@ -9,25 +9,25 @@ from choc_an_simulator.schemas import TableInfo
 
 @pytest.fixture()
 def test_schema() -> pa.schema:
-    """Generate a basic schema for testing"""
+    """Generate a basic schema for testing."""
     return pa.schema([pa.field("number", pa.uint32()), pa.field("text", pa.string())])
 
 
 @pytest.fixture()
 def test_character_limit() -> Dict[str, range]:
-    """Generate a basic character limit for testing"""
+    """Generate a basic character limit for testing."""
     return {"number": range(3, 5), "text": range(3, 10)}
 
 
 @pytest.fixture()
 def test_numeric_limit() -> Dict[str, range]:
-    """Generate a basic numeric limit for testing"""
+    """Generate a basic numeric limit for testing."""
     return {"number": range(200, 50000)}
 
 
 @pytest.fixture()
 def test_info(test_schema, test_character_limit, test_numeric_limit) -> TableInfo:
-    """Generate a basic TableInfo object for testing"""
+    """Generate a basic TableInfo object for testing."""
     return TableInfo("test", test_schema, test_character_limit, test_numeric_limit)
 
 
@@ -56,6 +56,7 @@ class TestTableInfo:
         ],
     )
     def test_table_info_initialization_invalid(self, test_schema, character_limits, numeric_limits):
+        """Test table_info initialization with valid inputs."""
         with pytest.raises(KeyError):
             TableInfo(
                 name="test",
@@ -65,7 +66,7 @@ class TestTableInfo:
             )
 
     def test_index_col(self, test_info):
-        """Test the check_dataframe function"""
+        """Test the check_dataframe function."""
         assert test_info.index_col() == "number"
 
     @pytest.mark.parametrize(
@@ -82,11 +83,11 @@ class TestTableInfo:
         ],
     )
     def test_includes_columns(self, columns, includes, test_info):
-        """Test of the includes_columns function"""
+        """Test of the includes_columns function."""
         assert test_info.includes_columns(columns) == includes
 
     def test_check_columns(self, test_info):
-        """Test of the check_columns function"""
+        """Test of the check_columns function."""
         test_info.check_columns(["number", "text"])
 
     @pytest.mark.parametrize(
@@ -101,12 +102,12 @@ class TestTableInfo:
         ],
     )
     def test_check_columns_invalid(self, test_info, columns):
-        """Parameterized tests of failed calls to check_columns()"""
+        """Parameterized tests of failed calls to check_columns()."""
         with pytest.raises(KeyError):
             test_info.check_columns(columns)
 
     def test_check_dataframe_valid(self, test_info):
-        """Test a successful call to check_dataframe()"""
+        """Test a successful call to check_dataframe()."""
         test_info.check_dataframe(pd.DataFrame({"number": [200], "text": ["abc"]}))
 
     @pytest.mark.parametrize(
@@ -125,12 +126,12 @@ class TestTableInfo:
         ],
     )
     def test_check_dataframe_invalid(self, dataframe, error_type, test_info):
-        """Parameterized tests of failed calls to check_dataframe()"""
+        """Parameterized tests of failed calls to check_dataframe()."""
         with pytest.raises(error_type):
             test_info.check_dataframe(dataframe)
 
     def test_check_series_valid(self, test_info):
-        """Test a successful call to check_series()"""
+        """Test a successful call to check_series()."""
         test_info.check_series(pd.Series({"number": 200, "text": "abc"}))
 
     @pytest.mark.parametrize(
@@ -149,12 +150,12 @@ class TestTableInfo:
         ],
     )
     def test_check_series_invalid(self, series, error_type, test_info):
-        """Parameterized tests of failed calls to check_series()"""
+        """Parameterized tests of failed calls to check_series()."""
         with pytest.raises(error_type):
             test_info.check_series(series)
 
     def test_check_field_valid(self, test_info):
-        """Test a successful call to check_field()"""
+        """Test a successful call to check_field()."""
         # Test 1: Passed check
         test_info.check_field(200, "number")
 
@@ -172,6 +173,6 @@ class TestTableInfo:
         ],
     )
     def test_check_field_invalid(self, field_name, field_val, error_type, test_info):
-        """Parameterized tests of failed calls to check_field()"""
+        """Parameterized tests of failed calls to check_field()."""
         with pytest.raises(error_type):
             test_info.check_field(field_val, field_name)
