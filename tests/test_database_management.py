@@ -1,4 +1,4 @@
-"""Tests of the database_management module"""
+"""Tests of the database_management module."""
 from datetime import datetime, date, timezone
 import os
 import pytest
@@ -91,7 +91,7 @@ def test_file(test_records, test_table_info):
 
 @pytest.fixture()
 def corrupted_test_file(test_file, test_table_info):
-    """Fixture to setup and teardown an test file"""
+    """Fixture to setup and teardown an test file."""
     test_path = os.path.join(_PARQUET_DIR_, f"{test_table_info.name}.pkt")
     with open(test_path, "w") as f:
         f.write("some extra garbage")
@@ -211,12 +211,13 @@ class TestLoadRecordsFromFile:
         assert test_records[test_records["value"] > 2.0].equals(lt_records)
 
     def test_load_records_from_file_invalid_equality(self, test_table_info, test_file):
-        """Test loading records with an unsupported equality filter"""
+        """Test loading records with an unsupported equality filter."""
 
         class NoEq:
-            """Example of a class that doesn't support equality"""
+            """Example of a class that doesn't support equality."""
 
             def __eq__(self, other):
+                """Equality operator overridden to always fail."""
                 raise TypeError(f"Equality between no_eq and {type(other)} not supported")
 
         with pytest.raises(TypeError):
