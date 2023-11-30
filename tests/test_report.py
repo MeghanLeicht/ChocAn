@@ -3,10 +3,15 @@ from unittest.mock import patch
 
 import pandas as pd
 import pyarrow as pa
-from _pytest.fixtures import fixture
 from pyarrow import ArrowIOError
+import pytest
+from _pytest.fixtures import fixture
 
-from choc_an_simulator.report import generate_member_report
+from choc_an_simulator.report import (
+    generate_member_report,
+    generate_provider_report,
+    generate_summary_report,
+)
 from choc_an_simulator.schemas import TableInfo
 
 """
@@ -268,3 +273,15 @@ def test_generate_member_report_arrow_io_error(mock_load_records_from_file, caps
     generate_member_report()
     captured = capsys.readouterr()
     assert captured.out == expected
+
+
+def test_generate_provider_report():
+    """Test of the generate_provider_report function."""
+    with pytest.raises(NotImplementedError):
+        generate_provider_report()
+
+
+def test_generate_summary_report():
+    """Test of the generate_summary_report function."""
+    with pytest.raises(NotImplementedError):
+        generate_summary_report()
