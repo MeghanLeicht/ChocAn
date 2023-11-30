@@ -262,7 +262,7 @@ def test_generate_member_report_no_members(mock_load_records_from_file, capsys):
 
 
 @patch("choc_an_simulator.report.load_records_from_file", side_effect=ArrowIOError)
-def test_generate_member_report_key_error(mock_load_records_from_file, capsys):
+def test_generate_member_report_arrow_io_error(mock_load_records_from_file, capsys):
     """Test the generate_member_report function with a KeyError."""
     expected = "\033[93mThere was an issue accessing the database.\n\tError: \x1b[0m\n"
     generate_member_report()
