@@ -4,7 +4,7 @@ from choc_an_simulator.login import login_menu
 from choc_an_simulator.database_management import load_records_from_file
 from choc_an_simulator.schemas import MEMBER_INFO, PROVIDER_DIRECTORY_INFO, USER_INFO
 
-MANAGER_LOGIN = ["333333333", "password"]
+MANAGER_LOGIN = ["333333333"]
 
 
 class MenuPaths:
@@ -27,6 +27,16 @@ class MenuPaths:
     REMOVE_PROVIDER_DIRECTORY = MANAGER_LOGIN + [3, 3]
 
 
+@pytest.fixture
+def mock_password_auth(mocker):
+    """Mock the password entry / authorization process. """
+    mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
+    mocker.patch("choc_an_simulator.login.generate_secure_password", return_value=[None, None])
+    mocker.patch("choc_an_simulator.login.secure_password_verifiction", return_value=True)
+    mocker.patch("choc_an_simulator.login.user_type_authorization", return_value=0)
+    yield
+
+
 @pytest.mark.parametrize(
     "input_strs,expected_output",
     [
@@ -39,10 +49,12 @@ class MenuPaths:
 def test_member_reports(
     mock_input_series,
     save_example_info,
+    mock_password_auth,
     capsys,
     expected_output,
 ):
     """Test a valid login by a provider, all member check-in responses."""
+
     with pytest.raises(StopIteration):
         login_menu()
     out = capsys.readouterr().out
@@ -52,8 +64,8 @@ def test_member_reports(
 @pytest.mark.parametrize(
     "input_strs,table_info",
     [
-        (MenuPaths.ADD_MEMBER + ["A", "B", "C", "OR", "97221"], MEMBER_INFO),
-        (MenuPaths.ADD_PROVIDER + ['A","B","C', "OR", "97221"], USER_INFO),
+        (MenuPaths.ADD_MEMBER + ["Name", "Addr", "City", "OR", "97221"], MEMBER_INFO),
+        (MenuPaths.ADD_PROVIDER + ["Name", "Addr", "City", "OR", "97221"], USER_INFO),
         (MenuPaths.ADD_PROVIDER_DIRECTORY + ["S", "10", "10"], PROVIDER_DIRECTORY_INFO),
     ],
 )
@@ -61,13 +73,12 @@ def test_member_reports(
 def test_add_to_database(
     mock_input_series,
     save_example_info,
-    capsys,
+    mock_password_auth,
     table_info,
 ):
     """Test adding a new member, provider, and service."""
     df_before = load_records_from_file(table_info)
-    with pytest.raises(StopIteration):
-        login_menu()
+    login_menu()
     df_after = load_records_from_file(table_info)
     assert len(df_before) == len(df_after) - 1
 
@@ -87,13 +98,12 @@ def test_add_to_database(
 def test_remove_from_database(
     mock_input_series,
     save_example_info,
-    capsys,
+    mock_password_auth,
     table_info,
 ):
     """Test removing a new member, provider, and service."""
     df_before = load_records_from_file(table_info)
-    with pytest.raises(StopIteration):
-        login_menu()
+    login_menu()
     df_after = load_records_from_file(table_info)
     assert len(df_before) == len(df_after) + 1
 
@@ -113,11 +123,10 @@ def test_remove_from_database(
 def test_update_in_database(
     mock_input_series,
     save_example_info,
-    capsys,
+    mock_password_auth,
     table_info,
 ):
     """Test removing a new member, provider, and service."""
-    with pytest.raises(StopIteration):
-        login_menu()
+    login_menu()
     df_after = load_records_from_file(table_info)
     assert df_after.iloc[0, 1] == "Newname"
