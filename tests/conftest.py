@@ -38,20 +38,28 @@ def mock_input_ctrl_c(monkeypatch):
 
 
 @pytest.fixture
-def mock_input_series(input_strs: List[str], monkeypatch):
+def mock_input_series(input_strs: List[str], mocker):
     """
-    When included by a test, simulates input_strs as sequential user inputs.
+    When included by a test, simulates input_strs as sequential user inputs. If
 
     Args-
         input_strs: List of strings to simulate as user input
-        monkeypatch:
+        mocker:
             Pytest fixture for mocking input. To be passed by the test as an indirect parameter.
 
     Examples-
         See tests/test_user_io.py for several examples
     """
     inputs = iter(input_strs)
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    def inputs_then_exit(_):
+        """Calls the next input in the sequence each time it's called, then KeyboardInterrupts"""
+        next_val = next(inputs, None)
+        if next_val is None:
+            raise KeyboardInterrupt
+        return str(next_val)
+
+    mocker.patch("builtins.input", inputs_then_exit)
 
 
 @pytest.fixture
@@ -196,32 +204,28 @@ def save_example_provider_directory_info():
     )
     with contextlib.suppress(ValueError):  # Avoid adding duplicate values
         add_records_to_file(provider_directory_df, PROVIDER_DIRECTORY_INFO)
-        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(
-            provider_directory_df
-        )
+        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(provider_directory_df)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def monkeysession(request):
-    """Create a patcher that lasts for the duration of the test module."""
+    """Create a patcher that lasts for the duration of the test function."""
     mp = MonkeyPatch()
     request.addfinalizer(mp.undo)
     return mp
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def save_example_info(monkeysession, tmp_path_factory):
     """Mock the directory that parquet files are stored in."""
-    monkeysession.setattr(
-        _parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp())
-    )
+    monkeysession.setattr(_parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp()))
     save_example_member_info()
     save_example_provider_info()
     save_example_provider_directory_info()
     yield tmp_path_factory
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def mock_report_dir(monkeysession, tmp_path_factory):
     """Mock the directory that report files are stored in."""
     monkeysession.setattr(reports, "_REPORT_DIR_", str(tmp_path_factory.getbasetemp()))
