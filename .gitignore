@@ -1,0 +1,8 @@
+**/.*
+**/__pycache__
+**/*.egg-info
+build
+!.gitignore
+!.pre-commit-config.yaml
+/src/choc_an_simulator/reports/*
+htmlcov/

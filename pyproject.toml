@@ -1,0 +1,21 @@
+[project]
+name = "choc_an_simulator"
+description = "Group 7's term project for CS 314"
+version = "0.1.0"
+authors = [
+    { name = "Danny Love", email = "danielov@pdx.edu" }
+]
+requires-python = ">=3.11.0,<3.12"
+dependencies = [
+    'numpy',
+    'pandas',
+    'pyarrow',
+]
+
+[project.optional-dependencies]
+dev = [
+    'pre-commit',
+    'pytest',
+    'black',
+    'coverage',
+]
