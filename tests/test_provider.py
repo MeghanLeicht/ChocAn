@@ -87,49 +87,41 @@ def test_display_member_information():
     with pytest.raises(NotImplementedError):
         display_member_information()
 
-
-def test_record_service_billing(mocker, capsys):
-    """Test for a valid user input"""
+@pytest.mark.parametrize("provider_id, user_input, expected_output", [
+    (123123123, ["yes", "Test comment"], "Service Billing Entry Recorded Successfully"),
+    (111111111, ["yes", "Test comment"], "Invalid Provider ID"),
+    (123123123, ["no", "Test comment"], "Service Not Confirmed"),
+    (123123123, ["yes", "Test comment"], "Service Confirmed"),
+    (123123123, ["yes", "Test comment"], "Service Fee: $100.50")
+])
+def test_record_service_billing(mocker, capsys, provider_id, user_input, expected_output):
+    """Test record service billing with all possible inputs"""
     dataframes_to_return = [
-        pd.DataFrame(
-            {
-                "provider_id": [123123123],
-            }
-        ),
-        pd.DataFrame(
-            {
-                "service_id": [555555],
-                "service_name": ["Test service"],
-                "price_dollars": [50],
-                "price_cents": [0],
-            }
-        ),
+        pd.DataFrame({"provider_id": [provider_id]}),
+        pd.DataFrame({
+            "service_id": [555555],
+            "service_name": ["Test service"],
+            "price_dollars": [100],
+            "price_cents": [50],
+        })
     ]
 
     def side_effect(*args, **kwargs):
         return dataframes_to_return.pop(0)
 
     mocker.patch("choc_an_simulator.provider.add_records_to_file")
-    mocker.patch(
-        "choc_an_simulator.provider.prompt_str", side_effect=["yes", "Test comment"]
-    )
-    mocker.patch(
-        "choc_an_simulator.provider.prompt_int", side_effect=[123123123, 555555]
-    )
+    mocker.patch("choc_an_simulator.provider.prompt_str", side_effect=user_input)
+    mocker.patch("choc_an_simulator.provider.prompt_int", side_effect=[123123123, 555555])
     mocker.patch(
         "choc_an_simulator.provider.prompt_date",
         return_value=datetime.strptime("11-26-2023", "%m-%d-%Y"),
     )
-    mocker.patch(
-        "choc_an_simulator.provider.load_records_from_file", side_effect=side_effect
-    )
+    mocker.patch("choc_an_simulator.provider.load_records_from_file", side_effect=side_effect)
 
     record_service_billing_entry(1233456789)
 
     captured = capsys.readouterr()
-    expected_output = "Service Billing Entry Recorded Successfully"
     assert expected_output in captured.out
-
 
 def test_request_provider_directory(mocker, capsys) -> None:
     """Verify correct file creation for request_provider_directory and output of filepath"""
