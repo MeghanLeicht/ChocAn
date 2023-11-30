@@ -22,6 +22,9 @@ def login_menu() -> None:
     while user_verified is False:
         user_id = prompt_int("User ID")
 
+        if user_id is None:
+            return None
+
         try:
             hashed_password = generate_secure_password(
                 getpass.getpass(prompt="Password: ")
@@ -29,9 +32,7 @@ def login_menu() -> None:
         except KeyboardInterrupt:
             return None
 
-        user_verified = secure_password_verifiction(
-            user_id, hashed_password[0], hashed_password[1]
-        )
+        user_verified = secure_password_verifiction(user_id, hashed_password)
 
         if user_verified is False:
             print("Password is incorrect. Try again.")
@@ -43,7 +44,7 @@ def login_menu() -> None:
             show_provider_menu()
 
 
-def generate_secure_password(password: str) -> (bytes, str):
+def generate_secure_password(password: str) -> str:
     """
     Generates a secure user password.
 
@@ -55,7 +56,7 @@ def generate_secure_password(password: str) -> (bytes, str):
     raise NotImplementedError("generate_secure_password")
 
 
-def secure_password_verifiction(user_id: int, salt: str, hashed_password: str) -> bool:
+def secure_password_verifiction(user_id: int, hashed_password: str) -> bool:
     """
     Verifies the password entered by the user.
 

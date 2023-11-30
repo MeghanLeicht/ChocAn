@@ -24,7 +24,7 @@ def test_login_menu_correct_password(user_type, endpoint_func_name, mocker):
     mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", return_value="thisisapassword")
     mocker.patch(
         f"{CAS_LOG_PATH}.generate_secure_password",
-        return_value=("salt123", "hashedpassword123"),
+        return_value=("hashedpassword123"),
     )
     mocker.patch(f"{CAS_LOG_PATH}.secure_password_verifiction", return_value=True)
     mocker.patch(f"{CAS_LOG_PATH}.user_type_authorization", return_value=user_type)
@@ -42,7 +42,7 @@ def test_login_menu_incorrect_password(mocker, capsys):
     mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", return_value="thisisapassword")
     mocker.patch(
         f"{CAS_LOG_PATH}.generate_secure_password",
-        return_value=("salt123", "hashedpassword123"),
+        return_value=("hashedpassword123"),
     )
     mocker.patch(f"{CAS_LOG_PATH}.secure_password_verifiction", return_value=False)
     mocker.patch(f"{CAS_LOG_PATH}.user_type_authorization", return_value=0)
@@ -59,6 +59,15 @@ def test_login_menu_incorrect_password(mocker, capsys):
     assert expected_output in captured.out
 
 
+def test_login_menu_user_id_none(mocker, capsys):
+    """Test that the user did not enter a user_id"""
+    mocker.patch(f"{CAS_LOG_PATH}.prompt_int", return_value=None)
+
+    expected_ouput = login_menu()
+
+    assert expected_ouput is None
+
+
 def test_generate_secure_password():
     """Verify that a secure password is generated."""
     with pytest.raises(NotImplementedError):
@@ -69,7 +78,7 @@ def test_secure_password_verifiction():
     """Verify that correct password is entered."""
     with pytest.raises(NotImplementedError):
         secure_password_verifiction(
-            user_id=123456789, salt="salt123", hashed_password="hashedpassword123"
+            user_id=123456789, hashed_password="hashedpassword123"
         )
 
 
