@@ -14,24 +14,23 @@ class MenuPaths:
 
 
 @pytest.mark.parametrize(
-    "input_strs,check_in_response",
+    "input_strs,expected_output",
     [
-        (CHECK_IN_SEQUENCE + ["222222222"], "Valid"),
-        (CHECK_IN_SEQUENCE + ["222222223"], "Suspended"),
-        (CHECK_IN_SEQUENCE + ["222222224"], "Invalid"),
+        (MenuPaths.MEMBER_REPORT, "Member Report"),
+        (MenuPaths.PROVIDER_REPORT, "Provider Report"),
+        (MenuPaths.SUMMARY_REPORT, "Summary Report"),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info")
-def test_member_check_in(
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_report_dir")
+def test_member_reports(
     mock_input_series,
     save_example_info,
     capsys,
-    check_in_response,
+    expected_output,
 ):
     """Test a valid login by a provider, all member check-in responses."""
     with pytest.raises(StopIteration):
         login_menu()
     out = capsys.readouterr().out
     print(out)
-    assert check_in_response in out
-    assert "Provider Menu" in out
+    assert expected_output in out

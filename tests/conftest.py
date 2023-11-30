@@ -17,6 +17,7 @@ from choc_an_simulator.database_management import (
     load_records_from_file,
     add_records_to_file,
     _parquet_utils,
+    reports,
 )
 
 
@@ -188,10 +189,15 @@ def monkeysession(request):
 
 @pytest.fixture(scope="module")
 def save_example_info(monkeysession, tmp_path_factory):
-    """Mock the directory that parquet files are stored."""
-    monkeysession.setattr(
-        _parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp())
-    )
+    """Mock the directory that parquet files are stored in."""
+    monkeysession.setattr(_parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp()))
     save_example_member_info()
     save_example_provider_info()
+    yield tmp_path_factory
+
+
+@pytest.fixture(scope="module")
+def mock_report_dir(monkeysession, tmp_path_factory):
+    """Mock the directory that report files are stored in."""
+    monkeysession.setattr(reports, "_REPORT_DIR_", str(tmp_path_factory.getbasetemp()))
     yield tmp_path_factory
