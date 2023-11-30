@@ -87,14 +87,15 @@ def test_display_member_information():
     with pytest.raises(NotImplementedError):
         display_member_information()
 
-@pytest.mark.parametrize("provider_id, user_input, expected_output", [
-    (123123123, ["yes", "Test comment"], "Service Billing Entry Recorded Successfully"),
-    (111111111, ["yes", "Test comment"], "Invalid Provider ID"),
-    (123123123, ["no", "Test comment"], "Service Not Confirmed"),
-    (123123123, ["yes", "Test comment"], "Service Confirmed"),
-    (123123123, ["yes", "Test comment"], "Service Fee: $100.50")
+@pytest.mark.parametrize("provider_id, user_input, service_code, expected_output", [
+    (123123123, ["yes", "Test comment"], 555555, "Service Billing Entry Recorded Successfully"),
+    (111111111, ["yes", "Test comment"], 555555, "Invalid Provider ID"),
+    (123123123, ["no", "Test comment"], 555555, "Service Not Confirmed"),
+    (123123123, ["yes", "Test comment"], 555555, "Service Confirmed"),
+    (123123123, ["yes", "Test comment"], 555555, "Service Fee: $100.50"),
+    (123123123, ["yes", "Test comment"], 999999, "Invalid Service Code"),
 ])
-def test_record_service_billing(mocker, capsys, provider_id, user_input, expected_output):
+def test_record_service_billing(mocker, capsys, provider_id, user_input, service_code, expected_output):
     """Test record service billing with all possible inputs"""
     dataframes_to_return = [
         pd.DataFrame({"provider_id": [provider_id]}),
@@ -111,7 +112,7 @@ def test_record_service_billing(mocker, capsys, provider_id, user_input, expecte
 
     mocker.patch("choc_an_simulator.provider.add_records_to_file")
     mocker.patch("choc_an_simulator.provider.prompt_str", side_effect=user_input)
-    mocker.patch("choc_an_simulator.provider.prompt_int", side_effect=[123123123, 555555])
+    mocker.patch("choc_an_simulator.provider.prompt_int", side_effect=[123123123, service_code])
     mocker.patch(
         "choc_an_simulator.provider.prompt_date",
         return_value=datetime.strptime("11-26-2023", "%m-%d-%Y"),
@@ -121,7 +122,9 @@ def test_record_service_billing(mocker, capsys, provider_id, user_input, expecte
     record_service_billing_entry(1233456789)
 
     captured = capsys.readouterr()
-    assert expected_output in captured.out
+    captured_output = captured.out
+
+    assert expected_output in captured_output
 
 def test_request_provider_directory(mocker, capsys) -> None:
     """Verify correct file creation for request_provider_directory and output of filepath"""

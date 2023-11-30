@@ -120,7 +120,7 @@ def record_service_billing_entry(member_id: int) -> None:
     )  # 6 digits service code
     services_df = load_records_from_file(PROVIDER_DIRECTORY_INFO)
     if service_code not in services_df["service_id"].values:
-        PColor.pfail("Invalid Service Code")
+        PColor.pfail("Invalid Date Format")
         return None
 
     # Display the service name and confirm
