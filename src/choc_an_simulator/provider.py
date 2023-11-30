@@ -183,6 +183,7 @@ def record_service_billing_entry() -> None:
     except ArrowIOError as e:
         PColor.pfail("Failed to retrieve service fee")
         PColor.pfail(f"An error occurred: {e}") 
+        return None
 
     try:
         add_records_to_file(record, SERVICE_LOG_INFO)
