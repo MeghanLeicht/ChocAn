@@ -18,6 +18,14 @@ class MenuPaths:
     ADD_PROVIDER = MANAGER_LOGIN + [2, 1]
     ADD_PROVIDER_DIRECTORY = MANAGER_LOGIN + [3, 1]
 
+    UPDATE_MEMBER = MANAGER_LOGIN + [1, 2]
+    UPDATE_PROVIDER = MANAGER_LOGIN + [2, 2]
+    UPDATE_PROVIDER_DIRECTORY = MANAGER_LOGIN + [3, 2]
+
+    REMOVE_MEMBER = MANAGER_LOGIN + [1, 3]
+    REMOVE_PROVIDER = MANAGER_LOGIN + [2, 3]
+    REMOVE_PROVIDER_DIRECTORY = MANAGER_LOGIN + [3, 3]
+
 
 @pytest.mark.parametrize(
     "input_strs,expected_output",
@@ -62,3 +70,52 @@ def test_add_to_database(
         login_menu()
     df_after = load_records_from_file(table_info)
     assert len(df_before) == len(df_after) - 1
+
+
+@pytest.mark.parametrize(
+    "input_strs,table_info",
+    [
+        (MenuPaths.ADD_MEMBER + ["A", "B", "C", "OR", "97221"], MEMBER_INFO),
+        (MenuPaths.ADD_PROVIDER + ['A","B","C', "OR", "97221"], USER_INFO),
+        (MenuPaths.ADD_PROVIDER_DIRECTORY + ["S", "10", "10"], PROVIDER_DIRECTORY_INFO),
+    ],
+)
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_report_dir")
+def test_update_in_database(
+    mock_input_series,
+    save_example_info,
+    capsys,
+    table_info,
+):
+    """Test adding a new member, provider, and service."""
+    df_before = load_records_from_file(table_info)
+    with pytest.raises(StopIteration):
+        login_menu()
+    df_after = load_records_from_file(table_info)
+    assert len(df_before) == len(df_after) - 1
+
+
+@pytest.mark.parametrize(
+    "input_strs,table_info",
+    [
+        (MenuPaths.REMOVE_MEMBER + ["222222222"], MEMBER_INFO),
+        (MenuPaths.REMOVE_PROVIDER + ["111111111"], USER_INFO),
+        (
+            MenuPaths.REMOVE_PROVIDER_DIRECTORY + ["S", "10", "10"],
+            PROVIDER_DIRECTORY_INFO,
+        ),
+    ],
+)
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_report_dir")
+def test_remove_from_database(
+    mock_input_series,
+    save_example_info,
+    capsys,
+    table_info,
+):
+    """Test removing a new member, provider, and service."""
+    df_before = load_records_from_file(table_info)
+    with pytest.raises(StopIteration):
+        login_menu()
+    df_after = load_records_from_file(table_info)
+    assert len(df_before) == len(df_after) + 1

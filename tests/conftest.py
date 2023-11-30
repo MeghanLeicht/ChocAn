@@ -12,7 +12,7 @@ from _pytest.monkeypatch import MonkeyPatch
 import pandas as pd
 import contextlib
 
-from choc_an_simulator.schemas import USER_INFO, MEMBER_INFO
+from choc_an_simulator.schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO
 from choc_an_simulator.database_management import (
     load_records_from_file,
     add_records_to_file,
@@ -158,7 +158,7 @@ def save_example_provider_info():
     )
     with contextlib.suppress(ValueError):  # Avoid adding duplicate values
         add_records_to_file(user_df, USER_INFO)
-    assert load_records_from_file(USER_INFO).equals(user_df)
+        assert load_records_from_file(USER_INFO).equals(user_df)
 
 
 def save_example_member_info():
@@ -176,7 +176,28 @@ def save_example_member_info():
     )
     with contextlib.suppress(ValueError):  # Avoid adding duplicate values
         add_records_to_file(member_df, MEMBER_INFO)
-    assert load_records_from_file(MEMBER_INFO).equals(member_df)
+        assert load_records_from_file(MEMBER_INFO).equals(member_df)
+
+
+def save_example_provider_directory_info():
+    provider_directory_df = pd.DataFrame(
+        {
+            "service_id": [100001, 100002, 100003, 100004],
+            "service_name": [
+                "S 1",
+                "S 2",
+                "S 3",
+                "S 4",
+            ],
+            "price_dollars": [50, 30, 60, 25],
+            "price_cents": [45, 44, 75, 30],
+        }
+    )
+    with contextlib.suppress(ValueError):  # Avoid adding duplicate values
+        add_records_to_file(provider_directory_df, PROVIDER_DIRECTORY_INFO)
+        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(
+            provider_directory_df
+        )
 
 
 @pytest.fixture(scope="module")
@@ -190,9 +211,12 @@ def monkeysession(request):
 @pytest.fixture(scope="module")
 def save_example_info(monkeysession, tmp_path_factory):
     """Mock the directory that parquet files are stored in."""
-    monkeysession.setattr(_parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp()))
+    monkeysession.setattr(
+        _parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp())
+    )
     save_example_member_info()
     save_example_provider_info()
+    save_example_provider_directory_info()
     yield tmp_path_factory
 
 
