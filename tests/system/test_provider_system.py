@@ -60,7 +60,6 @@ def test_member_record_service(
     mock_input_series,
     save_example_info,
     capsys,
-    check_in_response,
 ):
     """Test a valid login by a provider, then recording a service entry."""
     provider_directory_before = load_records_from_file(PROVIDER_DIRECTORY_INFO)
@@ -68,3 +67,19 @@ def test_member_record_service(
         login_menu()
     provider_directory_after = load_records_from_file(PROVIDER_DIRECTORY_INFO)
     assert len(provider_directory_before) == len(provider_directory_after) - 1
+
+
+@pytest.mark.parametrize("input_strs", [(MenuNums.REQUEST_DIRECTORY)])
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_report_dir")
+def test_member_request_provider_directory(
+    mock_input_series,
+    mock_report_dir,
+    save_example_info,
+    capsys,
+):
+    """Test a valid login by a provider, then request a provider directory."""
+    with pytest.raises(StopIteration):
+        login_menu()
+    out = capsys.readouterr().out
+    assert "Provider directory saved to" in out
+    assert (mock_report_dir / "provider_directory.csv").exists()
