@@ -13,7 +13,7 @@ from .database_management import (
     add_records_to_file,
 )
 from datetime import datetime
-from .schemas import PROVIDER_DIRECTORY_INFO, MEMBER_INFO, SERVICE_LOG_INFO
+from .schemas import PROVIDER_DIRECTORY_INFO, MEMBER_INFO, SERVICE_LOG_INFO, USER_INFO
 from .user_io import prompt_menu_options, PColor, prompt_int, prompt_date, prompt_str
 import pandas as pd
 
@@ -177,8 +177,13 @@ def record_service_billing_entry() -> None:
     )
 
     # Display Fee and Save to files
-    fee = services_df[services_df["service_id"] == service_code][["price_dollars", "price_cents"]]
-    PColor.pok(f"Service Fee: ${fee['price_dollars'].iloc[0]}.{fee['price_cents'].iloc[0]:02d}")
+    try:
+        fee = services_df[services_df["service_id"] == service_code][["price_dollars", "price_cents"]]
+        PColor.pok(f"Service Fee: ${fee['price_dollars'].iloc[0]}.{fee['price_cents'].iloc[0]:02d}")
+    except ArrowIOError as e:
+        PColor.pfail("Failed to retrieve service fee")
+        PColor.pfail(f"An error occurred: {e}") 
+
     try:
         add_records_to_file(record, SERVICE_LOG_INFO)
         PColor.pok("Service Billing Entry Recorded Successfully")
