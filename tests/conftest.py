@@ -8,6 +8,16 @@ This includes functions for testing menus and mocking user input.
 from typing import List
 import re
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
+import pandas as pd
+import contextlib
+
+from choc_an_simulator.schemas import USER_INFO, MEMBER_INFO
+from choc_an_simulator.database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    _parquet_utils,
+)
 
 
 @pytest.fixture
@@ -104,7 +114,7 @@ def assert_menu_endpoint(
         pattern = re.compile(r"(\d+):.*?" + re.escape(text))
         match = pattern.search(output)
         assert match is not None, "Option text not found in menu output"
-        return match.group(1)
+        return match[1]
 
     # Mock the input function to automatically select the correct option
     call_count = 0
@@ -129,3 +139,57 @@ def assert_menu_endpoint(
     yield
 
     patch.assert_called()
+
+
+def save_example_provider_info():
+    """Write example provider info to a temporary file."""
+    user_df = pd.DataFrame(
+        {
+            "id": [111111111, 333333333],
+            "type": [1, 0],
+            "name": ["Joe", "Manny"],
+            "address": "12234 NE Street St.",
+            "city": "Metrocity",
+            "state": "OR",
+            "zipcode": 97212,
+            "password_hash": bytes(0),
+        },
+    )
+    with contextlib.suppress(ValueError):  # Avoid adding duplicate values
+        add_records_to_file(user_df, USER_INFO)
+    assert load_records_from_file(USER_INFO).equals(user_df)
+
+
+def save_example_member_info():
+    """Write example provider info to a temporary file."""
+    member_df = pd.DataFrame(
+        {
+            "member_id": [222222222, 222222223],
+            "name": ["Mary", "Marie"],
+            "address": ["4321 NE Street St.", "A second place"],
+            "city": "Metrocity",
+            "state": "OR",
+            "zipcode": 97212,
+            "suspended": [False, True],
+        },
+    )
+    with contextlib.suppress(ValueError):  # Avoid adding duplicate values
+        add_records_to_file(member_df, MEMBER_INFO)
+    assert load_records_from_file(MEMBER_INFO).equals(member_df)
+
+
+@pytest.fixture(scope="module")
+def monkeysession(request):
+    """Create a patcher that lasts for the duration of the test module."""
+    mp = MonkeyPatch()
+    request.addfinalizer(mp.undo)
+    return mp
+
+
+@pytest.fixture(scope="module")
+def save_example_info(monkeysession, tmp_path_factory):
+    """Mock the directory that parquet files are stored."""
+    monkeysession.setattr(_parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp()))
+    save_example_member_info()
+    save_example_provider_info()
+    yield tmp_path_factory
