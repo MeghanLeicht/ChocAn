@@ -8,9 +8,12 @@ from pyarrow import ArrowIOError
 from pandas.api.types import is_numeric_dtype
 from .database_management import load_records_from_file, add_records_to_file
 from .schemas import USER_INFO, MEMBER_INFO, TableInfo
-from .user_io import prompt_str, prompt_int, PColor
-
-from choc_an_simulator.user_io import prompt_menu_options
+from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
+from .report import (
+    generate_member_report,
+    generate_summary_report,
+    generate_provider_report,
+)
 
 
 def manager_menu() -> None:
@@ -319,61 +322,3 @@ def remove_provider_directory_record() -> None:
     This prompt repeats until the user chooses to exit.
     """
     raise NotImplementedError("remove_provider_directory_record")
-
-
-def generate_member_report() -> None:
-    """
-    Each member who has consulted a ChocAn provider during that week receives a list of services.
-
-    This information will be sorted in order of service date.
-
-    The report, which is also sent as an e-mail attachment, includes:
-    Member name (25 characters).
-    Member number (9 digits).
-    Member street address (25 characters).
-    Member city (14 characters).
-    Member state (2 letters).
-    Member zip code (5 digits).
-    For each service provided, the following details are required:
-    Date of service (MM-DD-YYYY).
-    Provider name (25 characters).
-    Service name (20 characters).
-    """
-    raise NotImplementedError("generate_member_report")
-
-
-def generate_provider_report() -> None:
-    """
-    Each provider who has billed ChocAn during that week receives a report.
-
-    The fields of the report include:
-    Provider name (25 characters).
-    Provider number (9 digits).
-    Provider street address (25 characters).
-    Provider city (14 characters).
-    Provider state (2 letters).
-    Provider zip code (5 digits).
-    For each service provided, the following details are required:
-    Date of service (MM-DD-YYYY).
-    Date and time data were received by the computer (MM-DD-YYYY
-    HH:MM:SS).
-    Member name (25 characters).
-    Member number (9 digits).
-    Service code (6 digits).
-    Fee to be paid (up to $999.99).
-    Total number of consultations with members (3 digits).
-    Total fee for the week (up to $99,999.99)
-    """
-    raise NotImplementedError("generate_provider_report")
-
-
-def generate_summary_report() -> None:
-    """
-    A summary report is given to the manager for accounts payable.
-
-    The report lists every provider to be paid that week, the number of consultations each had, and
-    his or her total fee for that week. Finally the total number of providers who
-    provided services, the total number of consultations, and the overall fee total are
-    printed.
-    """
-    raise NotImplementedError("generate_summary_report")
