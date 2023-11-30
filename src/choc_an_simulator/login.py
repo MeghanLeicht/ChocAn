@@ -6,6 +6,9 @@ It includes functions for display the login menu, generating a secure password,
 secure password verification, and user type authorization.
 """
 from .user_io import prompt_int, PColor
+from .manager import manager_menu
+from .provider import show_provider_menu
+from typing import Optional
 import getpass
 
 
@@ -16,27 +19,32 @@ def login_menu() -> None:
     This function prompts the user for their ID (manager ID or provider ID) and password.
     """
     user_verified = False
-    try:
-        while user_verified is False:
-            try:
-                user_id = prompt_int("User ID")
-            except OSError:
-                PColor.pfail("There was an error with that user ID.")
-                return
 
+    while user_verified is False:
+        try:
+            user_id = prompt_int("User ID")
+        except KeyboardInterrupt:
+            return None
+
+        try:
             hashed_password = generate_secure_password(
                 getpass.getpass(prompt="Password: ")
             )
+        except KeyboardInterrupt:
+            return None
 
-            user_verified = secure_password_verifiction(
-                hashed_password[0], hashed_password[1]
-            )
-            if user_verified is False:
-                print("Password is incorrect. Try again.")
-    except KeyboardInterrupt:
-        return None
+        user_verified = secure_password_verifiction(
+            hashed_password[0], hashed_password[1]
+        )
 
-    user_type_authorization(user_id)
+        if user_verified is False:
+            print("Password is incorrect. Try again.")
+        
+    match user_type_authorization(user_id):
+        case 0:
+            manager_menu()
+        case 1:
+            show_provider_menu()
 
 
 def generate_secure_password(password: str) -> (bytes, str):
@@ -45,6 +53,8 @@ def generate_secure_password(password: str) -> (bytes, str):
 
     This function is used to hash/salt the user password.
     It returns the hash/salt password and the salt.
+
+    Returns the number of bytes and str of the secure password.
     """
     raise NotImplementedError("generate_secure_password")
 
@@ -58,11 +68,13 @@ def secure_password_verifiction(salt: str, hashed_password: str) -> bool:
     raise NotImplementedError("secure_password_verification")
 
 
-def user_type_authorization(user_id: int) -> None:
+def user_type_authorization(user_id: int) -> int:
     """
     Determines the user type.
 
     If the user type = 0, then the user has manager authorization.
     If the user type = 1, then the user has provider authorization.
+
+    Returns an integer of the user_type.
     """
     raise NotImplementedError("user_type_authorization")
