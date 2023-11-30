@@ -1,7 +1,0 @@
-# List packages used for development here
--r requirements.txt
-pre-commit
-pytest
-pytest-mock
-black
-coverage
