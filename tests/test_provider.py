@@ -87,26 +87,46 @@ def test_display_member_information():
     with pytest.raises(NotImplementedError):
         display_member_information()
 
-@pytest.mark.parametrize("member_id, provider_id, user_input, service_code, expected_output", [
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Service Billing Entry Recorded Successfully"),
-    (111111111, 111111111, ["yes", "Test comment"], 555555, "Invalid Provider ID"),
-    (111111111, 222222222, ["no", "Test comment"], 555555, "Service Not Confirmed"),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Service Confirmed"),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Service Fee: $100.50"),
-    (111111111, 222222222, ["yes", "Test comment"], 999999, "Invalid Service Code"),
-    (222222222, 222222222, ["yes", "Test comment"], 555555, "Invalid Member ID or Member Suspended"),
-])
-def test_record_service_billing(mocker, capsys, member_id, provider_id, user_input, service_code, expected_output):
+
+@pytest.mark.parametrize(
+    "member_id, provider_id, user_input, service_code, expected_output",
+    [
+        (
+            111111111,
+            222222222,
+            ["Yes", "Test comment"],
+            555555,
+            "Service Billing Entry Recorded Successfully",
+        ),
+        (111111111, 111111111, ["yes", "Test comment"], 555555, "Invalid Provider ID"),
+        (111111111, 222222222, ["No", "Test comment"], 555555, "Service Not Confirmed"),
+        (111111111, 222222222, ["yes", "Test comment"], 555555, "Service Confirmed"),
+        (111111111, 222222222, ["yes", "Test comment"], 555555, "Service Fee: $100.50"),
+        (111111111, 222222222, ["yes", "Test comment"], 999999, "Invalid Service Code"),
+        (
+            222222222,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Invalid Member ID or Member Suspended",
+        ),
+    ],
+)
+def test_record_service_billing(
+    mocker, capsys, member_id, provider_id, user_input, service_code, expected_output
+):
     """Test record service billing with all possible inputs"""
     dataframes_to_return = [
         pd.DataFrame({"member_id": [member_id]}),
         pd.DataFrame({"id": [provider_id]}),
-        pd.DataFrame({
-            "service_id": [555555],
-            "service_name": ["Test service"],
-            "price_dollars": [100],
-            "price_cents": [50],
-        })
+        pd.DataFrame(
+            {
+                "service_id": [555555],
+                "service_name": ["Test service"],
+                "price_dollars": [100],
+                "price_cents": [50],
+            }
+        ),
     ]
 
     def dataframes_side_effect(*args, **kwargs):
@@ -114,12 +134,18 @@ def test_record_service_billing(mocker, capsys, member_id, provider_id, user_inp
 
     mocker.patch("choc_an_simulator.provider.add_records_to_file")
     mocker.patch("choc_an_simulator.provider.prompt_str", side_effect=user_input)
-    mocker.patch("choc_an_simulator.provider.prompt_int", side_effect=[111111111, 222222222, service_code])
+    mocker.patch(
+        "choc_an_simulator.provider.prompt_int",
+        side_effect=[111111111, 222222222, service_code],
+    )
     mocker.patch(
         "choc_an_simulator.provider.prompt_date",
         return_value=datetime.strptime("11-26-2023", "%m-%d-%Y"),
     )
-    mocker.patch("choc_an_simulator.provider.load_records_from_file", side_effect=dataframes_side_effect)
+    mocker.patch(
+        "choc_an_simulator.provider.load_records_from_file",
+        side_effect=dataframes_side_effect,
+    )
 
     record_service_billing_entry()
 
@@ -129,6 +155,7 @@ def test_record_service_billing(mocker, capsys, member_id, provider_id, user_inp
 
     # Check for the expected output
     assert expected_output in captured_output
+
 
 def test_request_provider_directory(mocker, capsys) -> None:
     """Verify correct file creation for request_provider_directory and output of filepath"""
