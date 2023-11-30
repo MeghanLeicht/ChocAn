@@ -10,18 +10,22 @@ from choc_an_simulator.login import (
 
 CAS_LOG_PATH = "choc_an_simulator.login"
 
+
 @pytest.mark.parametrize(
-        "user_type,endpoint_func_name",
-        [
-            (0, f"{CAS_LOG_PATH}.manager_menu"),
-            (1, f"{CAS_LOG_PATH}.show_provider_menu"),
-        ]
+    "user_type,endpoint_func_name",
+    [
+        (0, f"{CAS_LOG_PATH}.manager_menu"),
+        (1, f"{CAS_LOG_PATH}.show_provider_menu"),
+    ],
 )
 def test_login_menu_correct_password(user_type, endpoint_func_name, mocker):
     """Test that a user tried to login with correct password."""
     mocker.patch(f"{CAS_LOG_PATH}.prompt_int", return_value=123456789)
     mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", return_value="thisisapassword")
-    mocker.patch(f"{CAS_LOG_PATH}.generate_secure_password", return_value=("salt123", "hashedpassword123"))
+    mocker.patch(
+        f"{CAS_LOG_PATH}.generate_secure_password",
+        return_value=("salt123", "hashedpassword123"),
+    )
     mocker.patch(f"{CAS_LOG_PATH}.secure_password_verifiction", return_value=True)
     mocker.patch(f"{CAS_LOG_PATH}.user_type_authorization", return_value=user_type)
 
@@ -36,12 +40,17 @@ def test_login_menu_incorrect_password(mocker, capsys):
     """Test that a user tried to login with incorrect password."""
     mocker.patch(f"{CAS_LOG_PATH}.prompt_int", return_value=123456789)
     mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", return_value="thisisapassword")
-    mocker.patch(f"{CAS_LOG_PATH}.generate_secure_password", return_value=("salt123", "hashedpassword123"))
+    mocker.patch(
+        f"{CAS_LOG_PATH}.generate_secure_password",
+        return_value=("salt123", "hashedpassword123"),
+    )
     mocker.patch(f"{CAS_LOG_PATH}.secure_password_verifiction", return_value=False)
     mocker.patch(f"{CAS_LOG_PATH}.user_type_authorization", return_value=0)
 
     # KeyboardInterrupt after first attempt
-    mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", side_effect=[False, KeyboardInterrupt])
+    mocker.patch(
+        f"{CAS_LOG_PATH}.getpass.getpass", side_effect=[False, KeyboardInterrupt]
+    )
 
     login_menu()
 
@@ -59,7 +68,9 @@ def test_generate_secure_password():
 def test_secure_password_verifiction():
     """Verify that correct password is entered."""
     with pytest.raises(NotImplementedError):
-        secure_password_verifiction(salt="salt123", hashed_password="hashedpassword123")
+        secure_password_verifiction(
+            user_id=123456789, salt="salt123", hashed_password="hashedpassword123"
+        )
 
 
 def test_user_type_authorization():
