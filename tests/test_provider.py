@@ -1,8 +1,10 @@
 """Tests of functions in the provider module."""
 import pytest
+import pandas as pd
 from pandas import DataFrame, read_csv
 import pyarrow as pa
 import os
+from datetime import datetime
 from choc_an_simulator.provider import (
     show_provider_menu,
     check_in_member,
@@ -86,10 +88,47 @@ def test_display_member_information():
         display_member_information()
 
 
-def test_record_service_billing_entry():
-    """Verify input validation & database lookups / additions for record_service_billing_entry."""
-    with pytest.raises(NotImplementedError):
-        record_service_billing_entry()
+def test_record_service_billing(mocker, capsys):
+    """Test for a valid user input"""
+    dataframes_to_return = [
+        pd.DataFrame(
+            {
+                "provider_id": [123123123],
+            }
+        ),
+        pd.DataFrame(
+            {
+                "service_id": [555555],
+                "service_name": ["Test service"],
+                "price_dollars": [50],
+                "price_cents": [0],
+            }
+        ),
+    ]
+
+    def side_effect(*args, **kwargs):
+        return dataframes_to_return.pop(0)
+
+    mocker.patch("choc_an_simulator.provider.add_records_to_file")
+    mocker.patch(
+        "choc_an_simulator.provider.prompt_str", side_effect=["yes", "Test comment"]
+    )
+    mocker.patch(
+        "choc_an_simulator.provider.prompt_int", side_effect=[123123123, 555555]
+    )
+    mocker.patch(
+        "choc_an_simulator.provider.prompt_date",
+        return_value=datetime.strptime("11-26-2023", "%m-%d-%Y"),
+    )
+    mocker.patch(
+        "choc_an_simulator.provider.load_records_from_file", side_effect=side_effect
+    )
+
+    record_service_billing_entry(1233456789)
+
+    captured = capsys.readouterr()
+    expected_output = "Service Billing Entry Recorded Successfully"
+    assert expected_output in captured.out
 
 
 def test_request_provider_directory(mocker, capsys) -> None:

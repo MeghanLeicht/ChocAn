@@ -7,9 +7,15 @@ billing entries, and managing provider directories. These functions collectively
 billing, service verification, and data retrieval processes in the ChocAn system.
 """
 from pyarrow import ArrowIOError
-from .database_management import load_records_from_file, save_report
-from .schemas import PROVIDER_DIRECTORY_INFO, MEMBER_INFO
-from .user_io import prompt_menu_options, PColor, prompt_int
+from .database_management import (
+    load_records_from_file,
+    save_report,
+    add_records_to_file,
+)
+from datetime import datetime
+from .schemas import PROVIDER_DIRECTORY_INFO, MEMBER_INFO, SERVICE_LOG_INFO
+from .user_io import prompt_menu_options, PColor, prompt_int, prompt_date, prompt_str
+import pandas as pd
 
 
 def show_provider_menu() -> None:
@@ -72,15 +78,93 @@ def display_member_information() -> None:
     raise NotImplementedError("display_member_information")
 
 
-def record_service_billing_entry() -> None:
+def record_service_billing_entry(member_id: int) -> None:
     """
     Record a billing entry for a service provided to a member.
 
     In this function, the provider enters details of the service rendered. It involves
     validating the member's status, collecting service details, and saving the information
     in the service logs.
+
+    Args-
+        member_id (int): The member's unique nine-digit ID.
+
+    Returns-
+        None
     """
-    raise NotImplementedError("record_service_billing_entry")
+    providers_df = load_records_from_file(SERVICE_LOG_INFO)
+
+    # Prompt for provider ID
+    provider_id = prompt_int(
+        "Enter provider ID",
+        char_limit=SERVICE_LOG_INFO.character_limits["provider_id"],
+        numeric_limit=range(100000000, 1000000000),
+    )  # 9 digits provider ID
+
+    # Validate provider
+    if provider_id not in providers_df["provider_id"].values:
+        PColor.pfail("Invalid Provider ID")
+        return None
+
+    # Prompt for service date
+    service_date = prompt_date("Enter service date: ")
+    if service_date is None:
+        PColor.pfail("Invalid Service Date")
+        return None
+
+    # Get Service Code
+    service_code = prompt_int(
+        "Enter service code",
+        char_limit=PROVIDER_DIRECTORY_INFO.character_limits["service_id"],
+        numeric_limit=range(100000, 1000000),
+    )  # 6 digits service code
+    services_df = load_records_from_file(PROVIDER_DIRECTORY_INFO)
+    if service_code not in services_df["service_id"].values:
+        PColor.pfail("Invalid Service Code")
+        return None
+
+    # Display the service name and confirm
+    service_name = services_df[services_df["service_id"] == service_code][
+        "service_name"
+    ].iloc[0]
+    PColor.pok(f"Service name: {service_name}")
+    confirmation = prompt_str("Confirm service (yes/no): ", char_limit=range(1, 4))
+    if confirmation in ["y", "yes"]:
+        PColor.pok("Service Confirmed")
+    else:
+        PColor.pfail("Service Not Confirmed")
+        return None
+
+    # Get Optional Comments
+    comments = prompt_str(
+        "Enter comments (optional): ", char_limit=range(1, 101)
+    )  # max of 100 characters for comments
+
+    # Create Record
+    current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
+    record = pd.DataFrame(
+        {
+            "entry_datetime_utc": [current_datetime],
+            "service_date_utc": [service_date.strftime("%m-%d-%Y")],
+            "provider_id": [provider_id],
+            "member_id": [member_id],
+            "service_id": [service_code],
+            "comments": [comments],
+        }
+    )
+
+    # Display Fee and Record for Verification
+
+    fee = services_df[services_df["service_id"] == service_code][
+        ["price_dollars", "price_cents"]
+    ]
+    PColor.pok(
+        f"Service Fee: ${fee['price_dollars'].iloc[0]}.{fee['price_cents'].iloc[0]:02d}"
+    )
+
+    # Save Record for Reporting
+    add_records_to_file(record, SERVICE_LOG_INFO)
+    PColor.pok("Service Billing Entry Recorded Successfully")
 
 
 def request_provider_directory() -> None:
