@@ -56,9 +56,7 @@ def _convert_datetimes_to_formatted_str(table: pd.DataFrame) -> pd.DataFrame:
             )
         # Convert all timezone-aware datetimes to local time
         elif str(col_dtype).startswith("datetime64[ns, "):
-            table[col_name] = (
-                table[col_name].dt.tz_convert(tzlocal()).dt.strftime(DTTM_FMT)
-            )
+            table[col_name] = table[col_name].dt.tz_convert(tzlocal()).dt.strftime(DTTM_FMT)
     return table
 
 
