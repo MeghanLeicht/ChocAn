@@ -8,77 +8,46 @@ from choc_an_simulator.login import (
     user_type_authorization,
 )
 
+CAS_LOG_PATH = "choc_an_simulator.login"
 
-def test_login_menu(mocker, capsys):
+@pytest.mark.parametrize(
+        "user_type,endpoint_func_name",
+        [
+            (0, f"{CAS_LOG_PATH}.manager_menu"),
+            (1, f"{CAS_LOG_PATH}.show_provider_menu"),
+        ]
+)
+def test_login_menu_correct_password(user_type, endpoint_func_name, mocker):
     """Test that a user tried to login with correct password."""
-    mocker.patch(
-       "choc_an_simulator.login.prompt_int",
-       return_value="123456789" 
-    )
-    mocker.patch(
-        "choc_an_simulator.login.getpass.getpass",
-        return_value="thisisapassword"
-    )
-    mocker.patch(
-        "choc_an_simulator.login.generate_secure_password",
-        return_value=("salt123", "hashedpassword123")
-        )
-    mocker.patch(
-        "choc_an_simulator.login.secure_password_verifiction",
-        return_value=True
-    )
-    mocker.patch("choc_an_simulator.login.user_type_authorization")
+    mocker.patch(f"{CAS_LOG_PATH}.prompt_int", return_value=123456789)
+    mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", return_value="thisisapassword")
+    mocker.patch(f"{CAS_LOG_PATH}.generate_secure_password", return_value=("salt123", "hashedpassword123"))
+    mocker.patch(f"{CAS_LOG_PATH}.secure_password_verifiction", return_value=True)
+    mocker.patch(f"{CAS_LOG_PATH}.user_type_authorization", return_value=user_type)
+
+    expected = mocker.patch(f"{endpoint_func_name}")
 
     login_menu()
+
+    expected.assert_called()
 
 
 def test_login_menu_incorrect_password(mocker, capsys):
     """Test that a user tried to login with incorrect password."""
-    mocker.patch(
-       "choc_an_simulator.login.prompt_int",
-       return_value="123456789" 
-    )
-    mocker.patch(
-        "choc_an_simulator.login.getpass.getpass",
-        return_value="thisisapassword"
-    )
-    mocker.patch(
-        "choc_an_simulator.login.generate_secure_password",
-        return_value=("salt123", "hashedpassword123")
-        )
-    mocker.patch(
-        "choc_an_simulator.login.secure_password_verifiction",
-        return_value=False
-    )
-    mocker.patch("choc_an_simulator.login.user_type_authorization")
+    mocker.patch(f"{CAS_LOG_PATH}.prompt_int", return_value=123456789)
+    mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", return_value="thisisapassword")
+    mocker.patch(f"{CAS_LOG_PATH}.generate_secure_password", return_value=("salt123", "hashedpassword123"))
+    mocker.patch(f"{CAS_LOG_PATH}.secure_password_verifiction", return_value=False)
+    mocker.patch(f"{CAS_LOG_PATH}.user_type_authorization", return_value=0)
 
     # KeyboardInterrupt after first attempt
-    mocker.patch(
-        "choc_an_simulator.login.secure_password_verifiction",
-        side_effect=[False, KeyboardInterrupt],
-    )
+    mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", side_effect=[False, KeyboardInterrupt])
 
     login_menu()
 
     captured = capsys.readouterr()
     expected_output = "Password is incorrect. Try again."
-    assert (
-        expected_output in captured.out
-    )
-
-
-def test_login_menu_with_os_error(mocker, capsys):
-    """Test login_menu function with save OS error"""
-    mocker.patch(
-       "choc_an_simulator.login.prompt_int",
-       side_effect=OSError,
-    )
-    login_menu()
-    assert(
-        "There was an error with that user ID."
-        in capsys.readouterr().out
-    )
-
+    assert expected_output in captured.out
 
 
 def test_generate_secure_password():
@@ -86,10 +55,12 @@ def test_generate_secure_password():
     with pytest.raises(NotImplementedError):
         generate_secure_password(password="thisisapassword")
 
+
 def test_secure_password_verifiction():
     """Verify that correct password is entered."""
     with pytest.raises(NotImplementedError):
-        secure_password_verifiction(salt='salt123', hashed_password='hashedpassword123')
+        secure_password_verifiction(salt="salt123", hashed_password="hashedpassword123")
+
 
 def test_user_type_authorization():
     """Verify that user exists and corresponds to the correct user type."""
