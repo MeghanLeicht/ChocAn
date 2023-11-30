@@ -233,11 +233,11 @@ def expected_output():
     side_effect=load_records_from_file_side_effect,
 )
 def test_generate_member_report(
-    mock_load_records_from_file,
-    mock_save_report,
-    expected_report_df,
-    expected_output,
-    capsys,
+        mock_load_records_from_file,
+        mock_save_report,
+        expected_report_df,
+        expected_output,
+        capsys,
 ):
     """Test the generate_member_report function."""
     generate_member_report()
@@ -275,10 +275,29 @@ def test_generate_member_report_arrow_io_error(mock_load_records_from_file, caps
     assert captured.out == expected
 
 
-def test_generate_provider_report():
-    """Test of the generate_provider_report function."""
-    with pytest.raises(NotImplementedError):
-        generate_provider_report()
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+def test_generate_provider_report(
+        mock_load_records_from_file,
+        mock_save_report,
+        expected_report_df,
+        expected_output,
+        capsys,
+):
+    """Test the generate_member_report function."""
+    generate_provider_report()
+    captured = capsys.readouterr()
+
+    #assert captured.out == expected_output
+
+    actual_df = pd.DataFrame()
+    for i in range(mock_save_report.call_args_list.__len__()):
+        actual_df = actual_df._append(mock_save_report.call_args_list[i][0][0])
+
+    assert actual_df.equals(expected_report_df)
 
 
 def test_generate_summary_report():

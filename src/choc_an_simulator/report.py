@@ -17,13 +17,13 @@ import pyarrow as pa
 
 from choc_an_simulator.database_management.load_records import load_records_from_file
 from choc_an_simulator.database_management.reports import save_report
-from choc_an_simulator.user_io import PColor
 from choc_an_simulator.schemas import (
     MEMBER_INFO,
     PROVIDER_DIRECTORY_INFO,
     SERVICE_LOG_INFO,
     USER_INFO,
 )
+from choc_an_simulator.user_io import PColor
 
 
 def generate_member_report() -> None:
@@ -140,7 +140,86 @@ def generate_provider_report() -> None:
     Total number of consultations with members (3 digits).
     Total fee for the week (up to $99,999.99)
     """
-    raise NotImplementedError("generate_provider_report")
+    gt_cols = {"service_date_utc": datetime.now() - timedelta(days=7)}
+    service_log = None
+    provider_directory = None
+    member_info = None
+    user_info = None
+    service_log_cols = ["service_date_utc", "member_id", "provider_id", "service_id",
+                        "entry_datetime_utc", ]
+    member_cols = ["member_id", "name"]
+    user_cols = ["name", "id", "address", "city", "state", "zipcode"]
+    provider_directory_cols = ["service_id", "price_cents", "price_dollars"]
+
+    try:
+        service_log = load_records_from_file(SERVICE_LOG_INFO, gt_cols=gt_cols)
+        if service_log.empty:
+            print("No records found within the last 7 days.")
+            return
+        service_log = service_log[service_log_cols]
+        member_info = load_records_from_file(MEMBER_INFO, gt_cols=gt_cols)[member_cols]
+        user_info = load_records_from_file(USER_INFO, gt_cols=gt_cols)[user_cols]
+        provider_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[
+            provider_directory_cols
+        ]
+    except pa.ArrowIOError as err_io:
+        PColor.pwarn(f"There was an issue accessing the database.\n\tError: {err_io}")
+        return
+
+    records = pd.merge(service_log, provider_directory, on="service_id")
+    records = pd.merge(records, user_info, left_on="provider_id", right_on="id")
+    records = pd.merge(records, member_info, on="member_id")
+    records["Fee to be paid"] = records["price_dollars"] + records["price_cents"] / 100
+    records = records.drop(columns=["id", "price_dollars", "price_cents"])
+
+    for provider_id in records["provider_id"].unique():
+        provider_record = records[records["provider_id"] == provider_id]
+        mask = records["provider_id"] == provider_id
+        records.loc[mask, "Total fee for the week"] = provider_record[
+            "Fee to be paid"
+        ].sum()
+        records.loc[mask, "Total number of consultations with members"] = len(
+            provider_record
+        )
+
+    records = records.rename(
+        columns={
+            "name_x": "Provider Name",
+            "provider_id": "Provider Number",
+            "name_y": "Member Name",
+            "member_id": "Member Number",
+            "service_date_utc": "Date of Service",
+            "entry_datetime_utc": "Date and Time Data Were Received by the Computer",
+            "service_id": "Service Code",
+        }
+    )
+
+    records = records[
+        [
+            "Provider Name",
+            "Provider Number",
+            "address",
+            "city",
+            "state",
+            "zipcode",
+            "Date of Service",
+            "Date and Time Data Were Received by the Computer",
+            "Member Name",
+            "Member Number",
+            "Service Code",
+            "Fee to be paid",
+            "Total number of consultations with members",
+            "Total fee for the week",
+        ]
+    ]
+
+    # For each provider save the report and print the path to the console
+    for provider_id in records["Provider Number"].unique():
+        provider_record = records[records["Provider Number"] == provider_id]
+        file_path = save_report(
+            provider_record, f"{provider_record['Provider Name'].iloc[0]}_{_current_date()}"
+        )
+        print(f"Provider Report saved to {file_path}")
 
 
 def generate_summary_report() -> None:
