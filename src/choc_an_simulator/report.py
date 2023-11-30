@@ -115,7 +115,7 @@ def generate_member_report() -> None:
         file_path = save_report(
             member_record, f"{member_record['Name'].iloc[0]}_{_current_date()}"
         )
-        print(f"Report saved to {file_path}")
+        print(f"Member Report saved to {file_path}")
 
 
 def generate_provider_report() -> None:

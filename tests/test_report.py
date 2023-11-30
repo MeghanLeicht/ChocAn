@@ -219,10 +219,10 @@ def expected_output():
     current_date = datetime.now().strftime("%m-%d-%Y")
     return "".join(
         [
-            f"Report saved to /path/to/report/John Doe_{current_date}.csv\n",
-            f"Report saved to /path/to/report/Bob Henderson_{current_date}.csv\n",
-            f"Report saved to /path/to/report/Alex Smith_{current_date}.csv\n",
-            f"Report saved to /path/to/report/Jane Doe_{current_date}.csv\n",
+            f"Member Report saved to /path/to/report/John Doe_{current_date}.csv\n",
+            f"Member Report saved to /path/to/report/Bob Henderson_{current_date}.csv\n",
+            f"Member Report saved to /path/to/report/Alex Smith_{current_date}.csv\n",
+            f"Member Report saved to /path/to/report/Jane Doe_{current_date}.csv\n",
         ]
     )
 
