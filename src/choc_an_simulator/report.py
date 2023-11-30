@@ -107,7 +107,7 @@ def generate_member_report() -> None:
         member_record.loc[:, "Services"] = member_record.loc[:, "Services"].apply(
             lambda x: sorted(
                 [
-                    (datetime.date(date), service_name, provider_name)
+                    (date, service_name, provider_name)
                     for date, service_name, provider_name, in x
                 ]
             )
@@ -120,33 +120,26 @@ def generate_member_report() -> None:
 
 def generate_provider_report() -> None:
     """
-    Each provider who has billed ChocAn during that week receives a report.
+    Generates a report of services rendered by a provider over the last 7 days.
 
-    The fields of the report include:
-    Provider name (25 characters).
-    Provider number (9 digits).
-    Provider street address (25 characters).
-    Provider city (14 characters).
-    Provider state (2 letters).
-    Provider zip code (5 digits).
-    For each service provided, the following details are required:
-    Date of service (MM-DD-YYYY).
-    Date and time data were received by the computer (MM-DD-YYYY
-    HH:MM:SS).
-    Member name (25 characters).
-    Member number (9 digits).
-    Service code (6 digits).
-    Fee to be paid (up to $999.99).
-    Total number of consultations with members (3 digits).
-    Total fee for the week (up to $99,999.99)
+    Generate a report for each provider who has rendered services to a ChocAn member.
+    A 'date' filter will be added to 'gt_cols' to retrieve providers that have had services rendered
+    in the last 7 days. Additionally, if the number of consultations is greater than 999, it will
+    be set to 999. If the total fee is greater than 99999.99, it will be set to 99999.99. After a
+    report is generated, the path to it is printed to the console.
     """
     gt_cols = {"service_date_utc": datetime.now() - timedelta(days=7)}
     service_log = None
     provider_directory = None
     member_info = None
     user_info = None
-    service_log_cols = ["service_date_utc", "member_id", "provider_id", "service_id",
-                        "entry_datetime_utc", ]
+    service_log_cols = [
+        "service_date_utc",
+        "member_id",
+        "provider_id",
+        "service_id",
+        "entry_datetime_utc",
+    ]
     member_cols = ["member_id", "name"]
     user_cols = ["name", "id", "address", "city", "state", "zipcode"]
     provider_directory_cols = ["service_id", "price_cents", "price_dollars"]
@@ -174,13 +167,25 @@ def generate_provider_report() -> None:
 
     for provider_id in records["provider_id"].unique():
         provider_record = records[records["provider_id"] == provider_id]
-        mask = records["provider_id"] == provider_id
-        records.loc[mask, "Total fee for the week"] = provider_record[
-            "Fee to be paid"
-        ].sum()
-        records.loc[mask, "Total number of consultations with members"] = len(
-            provider_record
-        )
+        current_provider = records["provider_id"] == provider_id
+        # calculate_total_fee is broken out into a function to make it easier to mock for testing
+        total_fee = calculate_total_fee(provider_record["Fee to be paid"])
+        if total_fee < 99999.99:
+            records.loc[current_provider, "Total fee for the week"] = total_fee
+        else:
+            records.loc[current_provider, "Total fee for the week"] = 99999.99
+
+        # calculate_length_of_consultations is broken out into a function to make it easier to mock
+        # for testing
+        total_consultations = calculate_length_of_consultations(provider_record)
+        if total_consultations < 999:
+            records.loc[
+                current_provider, "Total number of consultations with members"
+            ] = total_consultations
+        else:
+            records.loc[
+                current_provider, "Total number of consultations with members"
+            ] = 999
 
     records = records.rename(
         columns={
@@ -217,7 +222,8 @@ def generate_provider_report() -> None:
     for provider_id in records["Provider Number"].unique():
         provider_record = records[records["Provider Number"] == provider_id]
         file_path = save_report(
-            provider_record, f"{provider_record['Provider Name'].iloc[0]}_{_current_date()}"
+            provider_record,
+            f"{provider_record['Provider Name'].iloc[0]}_{_current_date()}",
         )
         print(f"Provider Report saved to {file_path}")
 
@@ -237,3 +243,13 @@ def generate_summary_report() -> None:
 def _current_date() -> str:
     """Returns the current date in the format MM-DD-YYYY."""
     return datetime.now().strftime("%m-%d-%Y")
+
+
+def calculate_total_fee(providers_fees_df: pd.DataFrame) -> float:
+    """Calculates the total fee for a provider."""
+    return providers_fees_df.sum()
+
+
+def calculate_length_of_consultations(providers_consultations_df: pd.DataFrame) -> int:
+    """Calculates the total number of consultations for a provider."""
+    return len(providers_consultations_df)
