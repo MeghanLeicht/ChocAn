@@ -180,6 +180,7 @@ def save_example_member_info():
 
 
 def save_example_provider_directory_info():
+    """Write example provider direcotory info to a temporary file."""
     provider_directory_df = pd.DataFrame(
         {
             "service_id": [100001, 100002, 100003, 100004],

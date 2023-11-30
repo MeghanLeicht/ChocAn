@@ -75,29 +75,6 @@ def test_add_to_database(
 @pytest.mark.parametrize(
     "input_strs,table_info",
     [
-        (MenuPaths.ADD_MEMBER + ["A", "B", "C", "OR", "97221"], MEMBER_INFO),
-        (MenuPaths.ADD_PROVIDER + ['A","B","C', "OR", "97221"], USER_INFO),
-        (MenuPaths.ADD_PROVIDER_DIRECTORY + ["S", "10", "10"], PROVIDER_DIRECTORY_INFO),
-    ],
-)
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_report_dir")
-def test_update_in_database(
-    mock_input_series,
-    save_example_info,
-    capsys,
-    table_info,
-):
-    """Test adding a new member, provider, and service."""
-    df_before = load_records_from_file(table_info)
-    with pytest.raises(StopIteration):
-        login_menu()
-    df_after = load_records_from_file(table_info)
-    assert len(df_before) == len(df_after) - 1
-
-
-@pytest.mark.parametrize(
-    "input_strs,table_info",
-    [
         (MenuPaths.REMOVE_MEMBER + ["222222222"], MEMBER_INFO),
         (MenuPaths.REMOVE_PROVIDER + ["111111111"], USER_INFO),
         (
@@ -119,3 +96,28 @@ def test_remove_from_database(
         login_menu()
     df_after = load_records_from_file(table_info)
     assert len(df_before) == len(df_after) + 1
+
+
+@pytest.mark.parametrize(
+    "input_strs,table_info",
+    [
+        (MenuPaths.UPDATE_MEMBER + [1, 222222222, "Newname"], MEMBER_INFO),
+        (MenuPaths.UPDATE_PROVIDER + [1, 111111111, "Newname"], USER_INFO),
+        (
+            MenuPaths.UPDATE_PROVIDER_DIRECTORY + [1, 100001, "Newname"],
+            PROVIDER_DIRECTORY_INFO,
+        ),
+    ],
+)
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_report_dir")
+def test_update_in_database(
+    mock_input_series,
+    save_example_info,
+    capsys,
+    table_info,
+):
+    """Test removing a new member, provider, and service."""
+    with pytest.raises(StopIteration):
+        login_menu()
+    df_after = load_records_from_file(table_info)
+    assert df_after.iloc[0, 1] == "Newname"
