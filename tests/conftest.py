@@ -189,7 +189,9 @@ def monkeysession(request):
 @pytest.fixture(scope="module")
 def save_example_info(monkeysession, tmp_path_factory):
     """Mock the directory that parquet files are stored."""
-    monkeysession.setattr(_parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp()))
+    monkeysession.setattr(
+        _parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp())
+    )
     save_example_member_info()
     save_example_provider_info()
     yield tmp_path_factory
