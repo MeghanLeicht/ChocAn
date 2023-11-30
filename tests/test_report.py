@@ -1,16 +1,13 @@
-import random
 from datetime import datetime
 from unittest.mock import patch
-from unittest import mock
 
 import pandas as pd
-import pyarrow
 import pyarrow as pa
-import pytest
-from pandas.errors import MergeError
+from _pytest.fixtures import fixture
+from pyarrow import ArrowIOError
 
-from choc_an_simulator.report import _generate_data_dict, generate_member_report
-from choc_an_simulator.schemas import SERVICE_LOG_INFO, TableInfo
+from choc_an_simulator.report import generate_member_report
+from choc_an_simulator.schemas import TableInfo
 
 """
 Create test data for the generate_member_report function.
@@ -18,49 +15,131 @@ Create test data for the generate_member_report function.
 test_user_info = pd.DataFrame(
     {
         "id": [940672921, 265608022, 637066975, 483185890, 385685178, 807527890],
-        # "type": random.sample(0, 1), 6),
-        "name": ["Case Hall", "Regina George", "Ray Donald", "Karla Tanners", "Zelda Hammersmith", "Linda Smith"],
-        "address": ["123 Main St", "456 Elm St", "789 Oak St", "1011 Pine St", "1213 Maple St", "1415 Cedar St"],
-        "city": ["Chicago", "New York", "Los Angeles", "Portland", "Sandy", "Muscle Shoals"],
+        "name": [
+            "Case Hall",
+            "Regina George",
+            "Ray Donald",
+            "Karla Tanners",
+            "Zelda Hammersmith",
+            "Linda Smith",
+        ],
+        "address": [
+            "123 Main St",
+            "456 Elm St",
+            "789 Oak St",
+            "1011 Pine St",
+            "1213 Maple St",
+            "1415 Cedar St",
+        ],
+        "city": [
+            "Chicago",
+            "New York",
+            "Los Angeles",
+            "Portland",
+            "Sandy",
+            "Muscle Shoals",
+        ],
         "state": ["IL", "NY", "CA", "OR", "OR", "AL"],
         "zipcode": [15603, 38322, 84524, 64198, 34268, 73952],
-        "password_hash": pa.array(["password1", "password2", "password3", "password4", "password5", "password6"],
-                                  type=pa.binary()),
+        "password_hash": pa.array(
+            [
+                "password1",
+                "password2",
+                "password3",
+                "password4",
+                "password5",
+                "password6",
+            ],
+            type=pa.binary(),
+        ),
     }
 )
 
 test_member_info = pd.DataFrame(
     {
         "member_id": [137002632, 989635272, 752880910, 367868907, 344690896, 406072422],
-        "name": ["John Doe", "Jane Doe", "Alex Smith", "Bob Henderson", "Rebecca Miller", "Leah Jones"],
-        "address": ["123 Main St", "456 Elm St", "789 Oak St", "1011 Pine St", "1213 Maple St", "1415 Cedar St"],
-        "city": ["Chicago", "New York", "Los Angeles", "Portland", "Sandy", "Muscle Shoals"],
+        "name": [
+            "John Doe",
+            "Jane Doe",
+            "Alex Smith",
+            "Bob Henderson",
+            "Rebecca Miller",
+            "Leah Jones",
+        ],
+        "address": [
+            "123 Main St",
+            "456 Elm St",
+            "789 Oak St",
+            "1011 Pine St",
+            "1213 Maple St",
+            "1415 Cedar St",
+        ],
+        "city": [
+            "Chicago",
+            "New York",
+            "Los Angeles",
+            "Portland",
+            "Sandy",
+            "Muscle Shoals",
+        ],
         "state": ["IL", "NY", "CA", "OR", "OR", "AL"],
         "zipcode": [15603, 38322, 84524, 64198, 34268, 73952],
         "suspended": [False, False, False, False, True, False],
-        # adding weights to decrease likelihood of suspended members
     }
 )
 
 test_service_log_info = pd.DataFrame(
     {
-        "entry_datetime_utc": [datetime(2023, 11, 21), datetime(2023, 11, 24), datetime(2023, 11, 26),
-                               datetime(2023, 11, 21), datetime(2023, 11, 21), datetime(2023, 11, 24)],
-        "service_date_utc": [datetime(2023, 11, 21), datetime(2023, 11, 24), datetime(2023, 11, 26),
-                             datetime(2023, 11, 21), datetime(2023, 11, 21), datetime(2023, 11, 24)],
+        "entry_datetime_utc": [
+            datetime(2023, 11, 21),
+            datetime(2023, 11, 24),
+            datetime(2023, 11, 26),
+            datetime(2023, 11, 21),
+            datetime(2023, 11, 21),
+            datetime(2023, 11, 24),
+        ],
+        "service_date_utc": [
+            datetime(2023, 11, 21),
+            datetime(2023, 11, 24),
+            datetime(2023, 11, 26),
+            datetime(2023, 11, 21),
+            datetime(2023, 11, 21),
+            datetime(2023, 11, 24),
+        ],
         "member_id": [367868907, 752880910, 367868907, 989635272, 752880910, 137002632],
-        "provider_id": [483185890, 483185890, 940672921, 385685178, 385685178, 637066975],
+        "provider_id": [
+            483185890,
+            483185890,
+            940672921,
+            385685178,
+            385685178,
+            637066975,
+        ],
         "service_id": [889804, 951175, 495644, 805554, 427757, 708195],
-        "comments": ["", "Test comment", "Test comment 2", "Test comment 3", "Test comment 4", "Test comment 5"],
+        "comments": [
+            "",
+            "Test comment",
+            "Test comment 2",
+            "Test comment 3",
+            "Test comment 4",
+            "Test comment 5",
+        ],
     }
 )
 
 test_provider_directory_info = pd.DataFrame(
     {
         "service_id": [889804, 951175, 495644, 805554, 427757, 708195],
-        "service_name": ["Service 1", "Service 2", "Service 3", "Service 4", "Service 5", "Service 6"],
-        "price_cents": random.sample(range(0, 99), 6),
-        "price_dollars": random.sample(range(1, 999), 6),
+        "service_name": [
+            "Service 1",
+            "Service 2",
+            "Service 3",
+            "Service 4",
+            "Service 5",
+            "Service 6",
+        ],
+        "price_cents": [33, 15, 99, 75, 50, 25],
+        "price_dollars": [100, 200, 300, 400, 500, 600],
     }
 )
 
@@ -102,157 +181,90 @@ def save_report_side_effect(*args, **kwargs):
     return f"/path/to/report/{report_file_path}.csv"
 
 
-@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=load_records_from_file_side_effect)
-def test_generate_member_report(mock_load_records_from_file, mock_save_report, capfd):
-    """
-    Test the generate_member_report function.
-    """
+@fixture
+def expected_report_df():
+    """Fixture for the expected report."""
+    return pd.DataFrame(
+        {
+            "Name": ["John Doe", "Bob Henderson", "Alex Smith", "Jane Doe"],
+            "Member Number": [137002632, 367868907, 752880910, 989635272],
+            "address": ["123 Main St", "1011 Pine St", "789 Oak St", "456 Elm St"],
+            "city": ["Chicago", "Portland", "Los Angeles", "New York"],
+            "state": ["IL", "OR", "CA", "NY"],
+            "zipcode": [15603, 64198, 84524, 38322],
+            "Services": [
+                [(datetime(2023, 11, 24).date(), "Service 6", "Ray Donald")],
+                [
+                    (datetime(2023, 11, 21).date(), "Service 1", "Karla Tanners"),
+                    (datetime(2023, 11, 26).date(), "Service 3", "Case Hall"),
+                ],
+                [
+                    (datetime(2023, 11, 21).date(), "Service 5", "Zelda Hammersmith"),
+                    (datetime(2023, 11, 24).date(), "Service 2", "Karla Tanners"),
+                ],
+                [(datetime(2023, 11, 21).date(), "Service 4", "Zelda Hammersmith")],
+            ],
+        }
+    )
+
+
+@fixture
+def expected_output():
+    """Fixture for the expected output."""
     current_date = datetime.now().strftime("%m-%d-%Y")
-    expected_output = ''.join([
-        f"Report saved to /path/to/report/John Doe_{current_date}.csv\n",
-        f"Report saved to /path/to/report/Bob Henderson_{current_date}.csv\n",
-        f"Report saved to /path/to/report/Alex Smith_{current_date}.csv\n",
-        f"Report saved to /path/to/report/Jane Doe_{current_date}.csv\n",
-    ])
-    expected_keys = [
-        "Member name",
-        "Member number",
-        "Member street address",
-        "Member city",
-        "Member state",
-        "Member zip code",
-        "Services",
-    ]
-    mock_df = mock.Mock()
+    return "".join(
+        [
+            f"Report saved to /path/to/report/John Doe_{current_date}.csv\n",
+            f"Report saved to /path/to/report/Bob Henderson_{current_date}.csv\n",
+            f"Report saved to /path/to/report/Alex Smith_{current_date}.csv\n",
+            f"Report saved to /path/to/report/Jane Doe_{current_date}.csv\n",
+        ]
+    )
 
+
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+def test_generate_member_report(
+    mock_load_records_from_file,
+    mock_save_report,
+    expected_report_df,
+    expected_output,
+    capsys,
+):
+    """Test the generate_member_report function."""
     generate_member_report()
-    captured = capfd.readouterr()
+    captured = capsys.readouterr()
 
-    assert (captured.out == expected_output)
+    assert captured.out == expected_output
 
-    actual_df = mock_save_report.call_args_list[0][0][0]
-    assert set(actual_df.columns) == set(expected_keys)
+    actual_df = pd.DataFrame()
+    for i in range(mock_save_report.call_args_list.__len__()):
+        actual_df = actual_df._append(mock_save_report.call_args_list[i][0][0])
+
+    assert actual_df.equals(expected_report_df)
 
 
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=load_records_from_file_side_effect)
-@patch("choc_an_simulator.report._load_all_records", return_value={'service_log': pd.DataFrame()})
-def test_generate_member_report_no_members(mock_load_records_from_file, mock_load_all_records, capfd):
+@patch("choc_an_simulator.report.load_records_from_file", return_value=pd.DataFrame())
+def test_generate_member_report_no_members(mock_load_records_from_file, capsys):
     """
-    Test the generate_member_report function with no members.
+    Test the generate_member_report function with no members having had a service in the last
+    7 days.
     """
     expected_output = "No records found within the last 7 days.\n"
 
     generate_member_report()
-    captured = capfd.readouterr()
+    captured = capsys.readouterr()
 
-    assert (captured.out == expected_output)
+    assert captured.out == expected_output
 
 
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=KeyError)
-def test_generate_member_report_key_error(mock_load_records_from_file, capfd):
-    """
-    Test the generate_member_report function with a KeyError.
-    """
-    expected = '\x1b[91mKeyError: \x1b[0m\n'
+@patch("choc_an_simulator.report.load_records_from_file", side_effect=ArrowIOError)
+def test_generate_member_report_key_error(mock_load_records_from_file, capsys):
+    """Test the generate_member_report function with a KeyError."""
+    expected = "\033[93mThere was an issue accessing the database.\n\tError: \x1b[0m\n"
     generate_member_report()
-    captured = capfd.readouterr()
-    assert (captured.out == expected)
-
-
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=pyarrow.ArrowTypeError)
-def test_generate_member_report_arrow_type_error(mock_load_records_from_file, capfd):
-    """
-    Test the generate_member_report function with a ArrowTypeError.
-    """
-    expected = '\x1b[91mArrowTypeError: \x1b[0m\n'
-    generate_member_report()
-    captured = capfd.readouterr()
-    assert (captured.out == expected)
-
-
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=pyarrow.ArrowInvalid)
-def test_generate_member_report_arrow_invalid(mock_load_records_from_file, capfd):
-    """
-    Test the generate_member_report function with a ArrowInvalid.
-    """
-    expected = '\x1b[91mArrowInvalid: \x1b[0m\n'
-    generate_member_report()
-    captured = capfd.readouterr()
-    assert (captured.out == expected)
-
-
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=pyarrow.ArrowIOError)
-def test_generate_member_report_arrow_io_error(mock_load_records_from_file, capfd):
-    """
-    Test the generate_member_report function with a ArrowIOError.
-    """
-    expected = '\x1b[91mArrowIOError: \x1b[0m\n'
-    generate_member_report()
-    captured = capfd.readouterr()
-    assert (captured.out == expected)
-
-
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=TypeError)
-def test_generate_member_report_type_error(mock_load_records_from_file, capfd):
-    """
-    Test the generate_member_report function with a TypeError.
-    """
-    expected = '\x1b[91mTypeError: \x1b[0m\n'
-    generate_member_report()
-    captured = capfd.readouterr()
-    assert (captured.out == expected)
-
-
-@patch("choc_an_simulator.report.pd.merge", side_effect=MergeError)
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=load_records_from_file_side_effect)
-def test_generate_member_report_merge_error(mock_load_records_from_file, mock_merge, capfd):
-    """
-    Test the generate_member_report function with a MergeError.
-    """
-    expected = '\x1b[91mMergeError: \x1b[0m\n'
-    generate_member_report()
-    captured = capfd.readouterr()
-    assert (captured.out == expected)
-
-
-@patch("choc_an_simulator.report.load_records_from_file", side_effect=load_records_from_file_side_effect)
-@patch("choc_an_simulator.report.pd.merge", side_effect=ValueError)
-def test_generate_member_report_value_error(mock_load_records_from_file, mock_merge, capfd):
-    """
-    Test the generate_member_report function with a ValueError.
-    """
-    expected = '\x1b[91mValueError: \x1b[0m\n'
-    generate_member_report()
-    captured = capfd.readouterr()
-    assert (captured.out == expected)
-
-
-kept_cols = ["member_id", "name", "address", "city", "state", "zipcode", "suspended"]
-table_info = SERVICE_LOG_INFO
-
-FILTERS = [
-    ('eq_cols', {"member_id": 137002632}),
-    ('lt_cols', {"member_id": 137002632}),
-    ('gt_cols', {"member_id": 137002632}),
-    (None, None)
-]
-
-
-@pytest.mark.parametrize('filter_type, filter_value', FILTERS)
-def test_generate_data_dict(filter_type, filter_value):
-    """
-    Parameterized test for the _generate_data_dict function.
-    """
-    params = {'kept_cols': kept_cols}
-
-    if filter_type:
-        params[filter_type] = filter_value
-
-    result = _generate_data_dict(table_info, **params)
-
-    assert result['table'] == table_info
-    assert result['kept_cols'] == kept_cols
-
-    if filter_type:
-        assert result['filter'][filter_type] == filter_value
+    captured = capsys.readouterr()
+    assert captured.out == expected
