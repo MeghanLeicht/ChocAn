@@ -7,9 +7,15 @@ billing entries, and managing provider directories. These functions collectively
 billing, service verification, and data retrieval processes in the ChocAn system.
 """
 from pyarrow import ArrowIOError
-from .database_management import load_records_from_file, save_report
-from .schemas import PROVIDER_DIRECTORY_INFO, MEMBER_INFO
-from .user_io import prompt_menu_options, PColor, prompt_int
+from .database_management import (
+    load_records_from_file,
+    save_report,
+    add_records_to_file,
+)
+from datetime import datetime
+from .schemas import PROVIDER_DIRECTORY_INFO, MEMBER_INFO, SERVICE_LOG_INFO, USER_INFO
+from .user_io import prompt_menu_options, PColor, prompt_int, prompt_date, prompt_str
+import pandas as pd
 
 
 def show_provider_menu() -> None:
@@ -80,7 +86,109 @@ def record_service_billing_entry() -> None:
     validating the member's status, collecting service details, and saving the information
     in the service logs.
     """
-    raise NotImplementedError("record_service_billing_entry")
+    try:
+        members_df = load_records_from_file(MEMBER_INFO)
+    except ArrowIOError as e:
+        PColor.pfail("Failed to load member information from the file")
+        PColor.pfail(f"An error occurred: {e}")
+        return None
+
+    try:
+        providers_df = load_records_from_file(USER_INFO)
+    except ArrowIOError as e:
+        PColor.pfail("Failed to load user information from the file")
+        PColor.pfail(f"An error occurred: {e}")
+        return None
+
+    # Prompt for member ID and validate
+    member_id = prompt_int(
+        "Enter member ID", char_limit=MEMBER_INFO.character_limits["member_id"]
+    )
+    if member_id is None:
+        return None
+    if member_id not in members_df["member_id"].values:
+        PColor.pfail("Invalid Member ID or Member Suspended")
+        return None
+
+    # Prompt for provider ID and validate
+    provider_id = prompt_int(
+        "Enter provider ID", char_limit=USER_INFO.character_limits["id"]
+    )
+    if provider_id is None:
+        return None
+    if provider_id not in providers_df["id"].values:
+        PColor.pfail("Invalid Provider ID")
+        return None
+
+    # Prompt for service date
+    service_date = prompt_date("Enter service date: ")
+    if service_date is None:
+        return None
+
+    # Get Service Code and validate
+    service_code = prompt_int(
+        "Enter service code",
+        char_limit=PROVIDER_DIRECTORY_INFO.character_limits["service_id"],
+    )
+    if service_code is None:
+        return None
+
+    try:
+        services_df = load_records_from_file(PROVIDER_DIRECTORY_INFO)
+    except ArrowIOError as e:
+        PColor.pfail("Failed to load provider directory information from the file")
+        PColor.pfail(f"An error occurred: {e}")
+        return None
+
+    if service_code not in services_df["service_id"].values:
+        PColor.pfail("Invalid Service Code")
+        return None
+
+    # Display the service name and confirm
+    service_name = services_df[services_df["service_id"] == service_code][
+        "service_name"
+    ].iloc[0]
+    PColor.pok(f"Service name: {service_name}")
+    confirmation = prompt_str("Confirm service (yes/no)", char_limit=range(1, 3))
+    if confirmation and confirmation.lower() in ["y", "yes"]:
+        PColor.pok("Service Confirmed")
+    else:
+        PColor.pfail("Service Not Confirmed")
+        return None
+
+    # Get Optional Comments
+    comments = prompt_str(
+        "Enter optional comments, or press Ctrl+C to skip",
+        char_limit=SERVICE_LOG_INFO.character_limits["comments"],
+    )
+
+    current_datetime = datetime.now()
+
+    # Create record
+    record = pd.DataFrame(
+        {
+            "entry_datetime_utc": [current_datetime],
+            "service_date_utc": [service_date],
+            "provider_id": [provider_id],
+            "member_id": [member_id],
+            "service_id": [service_code],
+            "comments": [comments],
+        }
+    )
+
+    # Display Fee and Save to files
+    fee = services_df[services_df["service_id"] == service_code][
+        ["price_dollars", "price_cents"]
+    ]
+    PColor.pok(
+        f"Service Fee: ${fee['price_dollars'].iloc[0]}.{fee['price_cents'].iloc[0]:02d}"
+    )
+    try:
+        add_records_to_file(record, SERVICE_LOG_INFO)
+        PColor.pok("Service Billing Entry Recorded Successfully")
+    except ArrowIOError as e:
+        PColor.pfail("Failed to add service log information to the file")
+        PColor.pfail(f"An error occurred: {e}") 
 
 
 def request_provider_directory() -> None:
