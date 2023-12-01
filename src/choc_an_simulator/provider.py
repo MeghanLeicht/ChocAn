@@ -77,7 +77,6 @@ def display_member_information() -> None:
     """
     raise NotImplementedError("display_member_information")
 
-
 def record_service_billing_entry() -> None:
     """
     Record a billing entry for a service provided to a member.
@@ -102,7 +101,8 @@ def record_service_billing_entry() -> None:
 
     # Prompt for member ID and validate
     member_id = prompt_int(
-        "Enter member ID", char_limit=MEMBER_INFO.character_limits["member_id"]
+        "Enter member ID",
+        char_limit=MEMBER_INFO.character_limits["member_id"]
     )
     if member_id is None:
         return None
@@ -112,7 +112,8 @@ def record_service_billing_entry() -> None:
 
     # Prompt for provider ID and validate
     provider_id = prompt_int(
-        "Enter provider ID", char_limit=USER_INFO.character_limits["id"]
+        "Enter provider ID",
+        char_limit=USER_INFO.character_limits["id"]
     )
     if provider_id is None:
         return None
@@ -128,9 +129,9 @@ def record_service_billing_entry() -> None:
     # Get Service Code and validate
     service_code = prompt_int(
         "Enter service code",
-        char_limit=PROVIDER_DIRECTORY_INFO.character_limits["service_id"],
+        char_limit=PROVIDER_DIRECTORY_INFO.character_limits["service_id"]
     )
-    if service_code == None:
+    if service_code is None:
         return None
 
     try:
@@ -149,8 +150,8 @@ def record_service_billing_entry() -> None:
         "service_name"
     ].iloc[0]
     PColor.pok(f"Service name: {service_name}")
-    confirmation = prompt_str("Confirm service (yes/no)", char_limit=range(1, 4))
-    if confirmation.lower() in ["y", "yes"]:
+    confirmation = prompt_str("Confirm service (yes/no)", char_limit=range(1,3))
+    if confirmation and confirmation.lower() in ["y", "yes"]:
         PColor.pok("Service Confirmed")
     else:
         PColor.pfail("Service Not Confirmed")
@@ -158,7 +159,8 @@ def record_service_billing_entry() -> None:
 
     # Get Optional Comments
     comments = prompt_str(
-        "Enter optional comments, or press Ctrl+C to skip", char_limit=range(1, 101)
+        "Enter optional comments, or press Ctrl+C to skip", 
+        char_limit=PROVIDER_DIRECTORY_INFO.character_limits["comments"]
     )
 
     current_datetime = datetime.now()
@@ -176,25 +178,14 @@ def record_service_billing_entry() -> None:
     )
 
     # Display Fee and Save to files
-    try:
-        fee = services_df[services_df["service_id"] == service_code][
-            ["price_dollars", "price_cents"]
-        ]
-        PColor.pok(
-            f"Service Fee: ${fee['price_dollars'].iloc[0]}.{fee['price_cents'].iloc[0]:02d}"
-        )
-    except ArrowIOError as e:
-        PColor.pfail("Failed to retrieve service fee")
-        PColor.pfail(f"An error occurred: {e}")
-        return None
-
+    fee = services_df[services_df["service_id"] == service_code][["price_dollars", "price_cents"]]
+    PColor.pok(f"Service Fee: ${fee['price_dollars'].iloc[0]}.{fee['price_cents'].iloc[0]:02d}")
     try:
         add_records_to_file(record, SERVICE_LOG_INFO)
         PColor.pok("Service Billing Entry Recorded Successfully")
     except ArrowIOError as e:
         PColor.pfail("Failed to load service log information from the file")
-        PColor.pfail(f"An error occurred: {e}")
-
+        PColor.pfail(f"An error occurred: {e}") 
 
 def request_provider_directory() -> None:
     """Save the provider directory to a CSV file, and display the path it was saved to."""
