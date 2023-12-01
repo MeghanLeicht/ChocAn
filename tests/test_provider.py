@@ -12,10 +12,16 @@ from choc_an_simulator.provider import (
     record_service_billing_entry,
     request_provider_directory,
 )
-from choc_an_simulator.provider import SERVICE_LOG_INFO, PROVIDER_DIRECTORY_INFO, MEMBER_INFO, USER_INFO
+from choc_an_simulator.provider import (
+    SERVICE_LOG_INFO,
+    PROVIDER_DIRECTORY_INFO,
+    MEMBER_INFO,
+    USER_INFO,
+)
 from pyarrow import ArrowIOError
 
 CAS_PVDR_PATH = "choc_an_simulator.provider"
+
 
 @pytest.mark.parametrize(
     "option_text,endpoint_func_name",
@@ -89,22 +95,139 @@ def test_display_member_information():
         display_member_information()
 
 
-@pytest.mark.parametrize("member_id, provider_id, user_input, service_code, expected_output, raise_error_at, raise_add_records_error", [
-    (111111111, 222222222, ["Yes", "Test comment"], 555555, "Service Billing Entry Recorded Successfully", None, False),
-    (111111111, 111111111, ["yes", "Test comment"], 555555, "Invalid Provider ID", None, False),
-    (111111111, 222222222, ["No", "Test comment"], 555555, "Service Not Confirmed", None, False),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Service Confirmed", None, False),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Service Fee: $100.50", None, False),
-    (111111111, 222222222, ["yes", "Test comment"], 999999, "Invalid Service Code", None, False),
-    (222222222, 222222222, ["yes", "Test comment"], 555555, "Invalid Member ID or Member Suspended", None, False),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Failed to load member information from the file", "members", False),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Failed to load user information from the file", "providers", False),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Failed to load provider directory information from the file", "services", False),
-    (111111111, 222222222, ["yes", "Test comment"], 555555, "Failed to add service log information to the file", "log", True),
-    (111111111, 222222222, ["Yes", None], 555555, "Service Billing Entry Recorded Successfully", None, False),
-    (111111111, 222222222, [None, "Test comment"], 555555, "Service Not Confirmed", None, False),
-])
-def test_record_service_billing(mocker, capsys, member_id, provider_id, user_input, service_code, expected_output, raise_error_at, raise_add_records_error):
+@pytest.mark.parametrize(
+    "member_id, provider_id, user_input, service_code, expected_output, raise_error_at, raise_add_records_error",
+    [
+        (
+            111111111,
+            222222222,
+            ["Yes", "Test comment"],
+            555555,
+            "Service Billing Entry Recorded Successfully",
+            None,
+            False,
+        ),
+        (
+            111111111,
+            111111111,
+            ["yes", "Test comment"],
+            555555,
+            "Invalid Provider ID",
+            None,
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["No", "Test comment"],
+            555555,
+            "Service Not Confirmed",
+            None,
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Service Confirmed",
+            None,
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Service Fee: $100.50",
+            None,
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["yes", "Test comment"],
+            999999,
+            "Invalid Service Code",
+            None,
+            False,
+        ),
+        (
+            222222222,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Invalid Member ID or Member Suspended",
+            None,
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Failed to load member information from the file",
+            "members",
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Failed to load user information from the file",
+            "providers",
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Failed to load provider directory information from the file",
+            "services",
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            ["yes", "Test comment"],
+            555555,
+            "Failed to add service log information to the file",
+            "log",
+            True,
+        ),
+        (
+            111111111,
+            222222222,
+            ["Yes", None],
+            555555,
+            "Service Billing Entry Recorded Successfully",
+            None,
+            False,
+        ),
+        (
+            111111111,
+            222222222,
+            [None, "Test comment"],
+            555555,
+            "Service Not Confirmed",
+            None,
+            False,
+        ),
+    ],
+)
+def test_record_service_billing(
+    mocker,
+    capsys,
+    member_id,
+    provider_id,
+    user_input,
+    service_code,
+    expected_output,
+    raise_error_at,
+    raise_add_records_error,
+):
     """
     Test the record_service_billing_entry function with a range of inputs and scenarios.
 
@@ -125,12 +248,14 @@ def test_record_service_billing(mocker, capsys, member_id, provider_id, user_inp
         # Provider information dataframe
         pd.DataFrame({"id": [provider_id]}),
         # Service information dataframe
-        pd.DataFrame({
-            "service_id": [555555],
-            "service_name": ["Test service"],
-            "price_dollars": [100],
-            "price_cents": [50],
-        })
+        pd.DataFrame(
+            {
+                "service_id": [555555],
+                "service_name": ["Test service"],
+                "price_dollars": [100],
+                "price_cents": [50],
+            }
+        ),
     ]
 
     # Simulate data loading errors based on the raise_error_at parameter
@@ -140,25 +265,38 @@ def test_record_service_billing(mocker, capsys, member_id, provider_id, user_inp
         elif raise_error_at == "providers" and args[0] == USER_INFO:
             raise ArrowIOError("Failed to load user information from the file")
         elif raise_error_at == "services" and args[0] == PROVIDER_DIRECTORY_INFO:
-            raise ArrowIOError("Failed to load provider directory information from the file")
+            raise ArrowIOError(
+                "Failed to load provider directory information from the file"
+            )
         elif raise_error_at == "log" and args[0] == SERVICE_LOG_INFO:
             raise ArrowIOError("Failed to add service log information to the file")
         return dataframes_to_return.pop(0)
 
     # Mock the add_records_to_file function to simulate errors in data saving if required
     if raise_add_records_error:
-        mocker.patch("choc_an_simulator.provider.add_records_to_file", side_effect=ArrowIOError("Failed to add service log information to the file"))
+        mocker.patch(
+            "choc_an_simulator.provider.add_records_to_file",
+            side_effect=ArrowIOError(
+                "Failed to add service log information to the file"
+            ),
+        )
     else:
         mocker.patch("choc_an_simulator.provider.add_records_to_file")
 
     # Mocking user inputs and the function that loads data from files
     mocker.patch("choc_an_simulator.provider.prompt_str", side_effect=user_input)
-    mocker.patch("choc_an_simulator.provider.prompt_int", side_effect=[111111111, 222222222, service_code])
+    mocker.patch(
+        "choc_an_simulator.provider.prompt_int",
+        side_effect=[111111111, 222222222, service_code],
+    )
     mocker.patch(
         "choc_an_simulator.provider.prompt_date",
         return_value=datetime.strptime("11-26-2023", "%m-%d-%Y"),
     )
-    mocker.patch("choc_an_simulator.provider.load_records_from_file", side_effect=dataframes_side_effect)
+    mocker.patch(
+        "choc_an_simulator.provider.load_records_from_file",
+        side_effect=dataframes_side_effect,
+    )
 
     record_service_billing_entry()
 
@@ -168,6 +306,7 @@ def test_record_service_billing(mocker, capsys, member_id, provider_id, user_inp
 
     # Check for the expected output
     assert expected_output in captured_output
+
 
 def test_request_provider_directory(mocker, capsys) -> None:
     """Verify correct file creation for request_provider_directory and output of filepath"""

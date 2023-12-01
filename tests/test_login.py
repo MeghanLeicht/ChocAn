@@ -6,8 +6,12 @@ import pyarrow as pa
 import pytest
 from pyarrow import ArrowIOError
 
-from choc_an_simulator.login import (generate_secure_password, login_menu,
-                                     secure_password_verification, user_type_authorization)
+from choc_an_simulator.login import (
+    generate_secure_password,
+    login_menu,
+    secure_password_verification,
+    user_type_authorization,
+)
 
 CAS_LOG_PATH = "choc_an_simulator.login"
 
@@ -133,12 +137,13 @@ def test_generate_secure_password():
         (265608022, "Th1s1sTh3m0stS3cur3!"),
     ],
 )
-@patch("choc_an_simulator.login.load_records_from_file", side_effect=mocked_user_and_hashed_pass)
+@patch(
+    "choc_an_simulator.login.load_records_from_file",
+    side_effect=mocked_user_and_hashed_pass,
+)
 def test_secure_password_verification(mock_load_records_from_file, user_id, password):
     """Verify that correct password is entered."""
-    verified_user = secure_password_verification(
-        user_id=user_id, password=password
-    )
+    verified_user = secure_password_verification(user_id=user_id, password=password)
 
     assert verified_user is True
 
@@ -169,7 +174,10 @@ def test_secure_password_verification_db_error(mock_load_records_from_file, caps
         (265608022, 1),
     ],
 )
-@patch("choc_an_simulator.login.load_records_from_file", side_effect=mocked_user_and_hashed_pass)
+@patch(
+    "choc_an_simulator.login.load_records_from_file",
+    side_effect=mocked_user_and_hashed_pass,
+)
 def test_user_type_authorization(mock_load_records_from_file, user_id, expected_type):
     """Verify that user exists and corresponds to the correct user type."""
     returned_user_type = user_type_authorization(user_id=user_id)

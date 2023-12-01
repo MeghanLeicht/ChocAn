@@ -32,8 +32,7 @@ def login_menu() -> None:
 
         try:
             user_verified = secure_password_verification(
-                user_id,
-                getpass.getpass(prompt="Password: ")
+                user_id, getpass.getpass(prompt="Password: ")
             )
         except KeyboardInterrupt:
             return None
