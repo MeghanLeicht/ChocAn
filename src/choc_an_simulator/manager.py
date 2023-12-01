@@ -203,7 +203,7 @@ def remove_member_record() -> None:
     """
     Prompt the user to remove the member's information.
 
-    Prompts the user for a member ID, then prompts for which field to remove.
+    Prompts the user for a member ID, then removes that member's information.
     """
     raise NotImplementedError("remove_member_record")
 
