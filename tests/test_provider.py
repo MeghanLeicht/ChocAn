@@ -10,6 +10,7 @@ from choc_an_simulator.provider import (
     record_service_billing_entry,
     request_provider_directory,
 )
+from definitions import PROVIDER_DIR_CSV
 
 CAS_PVDR_PATH = "choc_an_simulator.provider"
 
@@ -94,7 +95,8 @@ def test_record_service_billing_entry():
 
 def test_request_provider_directory(mocker, capsys) -> None:
     """Verify correct file creation for request_provider_directory and output of filepath"""
-    expected_save_path = "src/choc_an_simulator/reports/provider_directory.csv"
+    expected_save_path = PROVIDER_DIR_CSV
+
     mock_df = DataFrame({"service_id": [0, 1], "service_name": ["name 0", "name 1"]})
 
     mocker.patch(
@@ -108,8 +110,8 @@ def test_request_provider_directory(mocker, capsys) -> None:
 
     captured = capsys.readouterr()
     expected_output = expected_save_path + "\n"
-    assert (
-        expected_output in captured.out
+    assert expected_output in captured.out.replace(
+        os.path.sep, "/"
     ), f"file path not found in captured output: {captured.out}"
 
     saved_df = read_csv(expected_save_path)

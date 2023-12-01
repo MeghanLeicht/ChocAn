@@ -12,7 +12,7 @@ Summary reports are generated for all accounts payable this week
 
 from datetime import datetime, timedelta
 
-import pandas as pd
+from pandas import pandas as pd
 import pyarrow as pa
 
 from choc_an_simulator.database_management.load_records import load_records_from_file
@@ -52,8 +52,8 @@ def generate_member_report() -> None:
             print("No records found within the last 7 days.")
             return
         service_log = service_log[service_log_cols]
-        member_info = load_records_from_file(MEMBER_INFO, gt_cols=gt_cols)[member_cols]
-        user_info = load_records_from_file(USER_INFO, gt_cols=gt_cols)[user_cols]
+        member_info = load_records_from_file(MEMBER_INFO)[member_cols]
+        user_info = load_records_from_file(USER_INFO)[user_cols]
         provider_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[
             provider_directory_cols
         ]
@@ -152,9 +152,97 @@ def generate_summary_report() -> None:
     provided services, the total number of consultations, and the overall fee total are
     printed.
     """
-    raise NotImplementedError("generate_summary_report")
+    gt_cols = {"service_date_utc": datetime.now() - timedelta(days=7)}
+    service_log = None
+    provider_directory = None
+    user_info = None
+    service_log_cols = ["provider_id", "service_id"]
+    user_cols = ["name", "id"]
+    provider_directory_cols = ["service_id", "price_cents", "price_dollars"]
+    try:
+        service_log = load_records_from_file(SERVICE_LOG_INFO, gt_cols=gt_cols)
+        if service_log.empty:
+            print("No records found within the last 7 days.")
+            return
+        service_log = service_log[service_log_cols]
+        user_info = load_records_from_file(USER_INFO)[user_cols]
+        provider_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[
+            provider_directory_cols
+        ]
+    except pa.ArrowIOError as err_io:
+        PColor.pwarn(f"There was an issue accessing the database.\n\tError: {err_io}")
+        return
+
+    records = pd.merge(service_log, provider_directory, on="service_id")
+    records = pd.merge(records, user_info, left_on="provider_id", right_on="id")
+    records["Fee to be paid"] = records["price_dollars"] + records["price_cents"] / 100
+
+    for provider_id in records["provider_id"].unique():
+        provider_record = records[records["provider_id"] == provider_id]
+        current_provider = records["provider_id"] == provider_id
+        # calculate_total_fee is broken out into a function to make it easier to mock for testing
+        total_fee = calculate_total_fee(provider_record["Fee to be paid"])
+        if total_fee < 99999.99:
+            records.loc[current_provider, "Total fee for the week"] = total_fee
+        else:
+            records.loc[current_provider, "Total fee for the week"] = 99999.99
+
+        # calculate_length_of_consultations and calculate_total_fee are broken out into a functions
+        # to make it easier to mock for testing
+        total_consultations = calculate_num_of_consultations(provider_record)
+        if total_consultations < 999:
+            records.loc[
+                current_provider, "Total number of consultations with members"
+            ] = total_consultations
+        else:
+            records.loc[
+                current_provider, "Total number of consultations with members"
+            ] = 999
+
+    records = records.drop_duplicates(subset=["provider_id"])
+    records = records.drop(
+        columns=[
+            "provider_id",
+            "service_id",
+            "price_cents",
+            "price_dollars",
+            "id",
+            "Fee to be paid",
+        ]
+    ).reset_index(drop=True)
+
+    records = records.rename(
+        columns={
+            "name": "Provider Name",
+        }
+    )
+
+    total_num_providers = records["Provider Name"].nunique()
+    total_num_consultations = records[
+        "Total number of consultations with members"
+    ].sum()
+    total_fee = records["Total fee for the week"].sum()
+
+    # write out the summary row to the dataframe
+    records.loc["Total"] = [total_num_providers, total_fee, total_num_consultations]
+
+    file_path = save_report(
+        records,
+        f"Summary_Report_{_current_date()}",
+    )
+    print(f"Summary Report saved to {file_path}")
 
 
 def _current_date() -> str:
     """Returns the current date in the format MM-DD-YYYY."""
     return datetime.now().strftime("%m-%d-%Y")
+
+
+def calculate_total_fee(providers_fees_df: pd.DataFrame) -> float:
+    """Calculates the total fee for a provider."""
+    return providers_fees_df.sum()
+
+
+def calculate_num_of_consultations(providers_consultations_df: pd.DataFrame) -> int:
+    """Calculates the total number of consultations for a provider."""
+    return len(providers_consultations_df)

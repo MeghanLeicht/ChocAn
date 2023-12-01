@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pyarrow as pa
+from pandas.testing import assert_frame_equal
 from pyarrow import ArrowIOError
 import pytest
 from _pytest.fixtures import fixture
@@ -214,6 +215,66 @@ def expected_report_df():
 
 
 @fixture
+def expected_summary_report_df():
+    """Fixture for the expected report."""
+    summary_df = pd.DataFrame(
+        {
+            "Provider Name": [
+                "Karla Tanners",
+                "Case Hall",
+                "Zelda Hammersmith",
+                "Ray Donald",
+            ],
+            "Total fee for the week": [300.48, 300.99, 901.25, 600.25],
+            "Total number of consultations with members": [2.0, 1.0, 2.0, 1.0],
+        }
+    )
+
+    summary_df.loc["Total"] = [4.0, 2102.9700000000003, 6.0]
+    return summary_df
+
+
+@fixture
+def expected_summary_report_total_consults_over_999_df():
+    """Fixture for the expected report."""
+    summary_df = pd.DataFrame(
+        {
+            "Provider Name": [
+                "Karla Tanners",
+                "Case Hall",
+                "Zelda Hammersmith",
+                "Ray Donald",
+            ],
+            "Total fee for the week": [300.48, 300.99, 901.25, 600.25],
+            "Total number of consultations with members": [999.0, 999.0, 999.0, 999.0],
+        }
+    )
+
+    summary_df.loc["Total"] = [4.0, 2102.9700000000003, 3996]
+    return summary_df
+
+
+@fixture
+def expected_summary_report_total_fee_over_99999_99_df():
+    """Fixture for the expected report."""
+    summary_df = pd.DataFrame(
+        {
+            "Provider Name": [
+                "Karla Tanners",
+                "Case Hall",
+                "Zelda Hammersmith",
+                "Ray Donald",
+            ],
+            "Total fee for the week": [99999.99, 99999.99, 99999.99, 99999.99],
+            "Total number of consultations with members": [2.0, 1.0, 2.0, 1.0],
+        }
+    )
+
+    summary_df.loc["Total"] = [4.0, 399999.96, 6.0]
+    return summary_df
+
+
+@fixture
 def expected_output():
     """Fixture for the expected output."""
     current_date = datetime.now().strftime("%m-%d-%Y")
@@ -224,6 +285,15 @@ def expected_output():
             f"Member Report saved to /path/to/report/Alex Smith_{current_date}.csv\n",
             f"Member Report saved to /path/to/report/Jane Doe_{current_date}.csv\n",
         ]
+    )
+
+
+@fixture
+def expected_output_for_summary():
+    """Fixture for the expected output of the file path returned from save_report."""
+    current_date = datetime.now().strftime("%m-%d-%Y")
+    return (
+        f"Summary Report saved to /path/to/report/Summary_Report_{current_date}.csv\n"
     )
 
 
@@ -281,7 +351,96 @@ def test_generate_provider_report():
         generate_provider_report()
 
 
-def test_generate_summary_report():
-    """Test of the generate_summary_report function."""
-    with pytest.raises(NotImplementedError):
-        generate_summary_report()
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+def test_generate_summary_report(
+    mock_load_records_from_file,
+    mock_save_report,
+    expected_summary_report_df,
+    expected_output_for_summary,
+    capsys,
+):
+    """Test the generate_member_report function."""
+    generate_summary_report()
+    captured = capsys.readouterr()
+
+    assert captured.out == expected_output_for_summary
+
+    actual_df = mock_save_report.call_args_list[0][0][0]
+
+    assert_frame_equal(actual_df, expected_summary_report_df)
+
+
+@patch("choc_an_simulator.report.load_records_from_file", side_effect=ArrowIOError)
+def test_generate_summary_report_arrow_io_error(mock_load_records_from_file, capsys):
+    """Test the generate_member_report function with a KeyError."""
+    expected = "\033[93mThere was an issue accessing the database.\n\tError: \x1b[0m\n"
+    generate_summary_report()
+    captured = capsys.readouterr()
+    assert captured.out == expected
+
+
+@patch("choc_an_simulator.report.load_records_from_file", return_value=pd.DataFrame())
+def test_generate_summary_report_no_members(mock_load_records_from_file, capsys):
+    """
+    Test the generate_member_report function with no members having had a service in the last
+    7 days.
+    """
+    expected_output = "No records found within the last 7 days.\n"
+
+    generate_summary_report()
+    captured = capsys.readouterr()
+
+    assert captured.out == expected_output
+
+
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch("choc_an_simulator.report.calculate_num_of_consultations", return_value=1000)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+def test_generate_summary_report_provider_has_total_consults_over_999(
+    mock_load_records_from_file,
+    mock_calculate_num_of_consultations,
+    mock_save_report,
+    expected_summary_report_total_consults_over_999_df,
+    expected_output_for_summary,
+    capsys,
+):
+    """Test the generate_member_report function."""
+    generate_summary_report()
+
+    captured = capsys.readouterr().out
+    assert captured == expected_output_for_summary
+
+    actual_df = mock_save_report.call_args_list[0][0][0]
+    assert_frame_equal(actual_df, expected_summary_report_total_consults_over_999_df)
+
+
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch("choc_an_simulator.report.calculate_total_fee", return_value=999999.99)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+def test_generate_summary_report_provider_has_total_fees_over_99999_99(
+    mock_load_records_from_file,
+    mock_calculate_total_fee,
+    mock_save_report,
+    expected_summary_report_total_fee_over_99999_99_df,
+    expected_output_for_summary,
+    capsys,
+):
+    """Test the generate_member_report function."""
+    generate_summary_report()
+    captured = capsys.readouterr().out
+
+    assert captured == expected_output_for_summary
+
+    actual_df = mock_save_report.call_args_list[0][0][0]
+
+    assert_frame_equal(actual_df, expected_summary_report_total_fee_over_99999_99_df)
