@@ -224,8 +224,9 @@ def test_update_member_record():
 
 
 def test_remove_member_record():
-   with pytest.raises(NotImplementedError):
-       remove_member_record()
+    with pytest.raises(NotImplementedError):
+        remove_member_record()
+
 
 class TestAddProviderRecord:
     """Tests of the add_provider_record function"""

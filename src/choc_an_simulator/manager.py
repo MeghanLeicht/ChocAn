@@ -211,7 +211,6 @@ def remove_member_record() -> None:
     raise NotImplementedError("remove_member_record")
 
 
-
 def generate_unique_id(table_info: TableInfo) -> int:
     """
     Generate a unique 9 digit ID. ID's increment by 1.
