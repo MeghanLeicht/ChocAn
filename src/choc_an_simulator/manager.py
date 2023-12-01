@@ -293,18 +293,29 @@ def remove_provider_record() -> None:
     Prompts the user for a provider ID, then prompts for which field to remove.
     This prompt repeats until the user chooses to exit.
     """
+    # try:
+    #     provider_id = prompt_int("Provider ID")
+    #     if provider_id is not None:
+    #         if remove_record(provider_id, USER_INFO):
+    #             print(f"Provider {provider_id} Removed")
+    #         else:
+    #             print(f"Provider {provider_id} Not Found.")
+    #     else:
+    #         print("Provider ID cannot be a NULL value!")
+    # except ArrowIOError:
+    #     PColor.pfail("Provider was not removed!")
+    #     return
+    provider_id = prompt_int("Provider ID")
     try:
-        provider_id = prompt_int("Provider ID")
-        if provider_id is not None:
-            if remove_record(provider_id, USER_INFO):
-                print(f"Provider {provider_id} Removed")
-            else:
-                print(f"Provider {provider_id} Not Found.")
-        else:
-            print("Provider ID cannot be a NULL value!")
+        result = remove_record(provider_id, USER_INFO)
     except ArrowIOError:
-        PColor.pfail("Provider was not removed!")
+        PColor.pfail(f"There was an error and provider {provider_id} was not removed!")
         return
+
+    if result is True:
+        print(f"Provider {provider_id} Removed")
+    else:
+        print(f"Provider {provider_id} Not Found.")
 
 
 def add_provider_directory_record() -> None:
