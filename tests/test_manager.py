@@ -306,6 +306,7 @@ def test_update_provider_directory_record():
 
 class TestRemoveProviderDirectoryRecord:
     """Test of the remove_provider_directory_record function."""
+
     def test_remove_provider_directory_record(self, mocker, capsys) -> None:
         """Test remove_provider_directory_record successful."""
         service_id = 123456
@@ -318,7 +319,14 @@ class TestRemoveProviderDirectoryRecord:
 
         captured = capsys.readouterr()
         expected_output = f"Service {service_id} Removed\n"
-        assert (expected_output in captured.out) 
+        assert expected_output in captured.out
+
+
+    def test_remove_provider_directory_no_service_id(self, mocker, capsys) -> None:
+        """Test remove_provider_directory_record without service id."""
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=None)
+        excepted_output = remove_provider_directory_record()
+        assert excepted_output is None
 
 
     def test_remove_provider_directory_io_error(self, mocker, capsys) -> None:

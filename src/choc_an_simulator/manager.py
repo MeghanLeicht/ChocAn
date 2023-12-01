@@ -329,11 +329,14 @@ def remove_provider_directory_record() -> None:
     #     return
     service_id = prompt_int("Service ID")
     try:
-        remove_record(service_id, PROVIDER_DIRECTORY_INFO)
+        result = remove_record(service_id, PROVIDER_DIRECTORY_INFO)
     except ArrowIOError:
         PColor.pfail(f"There as an error and service {service_id} was not removed!")
         return
-    print(f"Service {service_id} Removed")
+    if result is True:
+        print(f"Service {service_id} Removed")
+    else:
+        print(f"Service {service_id} was not found")
 
 
 def generate_member_report() -> None:
