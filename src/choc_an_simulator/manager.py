@@ -321,8 +321,10 @@ def add_provider_directory_record() -> None:
 
 def update_provider_directory_record() -> None:
     """The manager is prompted for a service id and then the service is updated based on the id."""
+    service_id = prompt_int("Service ID")
+    if service_id is None:
+        return None
     try:
-        service_id = prompt_int("Service ID")
         service_record = load_records_from_file(
             PROVIDER_DIRECTORY_INFO, eq_cols={"service_id": service_id}
         )

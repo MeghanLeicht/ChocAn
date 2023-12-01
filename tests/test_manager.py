@@ -302,19 +302,68 @@ def test_add_provider_directory_record():
         add_provider_directory_record()
 
 
-class TestUpdateProviderDirectoryRecord:
-    """Test of the update_provider_directory_record function."""
+# class TestUpdateProviderDirectoryRecord:
+def test_update_provider_directory_load_io_error(mocker, capsys) -> None:
+    """Test update_provider_directory_record function with load IO error."""
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=123456)
+    mocker.patch(
+        "choc_an_simulator.manager.load_records_from_file",
+        side_effect=pa.ArrowIOError,
+    )
+    update_provider_directory_record()
+    assert "There was an error loading the service record." in capsys.readouterr().out
 
-    def test_update_provider_directory_load_io_error(self, mocker, capsys) -> None:
-        """Test update_provider_directory_record function with load IO error."""
-        mocker.patch(
-            "choc_an_simulator.manager.load_records_from_file",
-            side_effect=pa.ArrowIOError,
-        )
-        update_provider_directory_record()
-        assert (
-            "There was an error loading the service record." in capsys.readouterr().out
-        )
+
+def test_update_provider_directory_id_none(mocker):
+    """Test that the user did not enter a service_id."""
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=None)
+    expected_output = update_provider_directory_record()
+    assert expected_output is None
+
+
+def test_update_provider_directory_selection_none(mocker):
+    """Test that the selection is none."""
+    mock_df = pd.DataFrame({"service_id": [123456], "service_name": ["name 0"]})
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=123456)
+    mocker.patch(
+        "choc_an_simulator.manager.load_records_from_file",
+        return_value=mock_df,
+    )
+    mocker.patch(
+        "pandas.DataFrame.iloc",
+        return_value=pd.Series(
+            {"service_id": 123456, "service_name": "name 0"}, index=mock_df.columns
+        ),
+    )
+    mocker.patch("choc_an_simulator.manager.prompt_menu_options", return_value=None)
+    expected_ouput = update_provider_directory_record()
+    assert expected_ouput is None
+
+
+def test_update_provider_directory_record_fail(mocker, capsys):
+    mock_df = pd.DataFrame({"service_id": [123456], "service_name": ["name 0"]})
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=123456)
+    mocker.patch(
+        "choc_an_simulator.manager.load_records_from_file",
+        return_value=mock_df,
+    )
+    mocker.patch(
+        "pandas.DataFrame.iloc",
+        return_value=pd.Series(
+            {"service_id": 123456, "service_name": "name 0"}, index=mock_df.columns
+        ),
+    )
+    mocker.patch(
+        "choc_an_simulator.manager.prompt_menu_options",
+        return_value=(1, "service_name"),
+    )
+    mocker.patch("choc_an_simulator.manager.prompt_str", return_value="newname")
+    mocker.patch(
+        "choc_an_simulator.manager.update_record",
+        side_effect=pa.ArrowIOError,
+    )
+    update_provider_directory_record()
+    assert "There was an error updating the service record." in capsys.readouterr().out
 
 
 def test_remove_provider_directory_record():
