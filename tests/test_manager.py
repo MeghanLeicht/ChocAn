@@ -321,13 +321,11 @@ class TestRemoveProviderDirectoryRecord:
         expected_output = f"Service {service_id} Removed\n"
         assert expected_output in captured.out
 
-
     def test_remove_provider_directory_no_service_id(self, mocker, capsys) -> None:
         """Test remove_provider_directory_record without service id."""
         mocker.patch("choc_an_simulator.manager.prompt_int", return_value=None)
         excepted_output = remove_provider_directory_record()
         assert excepted_output is None
-
 
     def test_remove_provider_directory_io_error(self, mocker, capsys) -> None:
         """Test remove_provider_directory_record function with load IO error."""
