@@ -9,9 +9,10 @@ from pandas.api.types import is_numeric_dtype
 from .database_management import (
     load_records_from_file,
     add_records_to_file,
+    update_record,
     remove_record,
 )
-from .schemas import USER_INFO, MEMBER_INFO, TableInfo
+from .schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
 from .report import (
     generate_member_report,
@@ -333,12 +334,49 @@ def add_provider_directory_record() -> None:
 
 
 def update_provider_directory_record() -> None:
-    """
-    The manager is prompted for a service id to update, and a lookup is performed.
+    """The manager is prompted for a service id and then the service is updated based on the id."""
+    service_id = prompt_int("Service ID")
+    if service_id is None:
+        return None
+    try:
+        service_record = load_records_from_file(
+            PROVIDER_DIRECTORY_INFO, eq_cols={"service_id": service_id}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the service record.")
+        return
 
-    This prompt repeats until the user chooses to exit.
-    """
-    raise NotImplementedError("update_provider_directory_record")
+    if service_record.empty:
+        PColor.pfail("Error: No record loaded.")
+        return
+
+    service_record = service_record.iloc[0]
+
+    options = []
+    for field in service_record.index.values[1:]:
+        options.append(f"{field}: {service_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "price_dollars" or field_to_update == "price_cents":
+        new_value = prompt_int(
+            f"New value for {field_to_update}",
+            PROVIDER_DIRECTORY_INFO.character_limits["price_cents"],
+        )
+    else:
+        new_value = prompt_str(
+            f"New value for {field_to_update}",
+            PROVIDER_DIRECTORY_INFO.character_limits["service_name"],
+        )
+
+    try:
+        update_record(
+            service_id, PROVIDER_DIRECTORY_INFO, **{field_to_update: new_value}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the service record.")
+        return
 
 
 def remove_provider_directory_record() -> None:
