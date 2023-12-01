@@ -6,7 +6,11 @@ The manager sub-system allows managers to manage member, provider, and provider 
 import pandas as pd
 from pyarrow import ArrowIOError
 from pandas.api.types import is_numeric_dtype
-from .database_management import load_records_from_file, add_records_to_file
+from .database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    remove_record,
+)
 from .schemas import USER_INFO, MEMBER_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
 from .report import (
@@ -202,9 +206,17 @@ def remove_member_record() -> None:
     """
     Prompt the user to remove the member's information.
 
-    Prompts the user for a member ID, then prompts for which field to remove.
+    Prompts the user for a member ID, then removes that member's information.
     """
-    raise NotImplementedError("remove_member_record")
+    try:
+        member_id = prompt_int("Member ID")
+        if remove_record(member_id, MEMBER_INFO):
+            print(f"Member {member_id} Removed")
+        else:
+            print(f"Member {member_id} Not Found.")
+    except ArrowIOError:
+        PColor.pfail("Member was not removed!")
+        return
 
 
 def generate_unique_id(table_info: TableInfo) -> int:
