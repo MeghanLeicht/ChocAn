@@ -6,10 +6,10 @@ It includes functions for display the login menu, generating a secure password,
 secure password verification, and user type authorization.
 """
 import bcrypt
-
+import pyarrow as pa
 from choc_an_simulator.database_management import load_records_from_file
 from choc_an_simulator.schemas import USER_INFO
-from .user_io import prompt_int
+from .user_io import PColor, prompt_int
 from .manager import manager_menu
 from .provider import show_provider_menu
 import getpass
@@ -47,6 +47,8 @@ def login_menu() -> None:
             manager_menu()
         case 1:
             show_provider_menu()
+        case _:
+            PColor.pwarn("User type not recognized.")
 
 
 def generate_secure_password(password: str) -> (bytes, bytes):
@@ -70,7 +72,15 @@ def secure_password_verification(user_id: int, password: str) -> bool:
 
     Returns True or False if the password and user ID matches the database.
     """
-    pw = load_records_from_file(USER_INFO, eq_cols={"id": user_id})["password_hash"].loc[0]
+    try:
+        pw = load_records_from_file(USER_INFO, eq_cols={"id": user_id})
+        if pw.empty:
+            return False
+        pw = pw["password_hash"].iloc[0]
+    except pa.ArrowIOError as err_io:
+        PColor.pwarn(f"There was an issue accessing the database.\n\tError: {err_io}")
+        return False
+
     return bcrypt.checkpw(password.encode(), pw)
 
 
@@ -83,5 +93,10 @@ def user_type_authorization(user_id: int) -> int:
 
     Returns an integer of the user_type.
     """
-    user_type = load_records_from_file(USER_INFO, eq_cols={"id": user_id})["type"]
-    return user_type
+    try:
+        user_type = load_records_from_file(USER_INFO, eq_cols={"id": user_id})["type"]
+    except pa.ArrowIOError as err_io:
+        PColor.pwarn(f"There was an issue accessing the database.\n\tError: {err_io}")
+        return False
+
+    return user_type.iloc[0]
