@@ -136,14 +136,19 @@ def update_provider_record() -> None:
 
     Prompts the user for a provider ID, then prompts for which field to change.
     """
-    provider_id = prompt_int("Provider ID")
-    provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
+    try:
+        provider_id = prompt_int("Provider ID")
+        provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the provider record.")
+        return
+
     if provider_record.empty:
-        # error: no records found
-        pass
+        PColor.pfail("Error: No record loaded.")
+        return
+
     provider_record = provider_record.iloc[0]
 
-    print("Here are the provider's current values")
     options = []
     for field in provider_record.index.values[1:]:
         options.append(f"{field}: {provider_record[field]}")
@@ -152,11 +157,19 @@ def update_provider_record() -> None:
         return
     field_to_update = selection[1]
     if field_to_update == "type" or field_to_update == "zipcode":
-        new_value = prompt_int(f"New value for {field_to_update}")
+        new_value = prompt_int(
+            f"New value for {field_to_update}", USER_INFO.character_limits["zipcode"]
+        )
     else:
-        new_value = prompt_str(f"New value for {field_to_update}")
+        new_value = prompt_str(
+            f"New value for {field_to_update}", USER_INFO.character_limits["address"]
+        )
 
-    update_record(provider_id, USER_INFO, **{field_to_update: new_value})
+    try:
+        update_record(provider_id, USER_INFO, **{field_to_update: new_value})
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the provider record.")
+        return
 
 
 def remove_provider_record() -> None:
