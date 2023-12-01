@@ -6,6 +6,7 @@ from choc_an_simulator.manager import (
     _generate_user_id,
     manager_menu,
     add_member_record,
+    update_member_record,
     remove_member_record,
     add_provider_record,
     update_provider_record,
@@ -130,11 +131,9 @@ class TestAddMemberRecord:
         assert "No new member added." in capsys.readouterr().out
 
 
-'''
 class TestUpdateMemberRecord:
     """Test of the update_member_record function."""
 
-    @pytest.mark.usefixtures("mock_input_series")
     def test_update_member_load_io_error(self, mocker, capsys) -> None:
         """Test update_member_record function with load IO error."""
         mocker.patch(
@@ -145,19 +144,6 @@ class TestUpdateMemberRecord:
         assert (
             "There was an error loading the member record." in capsys.readouterr().out
         )
-
-    @pytest.mark.usefixtures("mock_input_series")
-    def test_update_member_update_io_error(self, mocker, capsys) -> None:
-        """Test update_member_record function with update IO error."""
-        mocker.patch(
-            "choc_an_simulator.manager.update_record",
-            side_effect=pa.ArrowIOError,
-        )
-        update_member_record()
-        assert (
-            "There was an error updating the member record." in capsys.readouterr().out
-        )
-'''
 
 
 def test_remove_member_record():
