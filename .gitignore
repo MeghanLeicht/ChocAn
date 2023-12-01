@@ -1,5 +1,4 @@
 **/.*
-**/*.pkt
 **/__pycache__
 **/*.egg-info
 build

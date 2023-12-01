@@ -1,4 +1,4 @@
-"""Tests of the database_management module"""
+"""Tests of the database_management module."""
 from datetime import datetime, date, timezone
 import os
 import pytest
@@ -11,51 +11,57 @@ from choc_an_simulator.database_management import (
     update_record,
     remove_record,
     save_report,
-    _load_all_records_from_file_,
+)
+from choc_an_simulator.database_management._write_records import (
     _overwrite_records_to_file_,
-    _PARQUET_DIR_,
+)
+from choc_an_simulator.database_management.load_records import (
+    _load_all_records_from_file_,
+)
+from choc_an_simulator.database_management._parquet_utils import (
     _convert_parquet_name_to_path_,
+    _PARQUET_DIR_,
 )
 
 
 @pytest.fixture()
-def test_records():
+def test_records() -> pd.DataFrame:
     """Fixture of a record that is valid for test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "value": [1.1, 2.2]})
 
 
 @pytest.fixture()
-def test_records_additional():
+def test_records_additional() -> pd.DataFrame:
     """Fixture of an additional valid record for test_table_info."""
     return pd.DataFrame({"ID": [3], "value": [3.0]})
 
 
 @pytest.fixture()
-def test_records_wrong_columns():
+def test_records_wrong_columns() -> pd.DataFrame:
     """Fixture of a record with wrong column names for test_table_info."""
     return pd.DataFrame({"mismatched": [1, 2], "records": [1.1, 2.2]})
 
 
 @pytest.fixture()
-def test_records_wrong_columns_right_index():
+def test_records_wrong_columns_right_index() -> pd.DataFrame:
     """Fixture of a record with the right index name, but wrong other names for test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "records": [1.1, 2.2]})
 
 
 @pytest.fixture()
-def test_records_wrong_type():
+def test_records_wrong_type() -> pd.DataFrame:
     """Fixture of a record with the wrong data types for test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "value": ["a", "b"]})
 
 
 @pytest.fixture()
-def test_records_out_of_range():
+def test_records_out_of_range() -> pd.DataFrame:
     """Fixture of a record that exceeds the numeric range of test_table_info."""
     return pd.DataFrame({"ID": [1, 2], "value": [5, 1]})
 
 
 @pytest.fixture()
-def test_table_info():
+def test_table_info() -> TableInfo:
     """Fixture of a TableInfo object, to be tested with the above test records."""
     return TableInfo(
         name="test",
@@ -85,7 +91,7 @@ def test_file(test_records, test_table_info):
 
 @pytest.fixture()
 def corrupted_test_file(test_file, test_table_info):
-    """Fixture to setup and teardown an test file"""
+    """Fixture to setup and teardown an test file."""
     test_path = os.path.join(_PARQUET_DIR_, f"{test_table_info.name}.pkt")
     with open(test_path, "w") as f:
         f.write("some extra garbage")
@@ -217,14 +223,15 @@ class TestLoadRecordsFromFile:
         assert test_records[test_records["value"] > 2.0].equals(lt_records)
 
     def test_load_records_from_file_invalid_equality(self, test_table_info, test_file):
-        """Test loading records with an unsupported equality filter"""
+        """Test loading records with an unsupported equality filter."""
 
         class NoEq:
-            """Example of a class that doesn't support equality"""
+            """Example of a class that doesn't support equality."""
 
             def __eq__(self, other):
+                """Equality operator overridden to always fail."""
                 raise TypeError(
-                    "Equality between no_eq and {type(other)} not supported"
+                    f"Equality between no_eq and {type(other)} not supported"
                 )
 
         with pytest.raises(TypeError):
@@ -282,7 +289,7 @@ class TestUpdateRecord:
             # No keyword arguments
             (2, {}, AssertionError),
             # Invalid index
-            (3, {"value": 3.3}, IndexError),
+            (3, {"value": 2.0}, IndexError),
             # Invalid column name
             (2, {"bad_column_name": "hello"}, KeyError),
             # Invalid type
@@ -372,6 +379,7 @@ class TestRemoveRecord:
 class TestOverwriteRecordsToFile:
     """Validate functionality and error handling of the _overwrite_records_to_file_ function."""
 
+    # Records to overwrite old records with
     new_records = pd.DataFrame({"ID": [3, 4], "value": [2.0, 1.0]})
 
     def test_overwrite_records_to_file_normal_overwrite(
@@ -419,7 +427,7 @@ class TestSaveReport:
 
     # Local timezone calculated using a different method than save_report
     local_timezone = datetime.now().astimezone().tzinfo
-
+    # Data passed to save_report()
     report_input: pd.DataFrame = pd.DataFrame(
         {
             "ID": [1, 2],
@@ -432,6 +440,7 @@ class TestSaveReport:
             "nullable": [1, None],
         }
     )
+    # Expected returned data from save_report()
     expected_output: pd.DataFrame = pd.DataFrame(
         {
             "ID": [1, 2],
