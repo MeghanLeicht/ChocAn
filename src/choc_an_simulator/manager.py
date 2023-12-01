@@ -295,10 +295,13 @@ def remove_provider_record() -> None:
     """
     try:
         provider_id = prompt_int("Provider ID")
-        if remove_record(provider_id, USER_INFO):
-            print(f"Provider {provider_id} Removed")
+        if provider_id is not None:
+            if remove_record(provider_id, USER_INFO):
+                print(f"Provider {provider_id} Removed")
+            else:
+                print(f"Provider {provider_id} Not Found.")
         else:
-            print(f"Provider {provider_id} Not Found.")
+            print("Provider ID cannot be a NULL value!")
     except ArrowIOError:
         PColor.pfail("Provider was not removed!")
         return
