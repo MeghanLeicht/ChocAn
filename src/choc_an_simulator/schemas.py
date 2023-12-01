@@ -125,13 +125,19 @@ class TableInfo:
             TypeError: Value type is incompatible with field
             ArithmeticError: Value doesn't adhere to field's character or numeric limit.
         """
-        if field_name not in self.schema.names:
-            raise KeyError(
-                f"Field Name {field_name} does not exist in {self.name} schema."
-            )
-        field: pa.Field = self.schema.field(field_name)
+        self._check_field_exists(field_name)
+        self._check_type(field_name, value)
+        self._check_character_limit(field_name, value)
+        self._check_numeric_limit(field_name, value)
 
-        # Check for type compatibility
+    def _check_field_exists(self, field_name: str):
+        """Raise a KeyError if a given field doesn't exist in the schema."""
+        if field_name not in self.schema.names:
+            raise KeyError(f"Field Name {field_name} does not exist in {self.name} schema.")
+
+    def _check_type(self, field_name: str, value: Any):
+        """Raise an Arithmetic error if a given field/value pair has an incompatible type."""
+        field: pa.Field = self.schema.field(field_name)
         try:
             _ = pa.array([value], type=field.type)
         except pa.ArrowInvalid as err_invalid:
@@ -141,21 +147,27 @@ class TableInfo:
                 f"{err_invalid}"
             )
 
-        if field_name in self.character_limits.keys():
-            val_len = len(str(value))
-            limit_range = self.character_limits[field_name]
-            if (val_len < limit_range.start) or (val_len > limit_range.stop):
-                print(type(value))
-                raise ArithmeticError(
-                    f"{field_name} value {value} is outside character limit {limit_range} "
-                )
+    def _check_character_limit(self, field_name: str, value: Any):
+        """Raise an Arithmetic error if a given field/value pair exceeds its character limit."""
+        if field_name not in self.character_limits.keys():
+            return
+        val_len = len(str(value))
+        limit_range = self.character_limits[field_name]
+        if (val_len < limit_range.start) or (val_len > limit_range.stop):
+            print(type(value))
+            raise ArithmeticError(
+                f"{field_name} value {value} is outside character limit {limit_range} "
+            )
 
-        if field_name in self.numeric_limits.keys():
-            limit_range = self.numeric_limits[field_name]
-            if (value < limit_range.start) or (value > limit_range.stop):
-                raise ArithmeticError(
-                    f"{field_name} value {value} is outside numeric limit {limit_range} "
-                )
+    def _check_numeric_limit(self, field_name: str, value: Any):
+        """Raise an Arithmetic error if a given field/value pair exceeds its numeric limit."""
+        if field_name not in self.numeric_limits.keys():
+            return
+        limit_range = self.numeric_limits[field_name]
+        if (value < limit_range.start) or (value > limit_range.stop):
+            raise ArithmeticError(
+                f"{field_name} value {value} is outside numeric limit {limit_range} "
+            )
 
 
 """All services offered by ChocAn, and their codes."""
@@ -165,8 +177,8 @@ PROVIDER_DIRECTORY_INFO = TableInfo(
         [
             pa.field("service_id", pa.int64(), nullable=False),
             pa.field("service_name", pa.string(), nullable=False),
-            pa.field("price_dollars", pa.int32(), nullable=False),
-            pa.field("price_cents", pa.int32(), nullable=False),
+            pa.field("price_dollars", pa.int64(), nullable=False),
+            pa.field("price_cents", pa.int64(), nullable=False),
         ]
     ),
     character_limits={"service_id": range(6, 6), "service_name": range(1, 20)},
@@ -183,12 +195,12 @@ MEMBER_INFO = TableInfo(
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.int32(), nullable=False),
+            pa.field("zipcode", pa.int64(), nullable=False),
             pa.field("suspended", pa.bool_(), nullable=False),
         ]
     ),
     character_limits={
-        "member_id": range(11, 11),
+        "member_id": range(9, 9),
         "name": range(1, 25),
         "address": range(1, 25),
         "city": range(1, 14),
@@ -208,12 +220,12 @@ USER_INFO = TableInfo(
             pa.field("address", pa.string(), nullable=False),
             pa.field("city", pa.string(), nullable=False),
             pa.field("state", pa.string(), nullable=False),
-            pa.field("zipcode", pa.int32(), nullable=False),
+            pa.field("zipcode", pa.int64(), nullable=False),
             pa.field("password_hash", pa.binary(), nullable=False),
         ]
     ),
     character_limits={
-        "id": range(11, 11),
+        "id": range(9, 9),
         "name": range(1, 25),
         "address": range(1, 25),
         "city": range(1, 14),
@@ -230,9 +242,9 @@ SERVICE_LOG_INFO = TableInfo(
         [
             pa.field("entry_datetime_utc", pa.date64(), nullable=False),
             pa.field("service_date_utc", pa.date32(), nullable=False),
-            pa.field("provider_id", pa.int32(), nullable=False),
-            pa.field("member_id", pa.int32(), nullable=False),
-            pa.field("service_id", pa.int32(), nullable=False),
+            pa.field("provider_id", pa.int64(), nullable=False),
+            pa.field("member_id", pa.int64(), nullable=False),
+            pa.field("service_id", pa.int64(), nullable=False),
             pa.field("comments", pa.string(), nullable=True),
         ]
     ),

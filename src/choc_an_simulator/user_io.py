@@ -88,6 +88,59 @@ class PColor:
         print(f"{color_code.value}{text}{cls._ENDC}", **kwargs)
 
 
+def _parse_date(date_str: str) -> date:
+    """
+    Parse a date string into a date object, using %m-%d-%Y format.
+
+    Args-
+        date_str (str): String to parse into a date.
+
+    Returns-
+        date: The parsed date.
+
+    Raises-
+        ValueError: Date is in the incorrect format.
+    """
+    try:
+        result = datetime.strptime(date_str, "%m-%d-%Y").date()
+    # Date incorrectly formatted
+    except ValueError:
+        raise ValueError("Incorrect date format")
+    return result
+
+
+def _prompt_single_date(message: str, min_date: date, max_date: date) -> Optional[date]:
+    """
+    Prompt the user for a single date.
+
+    Args-
+        message (str): The prompt message displayed to the user.
+        min_date (date): Minimum allowed date
+        max_date (date): Maximum allowed date
+
+    Returns-
+        int: Valid input, parsed as an integer.
+        None: user aborted.
+
+    Raises-
+        ValueError: Input invalid.
+    """
+    date_str = prompt_str(message)
+    if date_str is None:
+        return None
+    try:
+        result = _parse_date(date_str)
+    except ValueError:
+        PColor.pfail(f"{date_str} is not in MM-DD-YYYY format.")
+        raise ValueError
+    if not (min_date <= result <= max_date):
+        min_date_str = min_date.strftime("%m-%d-%Y")
+        max_date_str = max_date.strftime("%m-%d-%Y")
+        PColor.pfail(f"Date must be between {min_date_str} and {max_date_str}")
+        raise ValueError
+    return result
+
+
 def prompt_date(
     message: str, min_date: Optional[date] = None, max_date: Optional[date] = None
 ) -> Optional[date]:
@@ -95,9 +148,9 @@ def prompt_date(
     Prompts the user to enter a date within an optional range.
 
     Args-
-        message: The prompt message displayed to the user.
-        min_date: The minimum allowable date (inclusive).
-        max_date: The maximum allowable date (inclusive).
+        message (str): The prompt message displayed to the user.
+        min_date (Optional[date]): The minimum allowable date (inclusive, optional).
+        max_date (Optional[date]): The maximum allowable date (inclusive, optional).
 
     Returns-
         The date entered by the user, or None if the input is aborted.
@@ -106,34 +159,22 @@ def prompt_date(
         ValueError: If min_date is greater than max_date.
     """
     result: Optional[date] = None
+    # Default min / max date to their absolute min / max values.
+    min_date = min_date or date.min
+    max_date = max_date or date.max
+
+    if min_date > max_date:
+        raise ValueError(f"min_date {min_date} must be less than max_date {max_date}")
     message = f"{message} (MM-DD-YYYY)"
-    # min_date can't be greater than max_date
-    if ((min_date is not None) and (max_date is not None)) and (min_date > max_date):
-        raise ValueError(
-            "min_date must be less than or equal to max_date "
-            f"({min_date}>{max_date})"
-        )
-
-    while result is None:
-        date_str = prompt_str(message)
-        if date_str is None:
-            return None
+    # Repeatedly prompt for a date until valid input or user exits.
+    while True:
         try:
-            result = datetime.strptime(date_str, "%m-%d-%Y").date()
-        # Date incorrectly formatted
+            result = _prompt_single_date(message, min_date, max_date)
         except ValueError:
-            PColor.pfail(f"{date_str}is not in MM-DD-YYYY format.")
             continue
-        # Date before min_date
-        if (min_date is not None) and (result < min_date):
-            PColor.pfail(f"Date must be on or after {min_date.strftime('%m-%d-%Y')}")
-            result = None
-
-        # Date after max_date
-        elif (max_date is not None) and (result > max_date):
-            PColor.pfail(f"Date must be on or before {max_date.strftime('%m-%d-%Y')}")
-            result = None
-    return result
+        if result is None:
+            return None
+        return result
 
 
 def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int, str]]:
@@ -165,6 +206,44 @@ def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int,
     return (selection - 1, choices[selection - 1])
 
 
+def _prompt_single_int(
+    message: str, char_limit: Optional[range], numeric_limit: Optional[range]
+) -> Optional[int]:
+    """
+    Prompt the user for a single integer.
+
+    Args-
+        message: The prompt message displayed to the user.
+        char_limit: The range of acceptable character counts for the input.
+        numeric_limit: The numeric range of acceptable input values.
+
+    Returns-
+        int: Valid input, parsed as an integer.
+        None: user aborted.
+
+    Raises-
+        ValueError: Input invalid.
+    """
+    result_text = prompt_str(message, char_limit)
+    if result_text is None:  # user pressed ctrl+c
+        return None
+
+    result = _to_int_(result_text)
+    # Result could not be converted
+    if result is None:
+        print(f'"{result_text}" is not a valid integer.')
+        raise ValueError
+    # Result could not be converted
+    if (numeric_limit is not None) and not (
+        numeric_limit.start <= result <= numeric_limit.stop
+    ):
+        PColor.pfail(
+            f"{result} is not in the range ({numeric_limit.start}-{numeric_limit.stop})"
+        )
+        raise ValueError
+    return result
+
+
 def prompt_int(
     message: str,
     char_limit: Optional[range] = None,
@@ -182,24 +261,48 @@ def prompt_int(
         The integer entered by the user, or None if the input is aborted.
     """
     result: Optional[int] = None
+    # If there is a numeric limit, add it to the message string.
     if numeric_limit is not None:
         message = f"{message} ({numeric_limit.start}-{numeric_limit.stop})"
-
-    while result is None:
-        result_text = prompt_str(message, char_limit)
-        if result_text is None:  # user pressed ctrl+c
+    # Repeatedly prompt for an integer until valid input or user exits
+    while True:
+        try:
+            result = _prompt_single_int(message, char_limit, numeric_limit)
+        except ValueError:
+            continue
+        if result is None:
             return None
-        result = _to_int_(result_text)
-        if result is None:  # Result could not be converted
-            print(f'"{result_text}" is not a valid integer.')
-        elif (numeric_limit is not None) and not (
-            numeric_limit.start <= result <= numeric_limit.stop
-        ):
-            PColor.pfail(
-                f"{result} is not in the range ({numeric_limit.start}-{numeric_limit.stop})"
-            )
-            result = None
+        return result
 
+
+def _prompt_single_str(message: str, char_limit: Optional[range]) -> Optional[str]:
+    """
+    Prompt the user for a single string.
+
+    Args-
+        message (str): The prompt message displayed to the user.
+        char_limit (str): The max / min character length of the input (optional).
+
+    Returns-
+        int: The inputted string.
+        None: user aborted.
+
+    Raises-
+        ValueError: Input invalid.
+    """
+    try:
+        result = input(f"{message}: ")
+    except KeyboardInterrupt:
+        print()
+        return None
+    if (char_limit is not None) and not (
+        char_limit.start <= len(result) <= char_limit.stop
+    ):
+        PColor.pfail(
+            "Input must be between "
+            f"{char_limit.start} and {char_limit.stop} characters long."
+        )
+        raise ValueError
     return result
 
 
@@ -214,22 +317,12 @@ def prompt_str(message: str, char_limit: Optional[range] = None) -> Optional[str
     Returns-
         The string entered by the user, or None if the input is aborted.
     """
-    try:
-        result: Optional[str] = None
-        while result is None:
-            result = input(f"{message}: ")
-            if (char_limit is not None) and not (
-                char_limit.start <= len(result) <= char_limit.stop
-            ):
-                PColor.pfail(
-                    "Input must be between "
-                    f"{char_limit.start} and {char_limit.stop} characters long."
-                )
-                result = None
+    while True:
+        try:
+            result = _prompt_single_str(message, char_limit)
+        except ValueError:
+            continue
         return result
-    except KeyboardInterrupt:
-        print()
-        return None
 
 
 def _to_int_(text: str) -> Optional[int]:
