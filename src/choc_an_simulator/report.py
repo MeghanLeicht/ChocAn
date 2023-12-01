@@ -150,8 +150,8 @@ def generate_provider_report() -> None:
             print("No records found within the last 7 days.")
             return
         service_log = service_log[service_log_cols]
-        member_info = load_records_from_file(MEMBER_INFO, gt_cols=gt_cols)[member_cols]
-        user_info = load_records_from_file(USER_INFO, gt_cols=gt_cols)[user_cols]
+        member_info = load_records_from_file(MEMBER_INFO)[member_cols]
+        user_info = load_records_from_file(USER_INFO)[user_cols]
         provider_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[
             provider_directory_cols
         ]
