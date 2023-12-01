@@ -20,10 +20,12 @@ class MenuNums:
     [
         (MenuNums.CHECK_IN + ["222222222"], "Valid"),
         (MenuNums.CHECK_IN + ["222222223"], "Suspended"),
-        (MenuNums.CHECK_IN + ["222222224"], "Invalid"),
+        (MenuNums.CHECK_IN + ["555555555"], "Invalid"),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_provider_password_auth")
+@pytest.mark.usefixtures(
+    "mock_input_series", "save_example_info", "mock_provider_password_auth"
+)
 def test_member_check_in(
     mock_input_series,
     save_example_info,
@@ -55,7 +57,9 @@ def test_member_check_in(
         ),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_provider_password_auth")
+@pytest.mark.usefixtures(
+    "mock_input_series", "save_example_info", "mock_provider_password_auth"
+)
 def test_member_record_service(
     mock_input_series,
     save_example_info,
