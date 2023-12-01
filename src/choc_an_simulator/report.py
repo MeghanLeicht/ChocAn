@@ -36,7 +36,7 @@ def generate_member_report() -> None:
     the order of the service date. After a report is generated, the path to it
     is printed to the console.
     """
-    gt_cols = {"service_date_utc": datetime.now() - timedelta(days=7)}
+    gt_cols = {"service_date_utc": (datetime.now() - timedelta(days=7)).date()}
     service_log = None
     provider_directory = None
     member_info = None
@@ -52,8 +52,8 @@ def generate_member_report() -> None:
             print("No records found within the last 7 days.")
             return
         service_log = service_log[service_log_cols]
-        member_info = load_records_from_file(MEMBER_INFO, gt_cols=gt_cols)[member_cols]
-        user_info = load_records_from_file(USER_INFO, gt_cols=gt_cols)[user_cols]
+        member_info = load_records_from_file(MEMBER_INFO)[member_cols]
+        user_info = load_records_from_file(USER_INFO)[user_cols]
         provider_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[
             provider_directory_cols
         ]
@@ -95,9 +95,7 @@ def generate_member_report() -> None:
             "service_date_utc": "Service Date",
         }
     )
-    records = records[
-        ["Name", "Member Number", "address", "city", "state", "zipcode", "Services"]
-    ]
+    records = records[["Name", "Member Number", "address", "city", "state", "zipcode", "Services"]]
 
     # For each member, sort the services by date and then save the report and print the path to
     # the console
@@ -106,15 +104,10 @@ def generate_member_report() -> None:
         # member_record["Services"] = member_record["Services"].apply(lambda x: sorted(x))
         member_record.loc[:, "Services"] = member_record.loc[:, "Services"].apply(
             lambda x: sorted(
-                [
-                    (datetime.date(date), service_name, provider_name)
-                    for date, service_name, provider_name, in x
-                ]
+                [(date, service_name, provider_name) for date, service_name, provider_name, in x]
             )
         )
-        file_path = save_report(
-            member_record, f"{member_record['Name'].iloc[0]}_{_current_date()}"
-        )
+        file_path = save_report(member_record, f"{member_record['Name'].iloc[0]}_{_current_date()}")
         print(f"Member Report saved to {file_path}")
 
 
