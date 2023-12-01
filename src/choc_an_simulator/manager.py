@@ -11,6 +11,7 @@ from .database_management import (
     add_records_to_file,
     update_record,
     remove_record,
+    update_record,
 )
 from .schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
@@ -285,9 +286,39 @@ def update_provider_record() -> None:
     Prompt the user to update the provider's information.
 
     Prompts the user for a provider ID, then prompts for which field to change.
-    This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("update_provider_record")
+    provider_id = prompt_int("Provider ID")
+    if provider_id is None:
+        return None
+    try:
+        provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the provider record.")
+        return
+
+    provider_record = provider_record.iloc[0]
+
+    options = []
+    for field in provider_record.index.values[1:]:
+        options.append(f"{field}: {provider_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "type" or field_to_update == "zipcode":
+        new_value = prompt_int(
+            f"New value for {field_to_update}", USER_INFO.character_limits["zipcode"]
+        )
+    else:
+        new_value = prompt_str(
+            f"New value for {field_to_update}", USER_INFO.character_limits["address"]
+        )
+
+    try:
+        update_record(provider_id, USER_INFO, **{field_to_update: new_value})
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the provider record.")
+        return
 
 
 def remove_provider_record() -> None:
