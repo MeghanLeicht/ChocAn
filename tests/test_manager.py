@@ -288,37 +288,30 @@ def test_update_provider_record():
 
 class TestRemoveProviderRecord:
     """Test of the remove_member_record function."""
+
     def test_remove_provider_record(self, mocker, capsys) -> None:
         """Test remove_provider_record successful."""
         provider_id = 123456789
-        mocker.patch(
-            "choc_an_simulator.manager.prompt_int",
-            return_value=provider_id)
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=provider_id)
         mocker.patch(
             "choc_an_simulator.manager.remove_record",
             return_value=True,
-            )
+        )
         remove_provider_record()
         captured = capsys.readouterr()
         expected_output = f"Provider {provider_id} Removed"
         assert expected_output in captured.out
 
-
     def test_remove_provider_record_no_provider_id(self, mocker, capsys) -> None:
         """Test remove_provider_record without provider id."""
-        mocker.patch(
-            "choc_an_simulator.manager.prompt_int",
-            return_value=None)
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=None)
         expected_output = remove_provider_record()
         assert expected_output is None
-
 
     def test_remove_provider_io_error(self, mocker, capsys) -> None:
         """Test remove_provider_record function with load IO error."""
         provider_id = 123456789
-        mocker.patch(
-            "choc_an_simulator.manager.prompt_int",
-            return_value=provider_id)
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=provider_id)
         mocker.patch(
             "choc_an_simulator.manager.remove_record",
             side_effect=pa.ArrowIOError,
