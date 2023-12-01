@@ -298,6 +298,25 @@ class TestRemoveProviderRecord:
         remove_provider_record()
         assert "Provider was not removed!" in capsys.readouterr().out
 
+    @pytest.mark.parametrize(
+        "providers_id, expected_output1, is_record_removed",
+        [
+            (900000000, "Provider 900000000 Removed", True),
+            (900000001, "Provider 900000001 Not Found.", False),
+        ],
+    )
+    def test_remove_provider_record(
+        self, mocker, providers_id, expected_output1, is_record_removed, capsys
+    ) -> None:
+        """Test remove_provider_record function with valid input."""
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=providers_id)
+        mocker.patch(
+            "choc_an_simulator.manager.remove_record",
+            return_value=is_record_removed,
+        )
+        remove_provider_record()
+        assert expected_output1 in capsys.readouterr().out
+
 
 def test_add_provider_directory_record():
     """Test of the add_provider_directory_record function."""
