@@ -36,7 +36,7 @@ def generate_member_report() -> None:
     the order of the service date. After a report is generated, the path to it
     is printed to the console.
     """
-    gt_cols = {"service_date_utc": datetime.now() - timedelta(days=7)}
+    gt_cols = {"service_date_utc": (datetime.now() - timedelta(days=7)).date()}
     service_log = None
     provider_directory = None
     member_info = None
@@ -52,8 +52,8 @@ def generate_member_report() -> None:
             print("No records found within the last 7 days.")
             return
         service_log = service_log[service_log_cols]
-        member_info = load_records_from_file(MEMBER_INFO, gt_cols=gt_cols)[member_cols]
-        user_info = load_records_from_file(USER_INFO, gt_cols=gt_cols)[user_cols]
+        member_info = load_records_from_file(MEMBER_INFO)[member_cols]
+        user_info = load_records_from_file(USER_INFO)[user_cols]
         provider_directory = load_records_from_file(PROVIDER_DIRECTORY_INFO)[
             provider_directory_cols
         ]
@@ -107,7 +107,7 @@ def generate_member_report() -> None:
         member_record.loc[:, "Services"] = member_record.loc[:, "Services"].apply(
             lambda x: sorted(
                 [
-                    (datetime.date(date), service_name, provider_name)
+                    (date, service_name, provider_name)
                     for date, service_name, provider_name, in x
                 ]
             )
