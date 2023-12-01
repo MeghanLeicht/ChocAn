@@ -9,9 +9,10 @@ from pandas.api.types import is_numeric_dtype
 from .database_management import (
     load_records_from_file,
     add_records_to_file,
+    update_record,
     remove_record,
 )
-from .schemas import USER_INFO, MEMBER_INFO, TableInfo
+from .schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
 from .report import (
     generate_member_report,
