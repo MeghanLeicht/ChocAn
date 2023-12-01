@@ -317,7 +317,7 @@ def update_provider_directory_record() -> None:
 
 
 def remove_provider_directory_record() -> None:
-    """Manager is prompted for a service id to be removed, and a lookup is performed."""
+    """Manager is prompted for a service id, and a lookup is performed, and a service is removed."""
     try:
         service_id = prompt_int("Service ID")
         if remove_record(service_id, PROVIDER_DIRECTORY_INFO):
