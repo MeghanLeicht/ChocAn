@@ -4,7 +4,7 @@ from choc_an_simulator.login import login_menu
 from choc_an_simulator.database_management import load_records_from_file
 from choc_an_simulator.schemas import PROVIDER_DIRECTORY_INFO
 
-PROVIDER_LOGIN_SEQUENCE = ["111111111", "password"]
+PROVIDER_LOGIN_SEQUENCE = ["111111111"]
 
 
 class MenuNums:
@@ -23,16 +23,16 @@ class MenuNums:
         (MenuNums.CHECK_IN + ["222222224"], "Invalid"),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info")
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_password_auth")
 def test_member_check_in(
     mock_input_series,
     save_example_info,
+    mock_password_auth,
     capsys,
     check_in_response,
 ):
     """Test a valid login by a provider, all member check-in responses."""
-    with pytest.raises(StopIteration):
-        login_menu()
+    login_menu()
     out = capsys.readouterr().out
     print(out)
     assert check_in_response in out
@@ -55,31 +55,33 @@ def test_member_check_in(
         ),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info")
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_password_auth")
 def test_member_record_service(
     mock_input_series,
     save_example_info,
+    mock_password_auth,
     capsys,
 ):
     """Test a valid login by a provider, then recording a service entry."""
     provider_directory_before = load_records_from_file(PROVIDER_DIRECTORY_INFO)
-    with pytest.raises(StopIteration):
-        login_menu()
+    login_menu()
     provider_directory_after = load_records_from_file(PROVIDER_DIRECTORY_INFO)
     assert len(provider_directory_before) == len(provider_directory_after) - 1
 
 
 @pytest.mark.parametrize("input_strs", [(MenuNums.REQUEST_DIRECTORY)])
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_report_dir")
+@pytest.mark.usefixtures(
+    "mock_input_series", "save_example_info", "mock_report_dir", "mock_password_auth"
+)
 def test_member_request_provider_directory(
     mock_input_series,
-    mock_report_dir,
     save_example_info,
+    mock_password_auth,
+    mock_report_dir,
     capsys,
 ):
     """Test a valid login by a provider, then request a provider directory."""
-    with pytest.raises(StopIteration):
-        login_menu()
+    login_menu()
     out = capsys.readouterr().out
     assert "Provider directory saved to" in out
     assert (mock_report_dir / "provider_directory.csv").exists()

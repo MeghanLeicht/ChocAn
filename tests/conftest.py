@@ -6,13 +6,20 @@ These functions are designed to make testing more straightforward and remove boi
 This includes functions for testing menus and mocking user input.
 """
 from typing import List
+from datetime import date, datetime
+from numpy import datetime64
 import re
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 import pandas as pd
 import contextlib
 
-from choc_an_simulator.schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO
+from choc_an_simulator.schemas import (
+    USER_INFO,
+    MEMBER_INFO,
+    PROVIDER_DIRECTORY_INFO,
+    SERVICE_LOG_INFO,
+)
 from choc_an_simulator.database_management import (
     load_records_from_file,
     add_records_to_file,
@@ -204,7 +211,30 @@ def save_example_provider_directory_info():
     )
     with contextlib.suppress(ValueError):  # Avoid adding duplicate values
         add_records_to_file(provider_directory_df, PROVIDER_DIRECTORY_INFO)
-        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(provider_directory_df)
+        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(
+            provider_directory_df
+        )
+
+
+def save_example_service_log():
+    """
+    Write example service log data to a temporary file.
+
+    ID's correspond to to other example functions.
+    """
+    service_log_df = pd.DataFrame(
+        {
+            "entry_datetime_utc": datetime64(datetime.now()),
+            "service_date_utc": datetime.now().date(),
+            "provider_id": 111111111,
+            "member_id": 222222222,
+            "service_id": 100001,
+            "comments": "Some comments",
+        },
+        index=[0],
+    )
+    with contextlib.suppress(ValueError):
+        add_records_to_file(service_log_df, SERVICE_LOG_INFO)
 
 
 @pytest.fixture(scope="function")
@@ -218,10 +248,13 @@ def monkeysession(request):
 @pytest.fixture(scope="function")
 def save_example_info(monkeysession, tmp_path_factory):
     """Mock the directory that parquet files are stored in."""
-    monkeysession.setattr(_parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp()))
+    monkeysession.setattr(
+        _parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp())
+    )
     save_example_member_info()
     save_example_provider_info()
     save_example_provider_directory_info()
+    save_example_service_log()
     yield tmp_path_factory
 
 
@@ -230,3 +263,17 @@ def mock_report_dir(monkeysession, tmp_path_factory):
     """Mock the directory that report files are stored in."""
     monkeysession.setattr(reports, "_REPORT_DIR_", str(tmp_path_factory.getbasetemp()))
     yield tmp_path_factory
+
+
+@pytest.fixture
+def mock_password_auth(mocker):
+    """Mock the password entry / authorization process."""
+    mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
+    mocker.patch(
+        "choc_an_simulator.login.generate_secure_password", return_value=[None, None]
+    )
+    mocker.patch(
+        "choc_an_simulator.login.secure_password_verifiction", return_value=True
+    )
+    mocker.patch("choc_an_simulator.login.user_type_authorization", return_value=0)
+    yield
