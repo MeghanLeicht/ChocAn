@@ -294,15 +294,13 @@ def update_provider_record() -> None:
 
     Prompts the user for a provider ID, then prompts for which field to change.
     """
+    provider_id = prompt_int("Provider ID")
+    if provider_id is None:
+        return None
     try:
-        provider_id = prompt_int("Provider ID")
         provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
     except ArrowIOError:
         PColor.pfail("There was an error loading the provider record.")
-        return
-
-    if provider_record.empty:
-        PColor.pfail("Error: No record loaded.")
         return
 
     provider_record = provider_record.iloc[0]

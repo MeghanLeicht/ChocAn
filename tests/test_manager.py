@@ -284,19 +284,85 @@ class TestAddProviderRecord:
         assert "No new user added." in capsys.readouterr().out
 
 
-class TestUpdateProviderRecord:
-    """Test of the update_provider_record function."""
+def test_update_provider_load_io_error(mocker, capsys) -> None:
+    """Test update_provider_record function with load IO error."""
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=123456789)
+    mocker.patch(
+        "choc_an_simulator.manager.load_records_from_file",
+        side_effect=pa.ArrowIOError,
+    )
+    update_provider_record()
+    assert "There was an error loading the provider record." in capsys.readouterr().out
 
-    def test_update_provider_load_io_error(self, mocker, capsys) -> None:
-        """Test update_provider_record function with load IO error."""
-        mocker.patch(
-            "choc_an_simulator.manager.load_records_from_file",
-            side_effect=pa.ArrowIOError,
-        )
-        update_provider_record()
-        assert (
-            "There was an error loading the provider record." in capsys.readouterr().out
-        )
+
+def test_update_provider_id_none(mocker):
+    """Test that the user did not enter a provider_id."""
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=None)
+    expected_output = update_provider_record()
+    assert expected_output is None
+
+
+def test_update_provider_selection_none(mocker):
+    """Test that the selection is none."""
+    mock_df = pd.DataFrame({"id": [123456789], "type": [1]})
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=123456789)
+    mocker.patch(
+        "choc_an_simulator.manager.load_records_from_file",
+        return_value=mock_df,
+    )
+    mocker.patch(
+        "pandas.DataFrame.iloc",
+        return_value=pd.Series({"id": 123456789, "type": 1}, index=mock_df.columns),
+    )
+    mocker.patch("choc_an_simulator.manager.prompt_menu_options", return_value=None)
+    expected_ouput = update_provider_record()
+    assert expected_ouput is None
+
+
+def test_update_provider_zip(mocker, capsys):
+    """Test if field to update is zipcode."""
+    mock_df = pd.DataFrame({"id": [123456789], "type": [1]})
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=123456789)
+    mocker.patch(
+        "choc_an_simulator.manager.load_records_from_file",
+        return_value=mock_df,
+    )
+    mocker.patch(
+        "pandas.DataFrame.iloc",
+        return_value=pd.Series({"id": 123456789, "type": 1}, index=mock_df.columns),
+    )
+    mocker.patch(
+        "choc_an_simulator.manager.prompt_menu_options", return_value=(6, "zipcode")
+    )
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=12345)
+    mocker.patch(
+        "choc_an_simulator.manager.update_record",
+        return_value=mock_df,
+    )
+    update_provider_record()
+
+
+def test_update_provider_record_fail(mocker, capsys):
+    mock_df = pd.DataFrame({"id": [123456789], "type": [1]})
+    mocker.patch("choc_an_simulator.manager.prompt_int", return_value=123456789)
+    mocker.patch(
+        "choc_an_simulator.manager.load_records_from_file",
+        return_value=mock_df,
+    )
+    mocker.patch(
+        "pandas.DataFrame.iloc",
+        return_value=pd.Series({"id": 123456789, "type": 1}, index=mock_df.columns),
+    )
+    mocker.patch(
+        "choc_an_simulator.manager.prompt_menu_options", return_value=(2, "name")
+    )
+    mocker.patch("choc_an_simulator.manager.prompt_str", return_value="newname")
+    mocker.patch(
+        "choc_an_simulator.manager.update_record",
+        side_effect=pa.ArrowIOError,
+    )
+    update_provider_record()
+    assert "There was an error updating the provider record." in capsys.readouterr().out
 
 
 def test_remove_provider_record():
