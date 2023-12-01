@@ -520,21 +520,3 @@ class TestRemoveProviderDirectoryRecord:
             f"There as an error and service {service_id} was not removed!"
             in capsys.readouterr().out
         )
-
-
-def test_generate_member_report():
-    """Test of the generate_member_report function."""
-    with pytest.raises(NotImplementedError):
-        generate_member_report()
-
-
-def test_generate_provider_report():
-    """Test of the generate_provider_report function."""
-    with pytest.raises(NotImplementedError):
-        generate_provider_report()
-
-
-def test_generate_summary_report():
-    """Test of the generate_summary_report function."""
-    with pytest.raises(NotImplementedError):
-        generate_summary_report()
