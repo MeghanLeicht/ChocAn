@@ -191,17 +191,22 @@ def add_provider_directory_record() -> None:
 
 
 def update_provider_directory_record() -> None:
-    """The manager is prompted for a service id to update, and a lookup is performed."""
-    service_id = prompt_int("Service ID")
-    service_record = load_records_from_file(
-        PROVIDER_DIRECTORY_INFO, eq_cols={"service_id": service_id}
-    )
+    """The manager is prompted for a service id and then the service is updated based on the id."""
+    try:
+        service_id = prompt_int("Service ID")
+        service_record = load_records_from_file(
+            PROVIDER_DIRECTORY_INFO, eq_cols={"service_id": service_id}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the service record.")
+        return
+
     if service_record.empty:
-        # error: no records found
-        pass
+        PColor.pfail("Error: No record loaded.")
+        return
+
     service_record = service_record.iloc[0]
 
-    print("Here are the service's current values")
     options = []
     for field in service_record.index.values[1:]:
         options.append(f"{field}: {service_record[field]}")
@@ -210,11 +215,23 @@ def update_provider_directory_record() -> None:
         return
     field_to_update = selection[1]
     if field_to_update == "price_dollars" or field_to_update == "price_cents":
-        new_value = prompt_int(f"New value for {field_to_update}")
+        new_value = prompt_int(
+            f"New value for {field_to_update}",
+            PROVIDER_DIRECTORY_INFO.character_limits["price_cents"],
+        )
     else:
-        new_value = prompt_str(f"New value for {field_to_update}")
+        new_value = prompt_str(
+            f"New value for {field_to_update}",
+            PROVIDER_DIRECTORY_INFO.character_limits["service_name"],
+        )
 
-    update_record(service_id, PROVIDER_DIRECTORY_INFO, **{field_to_update: new_value})
+    try:
+        update_record(
+            service_id, PROVIDER_DIRECTORY_INFO, **{field_to_update: new_value}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the service record.")
+        return
 
 
 def remove_provider_directory_record() -> None:

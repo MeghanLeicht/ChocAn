@@ -13,6 +13,7 @@ from choc_an_simulator.manager import (
     update_provider_record,
     remove_provider_record,
     add_provider_directory_record,
+    update_provider_directory_record,
     remove_provider_directory_record,
     generate_member_report,
     generate_provider_report,
@@ -208,6 +209,21 @@ def test_add_provider_directory_record():
     """Test of the add_provider_directory_record function."""
     with pytest.raises(NotImplementedError):
         add_provider_directory_record()
+
+
+class TestUpdateProviderDirectoryRecord:
+    """Test of the update_provider_directory_record function."""
+
+    def test_update_provider_directory_load_io_error(self, mocker, capsys) -> None:
+        """Test update_provider_directory_record function with load IO error."""
+        mocker.patch(
+            "choc_an_simulator.manager.load_records_from_file",
+            side_effect=pa.ArrowIOError,
+        )
+        update_provider_directory_record()
+        assert (
+            "There was an error loading the service record." in capsys.readouterr().out
+        )
 
 
 def test_remove_provider_directory_record():
