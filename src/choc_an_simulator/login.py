@@ -22,6 +22,7 @@ def login_menu() -> None:
     This function prompts the user for their ID (manager ID or provider ID) and password.
     """
     user_verified = False
+    user_id = None
 
     while user_verified is False:
         user_id = prompt_int("User ID")
@@ -30,16 +31,16 @@ def login_menu() -> None:
             return None
 
         try:
-            hashed_password = generate_secure_password(
+            user_verified = secure_password_verification(
+                user_id,
                 getpass.getpass(prompt="Password: ")
             )
         except KeyboardInterrupt:
             return None
 
-        user_verified = secure_password_verifiction(user_id, hashed_password)
-
         if user_verified is False:
             print("Password is incorrect. Try again.")
+            continue
 
     match user_type_authorization(user_id):
         case 0:
@@ -48,7 +49,7 @@ def login_menu() -> None:
             show_provider_menu()
 
 
-def generate_secure_password(password: str) -> str:
+def generate_secure_password(password: str) -> (bytes, bytes):
     """
     Generates a secure user password.
 
@@ -63,14 +64,14 @@ def generate_secure_password(password: str) -> str:
     return hashed_password, salt
 
 
-def secure_password_verifiction(user_id: int, password: str) -> bool:
+def secure_password_verification(user_id: int, password: str) -> bool:
     """
     Verifies the password entered by the user.
 
     Returns True or False if the password and user ID matches the database.
     """
-    pw = load_records_from_file(USER_INFO, eq_cols={"id": user_id})["password_hash"]
-    return bcrypt.checkpw(pw, password.encode())
+    pw = load_records_from_file(USER_INFO, eq_cols={"id": user_id})["password_hash"].loc[0]
+    return bcrypt.checkpw(password.encode(), pw)
 
 
 def user_type_authorization(user_id: int) -> int:
@@ -82,4 +83,5 @@ def user_type_authorization(user_id: int) -> int:
 
     Returns an integer of the user_type.
     """
-    raise NotImplementedError("user_type_authorization")
+    user_type = load_records_from_file(USER_INFO, eq_cols={"id": user_id})["type"]
+    return user_type
