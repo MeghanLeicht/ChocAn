@@ -81,21 +81,19 @@ def update_member_record() -> None:
     Prompts the user for a member ID, then prompts for which field to change.
     This prompt repeats until the user chooses to exit.
     """
-    # prompt member ID
-    # use load_records to get that member's info
-    # display the info
-    # use prompt_menu to ask which field to update
-    # use prompt_str to get new value
     member_id = prompt_int("Member ID")
-    member_record = load_records_from_file(
-        MEMBER_INFO, eq_cols={"member_id": member_id}
-    )
+    try:
+        member_record = load_records_from_file(
+            MEMBER_INFO, eq_cols={"member_id": member_id}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the member record.")
+        return
     if member_record.empty:
         # errror: no records found
         pass
     member_record = member_record.iloc[0]
 
-    print("Here are the member's current values")
     options = []
     for field in member_record.index.values[1:]:
         options.append(f"{field}: {member_record[field]}")
@@ -108,7 +106,11 @@ def update_member_record() -> None:
     else:
         new_value = prompt_str(f"New value for {field_to_update}")
 
-    update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
+    try:
+        update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the member record.")
+        return
 
 
 def remove_member_record() -> None:
