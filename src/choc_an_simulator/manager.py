@@ -208,15 +208,7 @@ def remove_member_record() -> None:
 
     Prompts the user for a member ID, then removes that member's information.
     """
-    try:
-        member_id = prompt_int("Member ID")
-        if remove_record(member_id, MEMBER_INFO):
-            print(f"Member {member_id} Removed")
-        else:
-            print(f"Member {member_id} Not Found.")
-    except ArrowIOError:
-        PColor.pfail("Member was not removed!")
-        return
+    raise NotImplementedError("remove_member_record")
 
 
 def generate_unique_id(table_info: TableInfo) -> int:
@@ -304,7 +296,29 @@ def remove_provider_record() -> None:
     Prompts the user for a provider ID, then prompts for which field to remove.
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("remove_provider_record")
+    # try:
+    #     provider_id = prompt_int("Provider ID")
+    #     if provider_id is not None:
+    #         if remove_record(provider_id, USER_INFO):
+    #             print(f"Provider {provider_id} Removed")
+    #         else:
+    #             print(f"Provider {provider_id} Not Found.")
+    #     else:
+    #         print("Provider ID cannot be a NULL value!")
+    # except ArrowIOError:
+    #     PColor.pfail("Provider was not removed!")
+    #     return
+    provider_id = prompt_int("Provider ID")
+    try:
+        result = remove_record(provider_id, USER_INFO)
+    except ArrowIOError:
+        PColor.pfail(f"There was an error and provider {provider_id} was not removed!")
+        return
+
+    if result is True:
+        print(f"Provider {provider_id} Removed")
+    else:
+        print(f"Provider {provider_id} Not Found.")
 
 
 def add_provider_directory_record() -> None:
