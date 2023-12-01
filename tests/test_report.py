@@ -104,12 +104,12 @@ test_service_log_info = pd.DataFrame(
             datetime(2023, 11, 24),
         ],
         "service_date_utc": [
-            datetime(2023, 11, 21).date(),
-            datetime(2023, 11, 24).date(),
-            datetime(2023, 11, 26).date(),
-            datetime(2023, 11, 21).date(),
-            datetime(2023, 11, 21).date(),
-            datetime(2023, 11, 24).date(),
+            date(2023, 11, 21),
+            date(2023, 11, 24),
+            date(2023, 11, 26),
+            date(2023, 11, 21),
+            date(2023, 11, 21),
+            date(2023, 11, 24),
         ],
         "member_id": [367868907, 752880910, 367868907, 989635272, 752880910, 137002632],
         "provider_id": [
