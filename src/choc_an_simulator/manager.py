@@ -10,6 +10,7 @@ from .database_management import (
     load_records_from_file,
     add_records_to_file,
     remove_record,
+    update_record,
 )
 from .schemas import USER_INFO, MEMBER_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
