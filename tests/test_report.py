@@ -643,13 +643,13 @@ def test_generate_provider_report_has_total_consults_over_999(
     mock_save_report,
     expected_output_for_provider,
     expected_provider_report_total_consults_over_999_df,
-    # capsys,
+    capsys,
 ):
     """Test the generate_member_report function."""
     generate_provider_report()
-    # captured = capsys.readouterr().out
+    captured = capsys.readouterr().out
 
-    # assert captured == expected_output_for_provider
+    assert captured == expected_output_for_provider
 
     actual_df = pd.DataFrame()
     for i in range(mock_save_report.call_args_list.__len__()):
