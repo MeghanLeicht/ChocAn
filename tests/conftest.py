@@ -6,7 +6,7 @@ These functions are designed to make testing more straightforward and remove boi
 This includes functions for testing menus and mocking user input.
 """
 from typing import List
-from datetime import date, datetime
+from datetime import datetime
 from numpy import datetime64
 import re
 import pytest
@@ -47,7 +47,7 @@ def mock_input_ctrl_c(monkeypatch):
 @pytest.fixture
 def mock_input_series(input_strs: List[str], mocker):
     """
-    When included by a test, simulates input_strs as sequential user inputs. If
+    When included by a test, simulates input_strs as sequential user inputs.
 
     Args-
         input_strs: List of strings to simulate as user input
@@ -60,7 +60,7 @@ def mock_input_series(input_strs: List[str], mocker):
     inputs = iter(input_strs)
 
     def inputs_then_exit(_):
-        """Calls the next input in the sequence each time it's called, then KeyboardInterrupts"""
+        """Calls the next input in the sequence each time it's called, then KeyboardInterrupts."""
         next_val = next(inputs, None)
         if next_val is None:
             raise KeyboardInterrupt
@@ -266,7 +266,21 @@ def mock_report_dir(monkeysession, tmp_path_factory):
 
 
 @pytest.fixture
-def mock_password_auth(mocker):
+def mock_provider_password_auth(mocker):
+    """Mock the password entry / authorization process."""
+    mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
+    mocker.patch(
+        "choc_an_simulator.login.generate_secure_password", return_value=[None, None]
+    )
+    mocker.patch(
+        "choc_an_simulator.login.secure_password_verifiction", return_value=True
+    )
+    mocker.patch("choc_an_simulator.login.user_type_authorization", return_value=1)
+    yield
+
+
+@pytest.fixture
+def mock_manager_password_auth(mocker):
     """Mock the password entry / authorization process."""
     mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
     mocker.patch(

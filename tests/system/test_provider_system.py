@@ -23,11 +23,13 @@ class MenuNums:
         (MenuNums.CHECK_IN + ["222222224"], "Invalid"),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_password_auth")
+@pytest.mark.usefixtures(
+    "mock_input_series", "save_example_info", "mock_provider_password_auth"
+)
 def test_member_check_in(
     mock_input_series,
     save_example_info,
-    mock_password_auth,
+    mock_provider_password_auth,
     capsys,
     check_in_response,
 ):
@@ -55,11 +57,13 @@ def test_member_check_in(
         ),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_password_auth")
+@pytest.mark.usefixtures(
+    "mock_input_series", "save_example_info", "mock_provider_password_auth"
+)
 def test_member_record_service(
     mock_input_series,
     save_example_info,
-    mock_password_auth,
+    mock_provider_password_auth,
     capsys,
 ):
     """Test a valid login by a provider, then recording a service entry."""
@@ -71,17 +75,20 @@ def test_member_record_service(
 
 @pytest.mark.parametrize("input_strs", [(MenuNums.REQUEST_DIRECTORY)])
 @pytest.mark.usefixtures(
-    "mock_input_series", "save_example_info", "mock_report_dir", "mock_password_auth"
+    "mock_input_series",
+    "save_example_info",
+    "mock_report_dir",
+    "mock_provider_password_auth",
 )
 def test_member_request_provider_directory(
     mock_input_series,
     save_example_info,
-    mock_password_auth,
+    mock_provider_password_auth,
     mock_report_dir,
     capsys,
 ):
     """Test a valid login by a provider, then request a provider directory."""
     login_menu()
     out = capsys.readouterr().out
-    assert "Provider directory saved to" in out
-    assert (mock_report_dir / "provider_directory.csv").exists()
+    assert "Report saved to" in out
+    assert (mock_report_dir.getbasetemp() / "provider_directory.csv").exists()

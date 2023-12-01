@@ -95,7 +95,9 @@ def generate_member_report() -> None:
             "service_date_utc": "Service Date",
         }
     )
-    records = records[["Name", "Member Number", "address", "city", "state", "zipcode", "Services"]]
+    records = records[
+        ["Name", "Member Number", "address", "city", "state", "zipcode", "Services"]
+    ]
 
     # For each member, sort the services by date and then save the report and print the path to
     # the console
@@ -104,10 +106,15 @@ def generate_member_report() -> None:
         # member_record["Services"] = member_record["Services"].apply(lambda x: sorted(x))
         member_record.loc[:, "Services"] = member_record.loc[:, "Services"].apply(
             lambda x: sorted(
-                [(date, service_name, provider_name) for date, service_name, provider_name, in x]
+                [
+                    (date, service_name, provider_name)
+                    for date, service_name, provider_name, in x
+                ]
             )
         )
-        file_path = save_report(member_record, f"{member_record['Name'].iloc[0]}_{_current_date()}")
+        file_path = save_report(
+            member_record, f"{member_record['Name'].iloc[0]}_{_current_date()}"
+        )
         print(f"Member Report saved to {file_path}")
 
 

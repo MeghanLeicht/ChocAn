@@ -36,12 +36,15 @@ class MenuPaths:
     ],
 )
 @pytest.mark.usefixtures(
-    "mock_input_series", "save_example_info", "mock_report_dir", "mock_password_auth"
+    "mock_input_series",
+    "save_example_info",
+    "mock_report_dir",
+    "mock_manager_password_auth",
 )
 def test_member_reports(
     mock_input_series,
     save_example_info,
-    mock_password_auth,
+    mock_manager_password_auth,
     capsys,
     expected_output,
 ):
@@ -61,12 +64,15 @@ def test_member_reports(
     ],
 )
 @pytest.mark.usefixtures(
-    "mock_input_series", "save_example_info", "mock_report_dir", "mock_password_auth"
+    "mock_input_series",
+    "save_example_info",
+    "mock_report_dir",
+    "mock_manager_password_auth",
 )
 def test_add_to_database(
     mock_input_series,
     save_example_info,
-    mock_password_auth,
+    mock_manager_password_auth,
     table_info,
 ):
     """Test adding a new member, provider, and service."""
@@ -88,12 +94,15 @@ def test_add_to_database(
     ],
 )
 @pytest.mark.usefixtures(
-    "mock_input_series", "save_example_info", "mock_report_dir", "mock_password_auth"
+    "mock_input_series",
+    "save_example_info",
+    "mock_report_dir",
+    "mock_manager_password_auth",
 )
 def test_remove_from_database(
     mock_input_series,
     save_example_info,
-    mock_password_auth,
+    mock_manager_password_auth,
     table_info,
 ):
     """Test removing a new member, provider, and service."""
@@ -115,12 +124,15 @@ def test_remove_from_database(
     ],
 )
 @pytest.mark.usefixtures(
-    "mock_input_series", "save_example_info", "mock_report_dir", "mock_password_auth"
+    "mock_input_series",
+    "save_example_info",
+    "mock_report_dir",
+    "mock_manager_password_auth",
 )
 def test_update_in_database(
     mock_input_series,
     save_example_info,
-    mock_password_auth,
+    mock_manager_password_auth,
     table_info,
 ):
     """Test removing a new member, provider, and service."""
