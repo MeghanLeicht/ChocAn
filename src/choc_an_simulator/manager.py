@@ -208,15 +208,8 @@ def remove_member_record() -> None:
 
     Prompts the user for a member ID, then removes that member's information.
     """
-    try:
-        member_id = prompt_int("Member ID")
-        if remove_record(member_id, MEMBER_INFO):
-            print(f"Member {member_id} Removed")
-        else:
-            print(f"Member {member_id} Not Found.")
-    except ArrowIOError:
-        PColor.pfail("Member was not removed!")
-        return
+    raise NotImplementedError("remove_member_record")
+
 
 
 def generate_unique_id(table_info: TableInfo) -> int:
