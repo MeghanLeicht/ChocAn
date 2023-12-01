@@ -483,7 +483,40 @@ def test_update_provider_directory_record_fail(mocker, capsys):
     assert "There was an error updating the service record." in capsys.readouterr().out
 
 
-def test_remove_provider_directory_record():
+class TestRemoveProviderDirectoryRecord:
     """Test of the remove_provider_directory_record function."""
-    with pytest.raises(NotImplementedError):
+
+    def test_remove_provider_directory_record(self, mocker, capsys) -> None:
+        """Test remove_provider_directory_record successful."""
+        service_id = 123456
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=service_id)
+        mocker.patch(
+            "choc_an_simulator.manager.remove_record",
+            return_value=True,
+        )
         remove_provider_directory_record()
+
+        captured = capsys.readouterr()
+        expected_output = f"Service {service_id} Removed\n"
+        assert expected_output in captured.out
+
+    def test_remove_provider_directory_no_service_id(self, mocker, capsys) -> None:
+        """Test remove_provider_directory_record without service id."""
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=None)
+        excepted_output = remove_provider_directory_record()
+        assert excepted_output is None
+
+    def test_remove_provider_directory_io_error(self, mocker, capsys) -> None:
+        """Test remove_provider_directory_record function with load IO error."""
+        service_id = 123456
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=service_id)
+        mocker.patch(
+            "choc_an_simulator.manager.remove_record",
+            side_effect=pa.ArrowIOError,
+        )
+        remove_provider_directory_record()
+
+        assert (
+            f"There as an error and service {service_id} was not removed!"
+            in capsys.readouterr().out
+        )

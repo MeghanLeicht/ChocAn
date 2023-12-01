@@ -9,7 +9,6 @@ from pandas.api.types import is_numeric_dtype
 from .database_management import (
     load_records_from_file,
     add_records_to_file,
-    update_record,
     remove_record,
     update_record,
 )
@@ -411,9 +410,15 @@ def update_provider_directory_record() -> None:
 
 
 def remove_provider_directory_record() -> None:
-    """
-    Manager is prompted for a service id to be removed, and a lookup is performed.
-
-    This prompt repeats until the user chooses to exit.
-    """
-    raise NotImplementedError("remove_provider_directory_record")
+    """Manager is prompted for a service id, and a lookup is performed, and a service is removed."""
+    service_id = prompt_int("Service ID")
+    result = None
+    try:
+        result = remove_record(service_id, PROVIDER_DIRECTORY_INFO)
+    except ArrowIOError:
+        PColor.pfail(f"There as an error and service {service_id} was not removed!")
+        return
+    if result is True:
+        print(f"Service {service_id} Removed")
+    else:
+        print(f"Service {service_id} was not found")
