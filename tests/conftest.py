@@ -6,8 +6,26 @@ These functions are designed to make testing more straightforward and remove boi
 This includes functions for testing menus and mocking user input.
 """
 from typing import List
+from datetime import datetime
+from numpy import datetime64
 import re
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
+import pandas as pd
+import contextlib
+
+from choc_an_simulator.schemas import (
+    USER_INFO,
+    MEMBER_INFO,
+    PROVIDER_DIRECTORY_INFO,
+    SERVICE_LOG_INFO,
+)
+from choc_an_simulator.database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    _parquet_utils,
+    reports,
+)
 
 
 @pytest.fixture
@@ -27,20 +45,28 @@ def mock_input_ctrl_c(monkeypatch):
 
 
 @pytest.fixture
-def mock_input_series(input_strs: List[str], monkeypatch):
+def mock_input_series(input_strs: List[str], mocker):
     """
     When included by a test, simulates input_strs as sequential user inputs.
 
     Args-
         input_strs: List of strings to simulate as user input
-        monkeypatch:
+        mocker:
             Pytest fixture for mocking input. To be passed by the test as an indirect parameter.
 
     Examples-
         See tests/test_user_io.py for several examples
     """
     inputs = iter(input_strs)
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    def inputs_then_exit(_):
+        """Calls the next input in the sequence each time it's called, then KeyboardInterrupts."""
+        next_val = next(inputs, None)
+        if next_val is None:
+            raise KeyboardInterrupt
+        return str(next_val)
+
+    mocker.patch("builtins.input", inputs_then_exit)
 
 
 @pytest.fixture
@@ -104,7 +130,7 @@ def assert_menu_endpoint(
         pattern = re.compile(r"(\d+):.*?" + re.escape(text))
         match = pattern.search(output)
         assert match is not None, "Option text not found in menu output"
-        return match.group(1)
+        return match[1]
 
     # Mock the input function to automatically select the correct option
     call_count = 0
@@ -129,3 +155,139 @@ def assert_menu_endpoint(
     yield
 
     patch.assert_called()
+
+
+def save_example_provider_info():
+    """Write example provider info to a temporary file."""
+    user_df = pd.DataFrame(
+        {
+            "id": [111111111, 333333333],
+            "type": [1, 0],
+            "name": ["Joe", "Manny"],
+            "address": "12234 NE Street St.",
+            "city": "Metrocity",
+            "state": "OR",
+            "zipcode": 97212,
+            "password_hash": bytes(0),
+        },
+    )
+    with contextlib.suppress(ValueError):  # Avoid adding duplicate values
+        add_records_to_file(user_df, USER_INFO)
+        assert load_records_from_file(USER_INFO).equals(user_df)
+
+
+def save_example_member_info():
+    """Write example provider info to a temporary file."""
+    member_df = pd.DataFrame(
+        {
+            "member_id": [222222222, 222222223],
+            "name": ["Mary", "Marie"],
+            "address": ["4321 NE Street St.", "A second place"],
+            "city": "Metrocity",
+            "state": "OR",
+            "zipcode": 97212,
+            "suspended": [False, True],
+        },
+    )
+    with contextlib.suppress(ValueError):  # Avoid adding duplicate values
+        add_records_to_file(member_df, MEMBER_INFO)
+        assert load_records_from_file(MEMBER_INFO).equals(member_df)
+
+
+def save_example_provider_directory_info():
+    """Write example provider direcotory info to a temporary file."""
+    provider_directory_df = pd.DataFrame(
+        {
+            "service_id": [100001, 100002, 100003, 100004],
+            "service_name": [
+                "S 1",
+                "S 2",
+                "S 3",
+                "S 4",
+            ],
+            "price_dollars": [50, 30, 60, 25],
+            "price_cents": [45, 44, 75, 30],
+        }
+    )
+    with contextlib.suppress(ValueError):  # Avoid adding duplicate values
+        add_records_to_file(provider_directory_df, PROVIDER_DIRECTORY_INFO)
+        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(
+            provider_directory_df
+        )
+
+
+def save_example_service_log():
+    """
+    Write example service log data to a temporary file.
+
+    ID's correspond to to other example functions.
+    """
+    service_log_df = pd.DataFrame(
+        {
+            "entry_datetime_utc": datetime64(datetime.now()),
+            "service_date_utc": datetime.now().date(),
+            "provider_id": 111111111,
+            "member_id": 222222222,
+            "service_id": 100001,
+            "comments": "Some comments",
+        },
+        index=[0],
+    )
+    with contextlib.suppress(ValueError):
+        add_records_to_file(service_log_df, SERVICE_LOG_INFO)
+
+
+@pytest.fixture(scope="function")
+def monkeysession(request):
+    """Create a patcher that lasts for the duration of the test function."""
+    mp = MonkeyPatch()
+    request.addfinalizer(mp.undo)
+    return mp
+
+
+@pytest.fixture(scope="function")
+def save_example_info(monkeysession, tmp_path_factory):
+    """Mock the directory that parquet files are stored in."""
+    monkeysession.setattr(
+        _parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp())
+    )
+    save_example_member_info()
+    save_example_provider_info()
+    save_example_provider_directory_info()
+    save_example_service_log()
+    yield tmp_path_factory
+
+
+@pytest.fixture(scope="function")
+def mock_report_dir(monkeysession, tmp_path_factory):
+    """Mock the directory that report files are stored in."""
+    monkeysession.setattr(reports, "_REPORT_DIR_", str(tmp_path_factory.getbasetemp()))
+    yield tmp_path_factory
+
+
+@pytest.fixture
+def mock_provider_password_auth(mocker):
+    """Mock the password entry / authorization process."""
+    mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
+    mocker.patch(
+        "choc_an_simulator.login.generate_secure_password", return_value=[None, None]
+    )
+    mocker.patch(
+        "choc_an_simulator.login.secure_password_verification", return_value=True
+    )
+    mocker.patch("choc_an_simulator.login.user_type_authorization", return_value=1)
+    yield
+
+
+@pytest.fixture
+def mock_manager_password_auth(mocker):
+    """Mock the password entry / authorization process."""
+    mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
+    mocker.patch(
+        "choc_an_simulator.login.generate_secure_password", return_value=[None, None]
+    )
+    mocker.patch(
+        "choc_an_simulator.login.secure_password_verification", return_value=True
+    )
+    mocker.patch("choc_an_simulator.login.user_type_authorization", return_value=0)
+    yield
