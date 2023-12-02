@@ -201,15 +201,7 @@ def _validate_and_update_fields(
     if row is None:
         raise IndexError("Index not found.")
     for field_name, updated_value in field_updates.items():
-        updated_val = _validate_and_update_field(row, field_name, updated_value, table_info)
-        if table_info.name == "members":
-            records.loc[
-                records["member_id"] == updated_val["member_id"], field_name] = updated_value
-        elif table_info.name == "providers":
-            records.loc[records["id"] == updated_val["id"], field_name] = updated_value
-        else:
-            records.loc[
-                records["service_id"] == updated_val["service_id"], field_name] = updated_value
+        _validate_and_update_field(row, field_name, updated_value, table_info)
 
     return records
 
