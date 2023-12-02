@@ -88,7 +88,7 @@ def test_add_to_database(
         (MenuPaths.REMOVE_MEMBER + ["222222222"], MEMBER_INFO),
         (MenuPaths.REMOVE_PROVIDER + ["111111111"], USER_INFO),
         (
-            MenuPaths.REMOVE_PROVIDER_DIRECTORY + ["S", "10", "10"],
+            MenuPaths.REMOVE_PROVIDER_DIRECTORY + ["100001"],
             PROVIDER_DIRECTORY_INFO,
         ),
     ],

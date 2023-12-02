@@ -2,7 +2,7 @@
 import pytest
 from choc_an_simulator.login import login_menu
 from choc_an_simulator.database_management import load_records_from_file
-from choc_an_simulator.schemas import PROVIDER_DIRECTORY_INFO
+from choc_an_simulator.schemas import PROVIDER_DIRECTORY_INFO, SERVICE_LOG_INFO
 
 PROVIDER_LOGIN_SEQUENCE = ["111111111"]
 
@@ -23,9 +23,7 @@ class MenuNums:
         (MenuNums.CHECK_IN + ["555555555"], "Invalid"),
     ],
 )
-@pytest.mark.usefixtures(
-    "mock_input_series", "save_example_info", "mock_provider_password_auth"
-)
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_provider_password_auth")
 def test_member_check_in(
     mock_input_series,
     save_example_info,
@@ -47,19 +45,16 @@ def test_member_check_in(
         (
             MenuNums.RECORD_SERVICE
             + [
-                "09-15-1997",  # Service Date
-                "MemName",  # member Name
                 "222222222",  # member ID
+                "111111111",  # provider_ID
+                "09-15-1997",  # Service Date
                 "100001",  # service ID
-                "50",  # price (dollars)
-                "45",  # price (cents)
+                "y",
             ]
         ),
     ],
 )
-@pytest.mark.usefixtures(
-    "mock_input_series", "save_example_info", "mock_provider_password_auth"
-)
+@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_provider_password_auth")
 def test_member_record_service(
     mock_input_series,
     save_example_info,
@@ -67,10 +62,10 @@ def test_member_record_service(
     capsys,
 ):
     """Test a valid login by a provider, then recording a service entry."""
-    provider_directory_before = load_records_from_file(PROVIDER_DIRECTORY_INFO)
+    service_log_before = load_records_from_file(SERVICE_LOG_INFO)
     login_menu()
-    provider_directory_after = load_records_from_file(PROVIDER_DIRECTORY_INFO)
-    assert len(provider_directory_before) == len(provider_directory_after) - 1
+    service_log_after = load_records_from_file(SERVICE_LOG_INFO)
+    assert len(service_log_before) == len(service_log_after) - 1
 
 
 @pytest.mark.parametrize("input_strs", [(MenuNums.REQUEST_DIRECTORY)])
