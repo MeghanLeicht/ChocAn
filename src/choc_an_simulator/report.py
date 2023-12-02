@@ -128,7 +128,7 @@ def generate_provider_report() -> None:
     be set to 999. If the total fee is greater than 99999.99, it will be set to 99999.99. After a
     report is generated, the path to it is printed to the console.
     """
-    gt_cols = {"service_date_utc": datetime.now() - timedelta(days=7)}
+    gt_cols = {"service_date_utc": (datetime.now() - timedelta(days=7)).date()}
     service_log = None
     provider_directory = None
     member_info = None
