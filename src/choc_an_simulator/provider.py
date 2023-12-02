@@ -188,7 +188,7 @@ def record_service_billing_entry() -> None:
         PColor.pok("Service Billing Entry Recorded Successfully")
     except ArrowIOError as e:
         PColor.pfail("Failed to add service log information to the file")
-        PColor.pfail(f"An error occurred: {e}") 
+        PColor.pfail(f"An error occurred: {e}")
 
 
 def request_provider_directory() -> None:
