@@ -133,9 +133,7 @@ class TableInfo:
     def _check_field_exists(self, field_name: str):
         """Raise a KeyError if a given field doesn't exist in the schema."""
         if field_name not in self.schema.names:
-            raise KeyError(
-                f"Field Name {field_name} does not exist in {self.name} schema."
-            )
+            raise KeyError(f"Field Name {field_name} does not exist in {self.name} schema.")
 
     def _check_type(self, field_name: str, value: Any):
         """Raise an Arithmetic error if a given field/value pair has an incompatible type."""
