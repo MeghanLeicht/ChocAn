@@ -201,7 +201,8 @@ def _validate_and_update_fields(
     if row is None:
         raise IndexError("Index not found.")
     for field_name, updated_value in field_updates.items():
-        _validate_and_update_field(row, field_name, updated_value, table_info)
+        temp = _validate_and_update_field(row, field_name, updated_value, table_info)
+        records.loc[records.iloc[:, 0] == index, field_name] = updated_value
 
     return records
 

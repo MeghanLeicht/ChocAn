@@ -382,6 +382,12 @@ def update_provider_record() -> None:
         new_value = prompt_int(
             f"New value for {field_to_update}", USER_INFO.character_limits["zipcode"]
         )
+    elif field_to_update == "type":
+        new_value = prompt_int(
+            f"New value for {field_to_update}",
+            char_limit=USER_INFO.character_limits["type"],
+            numeric_limit=USER_INFO.numeric_limits["type"],
+        )
     else:
         new_value = prompt_str(
             f"New value for {field_to_update}", USER_INFO.character_limits["address"]

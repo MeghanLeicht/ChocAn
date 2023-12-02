@@ -228,6 +228,7 @@ USER_INFO = TableInfo(
     ),
     character_limits={
         "id": range(9, 9),
+        "type": range(1, 1),
         "name": range(1, 25),
         "address": range(1, 25),
         "city": range(1, 14),

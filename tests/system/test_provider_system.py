@@ -2,7 +2,7 @@
 import pytest
 from choc_an_simulator.login import login_menu
 from choc_an_simulator.database_management import load_records_from_file
-from choc_an_simulator.schemas import PROVIDER_DIRECTORY_INFO, SERVICE_LOG_INFO
+from choc_an_simulator.schemas import MEMBER_INFO, PROVIDER_DIRECTORY_INFO, SERVICE_LOG_INFO
 
 PROVIDER_LOGIN_SEQUENCE = ["111111111"]
 
