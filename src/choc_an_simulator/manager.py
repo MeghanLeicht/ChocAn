@@ -396,7 +396,8 @@ def add_provider_directory_record() -> None:
             ),
             "price_dollars": prompt_int("Price (dollars)"),
             "price_cents": prompt_int(
-                "Price (cents)", PROVIDER_DIRECTORY_INFO.character_limits["price_cents"]
+                "Price (cents)",
+                numeric_limit=PROVIDER_DIRECTORY_INFO.numeric_limits["price_cents"],
             ),
         },
         index=[0],
