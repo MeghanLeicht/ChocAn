@@ -172,8 +172,6 @@ def prompt_date(
             result = _prompt_single_date(message, min_date, max_date)
         except ValueError:
             continue
-        if result is None:
-            return None
         return result
 
 
@@ -191,8 +189,7 @@ def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int,
     Raises-
         ValueError: If the 'choices' list is empty.
     """
-    if len(choices) == 0:
-        raise ValueError("'choices' may not be empty.")
+    assert choices, "'choices' may not be empty."
     print(message)
     for i, choice in enumerate(choices):
         PColor.pok(f"{i+1}: ", end=f"{choice}\n")
@@ -201,9 +198,7 @@ def prompt_menu_options(message: str, choices: List[str]) -> Optional[Tuple[int,
         char_limit=None,
         numeric_limit=range(1, len(choices)),
     )
-    if selection is None:
-        return None
-    return (selection - 1, choices[selection - 1])
+    return (selection - 1, choices[selection - 1]) if selection else None
 
 
 def _prompt_single_int(
