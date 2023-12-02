@@ -234,12 +234,8 @@ def _prompt_single_int(
         print(f'"{result_text}" is not a valid integer.')
         raise ValueError
     # Result could not be converted
-    if (numeric_limit is not None) and not (
-        numeric_limit.start <= result <= numeric_limit.stop
-    ):
-        PColor.pfail(
-            f"{result} is not in the range ({numeric_limit.start}-{numeric_limit.stop})"
-        )
+    if (numeric_limit is not None) and not (numeric_limit.start <= result <= numeric_limit.stop):
+        PColor.pfail(f"{result} is not in the range ({numeric_limit.start}-{numeric_limit.stop})")
         raise ValueError
     return result
 
@@ -270,8 +266,6 @@ def prompt_int(
             result = _prompt_single_int(message, char_limit, numeric_limit)
         except ValueError:
             continue
-        if result is None:
-            return None
         return result
 
 
@@ -295,12 +289,9 @@ def _prompt_single_str(message: str, char_limit: Optional[range]) -> Optional[st
     except KeyboardInterrupt:
         print()
         return None
-    if (char_limit is not None) and not (
-        char_limit.start <= len(result) <= char_limit.stop
-    ):
+    if (char_limit is not None) and not (char_limit.start <= len(result) <= char_limit.stop):
         PColor.pfail(
-            "Input must be between "
-            f"{char_limit.start} and {char_limit.stop} characters long."
+            "Input must be between " f"{char_limit.start} and {char_limit.stop} characters long."
         )
         raise ValueError
     return result
