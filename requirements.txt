@@ -1,4 +1,5 @@
 #List all external packages (anything installed with pip) here
+bcrypt
 numpy
 pandas
 pyarrow
