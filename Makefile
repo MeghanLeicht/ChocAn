@@ -22,10 +22,6 @@ systest:
 	$(COVERAGE) report -m
 	rm .coverage
 
-systest:
-	$(COVERAGE) run -m pytest -v tests/system
-	$(COVERAGE) report -m
-
 
 clean:
 	rm -rf $(VENV)

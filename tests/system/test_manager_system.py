@@ -115,10 +115,10 @@ def test_remove_from_database(
 @pytest.mark.parametrize(
     "input_strs,table_info",
     [
-        (MenuPaths.UPDATE_MEMBER + [1, 222222222, "Newname"], MEMBER_INFO),
-        (MenuPaths.UPDATE_PROVIDER + [1, 111111111, "Newname"], USER_INFO),
+        (MenuPaths.UPDATE_MEMBER + [222222222, 1, "Newname"], MEMBER_INFO),
+        (MenuPaths.UPDATE_PROVIDER + [111111111, 1, "Newname"], USER_INFO),
         (
-            MenuPaths.UPDATE_PROVIDER_DIRECTORY + [1, 100001, "Newname"],
+            MenuPaths.UPDATE_PROVIDER_DIRECTORY + [100001, 1, "Newname"],
             PROVIDER_DIRECTORY_INFO,
         ),
     ],
