@@ -202,6 +202,8 @@ def update_member_record() -> None:
     """
     try:
         member_id = prompt_int("Member ID")
+        if member_id is None:
+            return
         member_record = load_records_from_file(
             MEMBER_INFO, eq_cols={"member_id": member_id}
         )
@@ -233,6 +235,7 @@ def update_member_record() -> None:
 
     try:
         update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
+        PColor.pok("Member record updated.")
     except ArrowIOError:
         PColor.pfail("There was an error updating the member record.")
         return
