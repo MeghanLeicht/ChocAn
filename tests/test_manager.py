@@ -223,9 +223,41 @@ def test_update_member_record():
         update_member_record()
 
 
-def test_remove_member_record():
-    with pytest.raises(NotImplementedError):
+class TestRemoveMemberRecord:
+    """Test of the remove_member_record function."""
+
+    def test_remove_member_record(self, mocker, capsys) -> None:
+        """Test remove_member_record successful."""
+        member_id = 123456789
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=member_id)
+        mocker.patch(
+            "choc_an_simulator.manager.remove_record",
+            return_value=True,
+        )
         remove_member_record()
+        captured = capsys.readouterr()
+        expected_output = f"Member {member_id} Removed"
+        assert expected_output in captured.out
+
+    def test_remove_member_record_no_member_id(self, mocker, capsys) -> None:
+        """Test remove_provider_record without member id."""
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=None)
+        expected_output = remove_member_record()
+        assert expected_output is None
+
+    def test_remove_member_io_error(self, mocker, capsys) -> None:
+        """Test remove_member_record function with load IO error."""
+        member_id = 123456789
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=member_id)
+        mocker.patch(
+            "choc_an_simulator.manager.remove_record",
+            side_effect=pa.ArrowIOError,
+        )
+        remove_member_record()
+        assert (
+            f"There was an error and member {member_id} was not removed!"
+            in capsys.readouterr().out
+        )
 
 
 class TestAddProviderRecord:
