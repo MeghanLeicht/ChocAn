@@ -6,14 +6,15 @@ saving reports. The module works with Parquet and CSV file formats and ensures d
 and schema compatibility.
 """
 
-from .load_records import load_records_from_file
-from .edit_records import update_record, remove_record, add_records_to_file
+from .load_records import load_records_from_file, load_record
+from .edit_records import update_record, remove_record, add_record_to_file
 from .reports import save_report
 
 __all__ = [
     "load_records_from_file",
+    "load_record",
     "update_record",
     "remove_record",
-    "add_records_to_file",
+    "add_record_to_file",
     "save_report",
 ]

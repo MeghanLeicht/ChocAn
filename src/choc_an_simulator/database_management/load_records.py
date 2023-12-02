@@ -66,6 +66,35 @@ def load_records_from_file(
     return records
 
 
+def load_record(index: int, table_info: TableInfo) -> pd.Series:
+    """
+    Load a single row from a database.
+
+    Args-
+        index (int): The value in the first column to search for
+        table_info (TableInfo): Info for the database to search
+
+    Returns-
+        pd.Series: The matching row
+
+    Raises-
+        IndexError: No record found.
+    """
+    try:
+        record_df = load_records_from_file(table_info, eq_cols={table_info.index_col(): index})
+    except pa.ArrowInvalid as err_invalid:
+        raise err_invalid
+    except pa.ArrowIOError as err_io:
+        raise err_io
+    except KeyError as err_key:
+        raise err_key
+
+    try:
+        return record_df.iloc[0]
+    except IndexError as err_index:
+        raise IndexError("Record not found.") from err_index
+
+
 def _apply_filter(
     records: pd.DataFrame,
     col_filters: Optional[Dict[str, Any]],
