@@ -357,10 +357,39 @@ def add_provider_directory_record() -> None:
     Manager is prompted to enter service information.
 
     This is the service information: service_id, service_name, price_dollars, and price_cents.
-
-    This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("add_provider_directory_record")
+    try:
+        service_id = generate_unique_id(PROVIDER_DIRECTORY_INFO)
+    except IndexError:
+        PColor.pfail(
+            "The maximum number of services has been reached. No new services added."
+        )
+        return
+
+    service_df = pd.DataFrame(
+        {
+            "service_id": service_id,
+            "service_name": prompt_str(
+                "Service name", PROVIDER_DIRECTORY_INFO.character_limits["service_name"]
+            ),
+            "price_dollars": prompt_int("Price (dollars)"),
+            "price_cents": prompt_int(
+                "Price (cents)", PROVIDER_DIRECTORY_INFO.character_limits["price_cents"]
+            ),
+        },
+        index=[0],
+    )
+    if service_df.isna().values.any():
+        return
+    try:
+        add_records_to_file(service_df, PROVIDER_DIRECTORY_INFO)
+    except ArrowIOError:
+        PColor.pwarn(
+            "There was an issue accessing the database. Service was not added."
+        )
+        return
+    # value / type errors are impossible due to checks during prompting.
+    PColor.pok(f"Service #{service_id} Added.")
 
 
 def update_provider_directory_record() -> None:
