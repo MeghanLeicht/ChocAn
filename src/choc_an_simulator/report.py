@@ -177,7 +177,7 @@ def generate_provider_report() -> None:
 
         # calculate_length_of_consultations is broken out into a function to make it easier to mock
         # for testing
-        total_consultations = calculate_length_of_consultations(provider_record)
+        total_consultations = calculate_num_of_consultations(provider_record)
         if total_consultations < 999:
             records.loc[
                 current_provider, "Total number of consultations with members"
@@ -328,6 +328,6 @@ def calculate_total_fee(providers_fees_df: pd.DataFrame) -> float:
     return providers_fees_df.sum()
 
 
-def calculate_length_of_consultations(providers_consultations_df: pd.DataFrame) -> int:
+def calculate_num_of_consultations(providers_consultations_df: pd.DataFrame) -> int:
     """Calculates the total number of consultations for a provider."""
     return len(providers_consultations_df)

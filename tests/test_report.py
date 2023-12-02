@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pyarrow as pa
+from pandas._testing import assert_frame_equal
 from pyarrow import ArrowIOError
 import pytest
 from _pytest.fixtures import fixture
