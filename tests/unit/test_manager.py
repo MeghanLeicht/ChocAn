@@ -299,7 +299,7 @@ class TestUpdateMemberRecord:
         )
         assert update_member_record() is None
         assert (
-                "Error: No record loaded." in capsys.readouterr().out
+                "Warning: No matching member.\n" in capsys.readouterr().out
         )
 
     def test_update_member_record_valid(

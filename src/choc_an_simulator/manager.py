@@ -209,18 +209,18 @@ def update_member_record() -> None:
             MEMBER_INFO, eq_cols={"member_id": member_id}
         )
     except ArrowIOError:
-        PColor.pfail("There was an error loading the member record.")
+        PColor.pwarn("There was an error loading the member record.")
         return
 
     if member_record.empty:
-        PColor.pfail("Error: No record loaded.")
+        PColor.pwarn("Warning: No matching member.\n")
         return
 
     member_record = member_record.iloc[0]
 
     options = []
     for field in member_record.index.values[1:]:
-        options.append(f"{field}: {member_record[field]}")
+        options.append(field)
     selection = prompt_menu_options("Choose field to change", options)
     if selection is None:
         return
@@ -233,6 +233,9 @@ def update_member_record() -> None:
         new_value = prompt_str(
             f"New value for {field_to_update}", MEMBER_INFO.character_limits["address"]
         )
+
+    if new_value is None:
+        return
 
     try:
         update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
@@ -261,6 +264,8 @@ def remove_member_record() -> None:
     #     PColor.pfail("Member was not removed!")
     #     return
     member_id = prompt_int("Member ID")
+    if member_id is None:
+        return
     try:
         result = remove_record(member_id, MEMBER_INFO)
     except ArrowIOError:
@@ -283,7 +288,13 @@ def generate_unique_id(table_info: TableInfo) -> int:
     Raises-
         IndexError: ID limit exceeded.
     """
-    df = load_records_from_file(table_info)
+    df = None
+    try:
+        df = load_records_from_file(table_info)
+    except ArrowIOError:
+        PColor.pwarn(
+            "There was an issue accessing the database."
+        )
     if df.empty:
         return 1000000000
 
@@ -353,7 +364,7 @@ def update_provider_record() -> None:
     try:
         provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
     except ArrowIOError:
-        PColor.pfail("There was an error loading the provider record.")
+        PColor.pwarn("There was an error loading the provider record.")
         return
     if provider_record.empty:
         PColor.pwarn("Provider ID not found.")
@@ -362,12 +373,12 @@ def update_provider_record() -> None:
 
     options = []
     for field in provider_record.index.values[1:]:
-        options.append(f"{field}: {provider_record[field]}")
+        options.append(field)
     selection = prompt_menu_options("Choose field to change", options)
     if selection is None:
         return
     field_to_update = selection[1]
-    if field_to_update == "type" or field_to_update == "zipcode":
+    if field_to_update == "zipcode":
         new_value = prompt_int(
             f"New value for {field_to_update}", USER_INFO.character_limits["zipcode"]
         )
@@ -375,6 +386,9 @@ def update_provider_record() -> None:
         new_value = prompt_str(
             f"New value for {field_to_update}", USER_INFO.character_limits["address"]
         )
+
+    if new_value is None:
+        return
 
     try:
         update_record(provider_id, USER_INFO, **{field_to_update: new_value})
@@ -477,7 +491,7 @@ def update_provider_directory_record() -> None:
 
     options = []
     for field in service_record.index.values[1:]:
-        options.append(f"{field}: {service_record[field]}")
+        options.append(field)
     selection = prompt_menu_options("Choose field to change", options)
     if selection is None:
         return
