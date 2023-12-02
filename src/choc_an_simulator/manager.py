@@ -443,7 +443,7 @@ def update_provider_directory_record() -> None:
     if field_to_update == "price_dollars" or field_to_update == "price_cents":
         new_value = prompt_int(
             f"New value for {field_to_update}",
-            PROVIDER_DIRECTORY_INFO.character_limits["price_cents"],
+            numeric_limit=PROVIDER_DIRECTORY_INFO.numeric_limits["price_cents"],
         )
     else:
         new_value = prompt_str(
