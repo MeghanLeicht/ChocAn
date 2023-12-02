@@ -316,7 +316,9 @@ def update_provider_record() -> None:
     except ArrowIOError:
         PColor.pfail("There was an error loading the provider record.")
         return
-
+    if provider_record.empty:
+        PColor.pwarn("Provider ID not found.")
+        return
     provider_record = provider_record.iloc[0]
 
     options = []
