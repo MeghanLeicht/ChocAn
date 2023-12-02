@@ -413,10 +413,23 @@ class TestRemoveProviderRecord:
     #     assert expected_output1 in capsys.readouterr().out
 
 
-def test_add_provider_directory_record():
-    """Test of the add_provider_directory_record function."""
-    with pytest.raises(NotImplementedError):
+class TestAddProviderDirectoryRecord:
+    """Tests for the add_provider_directory_record function"""
+
+    def test_add_provider_directory_record_id(self, mocker, capsys):
+        """
+        Test of the add_provider_directory_record function when the system has reached the maximum
+        number of services.
+        """
+        mocker.patch(
+            "choc_an_simulator.manager.generate_unique_id",
+            side_effect=IndexError,
+        )
         add_provider_directory_record()
+        assert (
+            "The maximum number of services has been reached. No new services added."
+            in capsys.readouterr().out
+        )
 
 
 # class TestUpdateProviderDirectoryRecord:
