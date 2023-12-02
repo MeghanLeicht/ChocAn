@@ -12,7 +12,7 @@ from choc_an_simulator.provider import (
     record_service_billing_entry,
     request_provider_directory,
 )
-from definitions import PROVIDER_DIR_CSV
+from choc_an_simulator.definitions import PROVIDER_DIR_CSV
 from choc_an_simulator.provider import (
     SERVICE_LOG_INFO,
     PROVIDER_DIRECTORY_INFO,
@@ -97,7 +97,7 @@ def test_display_member_information():
 
 
 @pytest.mark.parametrize(
-    "member_id, provider_id, user_input, service_code, expected_output, raise_error_at, raise_add_records_error",
+    "member_id,provider_id,user_input,serv_id,expected_output,raise_at,raise_add_records",
     [
         (
             111111111,
@@ -224,23 +224,24 @@ def test_record_service_billing(
     member_id,
     provider_id,
     user_input,
-    service_code,
+    serv_id,
     expected_output,
-    raise_error_at,
-    raise_add_records_error,
+    raise_at,
+    raise_add_records,
 ):
     """
     Test the record_service_billing_entry function with a range of inputs and scenarios.
 
-    This includes testing normal operation as well as error handling for failed data loading and saving.
+    This includes testing normal operation as well as error handling for failed data loading
+    and saving.
 
     Args:
         mocker: Pytest fixture for mocking dependencies.
         capsys: Pytest fixture for capturing stdout and stderr.
-        member_id, provider_id, user_input, service_code: Input parameters for the test.
+        member_id, provider_id, user_input, serv_id: Input parameters for the test.
         expected_output: The expected output string to verify correct function behavior.
-        raise_error_at: Specifies at which point to simulate a data loading error.
-        raise_add_records_error: Boolean indicating whether to simulate an error in data saving.
+        raise_at: Specifies at which point to simulate a data loading error.
+        raise_add_records: Indicates whether to simulate an error in data saving.
     """
     # Predefined dataframes to return for successful data loading operations
     dataframes_to_return = [
@@ -259,22 +260,22 @@ def test_record_service_billing(
         ),
     ]
 
-    # Simulate data loading errors based on the raise_error_at parameter
+    # Simulate data loading errors based on the raise_at parameter
     def dataframes_side_effect(*args, **kwargs):
-        if raise_error_at == "members" and args[0] == MEMBER_INFO:
+        if raise_at == "members" and args[0] == MEMBER_INFO:
             raise ArrowIOError("Failed to load member information from the file")
-        elif raise_error_at == "providers" and args[0] == USER_INFO:
+        elif raise_at == "providers" and args[0] == USER_INFO:
             raise ArrowIOError("Failed to load user information from the file")
-        elif raise_error_at == "services" and args[0] == PROVIDER_DIRECTORY_INFO:
+        elif raise_at == "services" and args[0] == PROVIDER_DIRECTORY_INFO:
             raise ArrowIOError(
                 "Failed to load provider directory information from the file"
             )
-        elif raise_error_at == "log" and args[0] == SERVICE_LOG_INFO:
+        elif raise_at == "log" and args[0] == SERVICE_LOG_INFO:
             raise ArrowIOError("Failed to add service log information to the file")
         return dataframes_to_return.pop(0)
 
     # Mock the add_records_to_file function to simulate errors in data saving if required
-    if raise_add_records_error:
+    if raise_add_records:
         mocker.patch(
             "choc_an_simulator.provider.add_records_to_file",
             side_effect=ArrowIOError(
@@ -288,7 +289,7 @@ def test_record_service_billing(
     mocker.patch("choc_an_simulator.provider.prompt_str", side_effect=user_input)
     mocker.patch(
         "choc_an_simulator.provider.prompt_int",
-        side_effect=[111111111, 222222222, service_code],
+        side_effect=[111111111, 222222222, serv_id],
     )
     mocker.patch(
         "choc_an_simulator.provider.prompt_date",

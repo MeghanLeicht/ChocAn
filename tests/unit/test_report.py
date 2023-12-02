@@ -5,7 +5,7 @@ import pandas as pd
 import pyarrow as pa
 from pandas._testing import assert_frame_equal
 from pyarrow import ArrowIOError
-import pytest
+
 from _pytest.fixtures import fixture
 
 from choc_an_simulator.report import (
@@ -721,9 +721,14 @@ def test_generate_provider_report_has_total_consults_over_999(
 
     assert captured == expected_output_for_provider
 
-    actual_df = pd.DataFrame()
-    for i in range(mock_save_report.call_args_list.__len__()):
-        actual_df = actual_df._append(mock_save_report.call_args_list[i][0][0])
+    actual_df = pd.concat(
+        [
+            mock_save_report.call_args_list[0][0][0],
+            mock_save_report.call_args_list[1][0][0],
+            mock_save_report.call_args_list[2][0][0],
+            mock_save_report.call_args_list[3][0][0],
+        ]
+    )
 
     actual_df = actual_df.reset_index(drop=True)
 
