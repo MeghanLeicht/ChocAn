@@ -104,8 +104,8 @@ def _parse_date(date_str: str) -> date:
     try:
         result = datetime.strptime(date_str, "%m-%d-%Y").date()
     # Date incorrectly formatted
-    except ValueError:
-        raise ValueError("Incorrect date format")
+    except ValueError as err_val:
+        raise ValueError(f'String {date_str} is not in "%m-%d-%Y" format') from err_val
     return result
 
 
@@ -130,14 +130,15 @@ def _prompt_single_date(message: str, min_date: date, max_date: date) -> Optiona
         return None
     try:
         result = _parse_date(date_str)
-    except ValueError:
+    except ValueError as err_val:
         PColor.pfail(f"{date_str} is not in MM-DD-YYYY format.")
-        raise ValueError
+        raise err_val
     if not (min_date <= result <= max_date):
         min_date_str = min_date.strftime("%m-%d-%Y")
         max_date_str = max_date.strftime("%m-%d-%Y")
-        PColor.pfail(f"Date must be between {min_date_str} and {max_date_str}")
-        raise ValueError
+        err_text = f"Date must be between {min_date_str} and {max_date_str}"
+        PColor.pfail(err_text)
+        raise ValueError(err_text)
     return result
 
 
