@@ -3,18 +3,21 @@ Manager Sub-System.
 
 The manager sub-system allows managers to manage member, provider, and provider directory records.
 """
+from typing import Dict, Optional, Any, List, cast
+from datetime import datetime, date
 import pandas as pd
-from pyarrow import ArrowIOError
+import pyarrow as pa
 from pandas.api.types import is_numeric_dtype
 from .database_management import (
     load_records_from_file,
-    add_records_to_file,
+    load_record,
+    add_record_to_file,
     update_record,
     remove_record,
     update_record,
 )
 from .schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO, TableInfo
-from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
+from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options, prompt_date
 from .report import (
     generate_member_report,
     generate_summary_report,
@@ -39,97 +42,36 @@ def manager_menu() -> None:
     Generate Provider Report
     Generate Summary Report
     """
-    user_exit = False
     message = "Manger Terminal"
     choices = ["Member", "Provider", "Provider Directory", "Reports"]
 
-    while user_exit is False:
+    while True:
         match prompt_menu_options(message, choices):
             case (_, "Member"):
-                _prompt_member_options()
+                _prompt_add_remove_update(MEMBER_INFO, "Member")
             case (_, "Provider"):
-                _prompt_provider_options()
+                _prompt_add_remove_update(USER_INFO, "Provider")
             case (_, "Provider Directory"):
-                _prompt_provider_directory_options()
+                _prompt_add_remove_update(PROVIDER_DIRECTORY_INFO, "Provider Directory")
             case (_, "Reports"):
                 _prompt_report_options()
             case None:
-                user_exit = True
+                return
 
 
-def _prompt_member_options() -> None:
-    """
-    Display member options menu to the manager.
-
-    The member options menu provides access to the following key functionalities.
-    Add Member
-    Update Member
-    Remove Member
-    """
-    user_exit = False
-    message = "Member Options"
+def _prompt_add_remove_update(table_info: TableInfo, name) -> None:
+    message = f"Edit {name} Records"
     choices = ["Add", "Update", "Remove"]
-
-    while user_exit is False:
+    while True:
         match prompt_menu_options(message, choices):
             case (_, "Add"):
-                add_member_record()
+                _prompt_add_to_table_info(table_info)
             case (_, "Update"):
-                update_member_record()
+                _prompt_update_table_info(table_info)
             case (_, "Remove"):
-                remove_member_record()
+                _prompt_remove_from_table_info(table_info)
             case None:
-                user_exit = True
-
-
-def _prompt_provider_options() -> None:
-    """
-    Display provider options menu to the manager.
-
-    The provider options menu provides access to the following key functionalities.
-    Add Provider
-    Update Provider
-    Remove Provider
-    """
-    user_exit = False
-    message = "Provider Options"
-    choices = ["Add", "Update", "Remove"]
-
-    while user_exit is False:
-        match prompt_menu_options(message, choices):
-            case (_, "Add"):
-                add_provider_record()
-            case (_, "Update"):
-                update_provider_record()
-            case (_, "Remove"):
-                remove_provider_record()
-            case None:
-                user_exit = True
-
-
-def _prompt_provider_directory_options() -> None:
-    """
-    Display provider directory options menu to the manager.
-
-    The provider directory options menu provides access to the following key functionalities.
-    Add Provider Directory
-    Update Provider Directory
-    Remove Provider Directory
-    """
-    user_exit = False
-    message = "Provider Directory Options"
-    choices = ["Add", "Update", "Remove"]
-
-    while user_exit is False:
-        match prompt_menu_options(message, choices):
-            case (_, "Add"):
-                add_provider_directory_record()
-            case (_, "Update"):
-                update_provider_directory_record()
-            case (_, "Remove"):
-                remove_provider_directory_record()
-            case None:
-                user_exit = True
+                return
 
 
 def _prompt_report_options() -> None:
@@ -141,11 +83,10 @@ def _prompt_report_options() -> None:
     Generate Provider Report
     Generate Summary Report
     """
-    user_exit = False
     message = "Reports Options"
     choices = ["Member", "Provider", "Summary"]
 
-    while user_exit is False:
+    while True:
         match prompt_menu_options(message, choices):
             case (_, "Member"):
                 generate_member_report()
@@ -154,128 +95,123 @@ def _prompt_report_options() -> None:
             case (_, "Summary"):
                 generate_summary_report()
             case None:
-                user_exit = True
+                return
 
 
-def add_member_record() -> None:
+def _prompt_field(table_info: TableInfo, field_name: str) -> Optional[str | int | date]:
+    field = next((field for field in table_info.schema.fields if field.name == field_name), None)
+    if field is None:
+        raise ValueError(f"Field {field_name} not found in schema {table_info.name}")
+    char_limit = table_info.character_limits.get(field_name, None)
+    num_limit = table_info.numeric_limits.get(field_name, None)
+    match field.type:
+        case pa.int64():
+            response = prompt_int(field.name, char_limit, num_limit)
+        case pa.date32():
+            response = prompt_date(field.name, max_date=datetime.now().date())
+        case _:
+            response = prompt_str(field.name, char_limit)
+    return response
+
+
+def _prompt_table_info(
+    table_info: TableInfo, blacklist: Optional[List[str]]
+) -> Optional[Dict[str, Any]]:
     """
-    Manager is prompted to enter member information.
+    Prompt the user for the fields in a table_info object.
 
-    Member information: member id, name, street address, city, state, zip code, and suspended.
-    The member number will be generated from generate_unique_id().
+    Args-
+        table_info: Object to get field names, types & limits from.
+        blacklist: Optional list of fields to omit from the prompt.
+
+    Returns-
+        A dictionary of name/response pairs, or none if the user exits.
     """
+    result = {}
+    blacklist = blacklist or []
+    blacklist.append(table_info.index_col())
+    for field in table_info.schema.fields:
+        if field.name in blacklist:
+            continue
+        response = _prompt_field(table_info, field.name)
+        if response is None:
+            return None
+        result[field.name] = response
+    return result
+
+
+def _prompt_update_table_info(table_info: TableInfo, blacklist: Optional[List[str]] = None):
+    blacklist = blacklist or []
+    blacklist.append(table_info.index_col())
+    index_to_update = _prompt_field(table_info, table_info.index_col())
+    if index_to_update is None:
+        return
+    index_to_update = cast(int, index_to_update)
     try:
-        member_id = generate_unique_id(MEMBER_INFO)
+        row_to_update = load_record(index_to_update, table_info)
+    except pa.ArrowIOError as err_io:
+        PColor.pfail(f"Unable to access records in {table_info.name}\n{err_io}")
+        return
     except IndexError:
-        PColor.pfail(
-            "The maximum number of members has been reached. No new member added."
-        )
+        PColor.pfail(f"Index {index_to_update} not found in {table_info.name}")
         return
 
-    member_df = pd.DataFrame(
-        {
-            "member_id": member_id,
-            "name": prompt_str("Name", MEMBER_INFO.character_limits["name"]),
-            "address": prompt_str("Address", MEMBER_INFO.character_limits["address"]),
-            "city": prompt_str("City", MEMBER_INFO.character_limits["city"]),
-            "state": prompt_str("State", MEMBER_INFO.character_limits["state"]),
-            "zipcode": prompt_int("Zipcode", MEMBER_INFO.character_limits["zipcode"]),
-            "suspended": False,
-        },
-        index=[0],
-    )
-    if member_df.isna().values.any():
-        return
-    try:
-        add_records_to_file(member_df, MEMBER_INFO)
-    except ArrowIOError:
-        PColor.pwarn("There was an issue accessing the database. Member was not added.")
-        return
-    PColor.pok(f"Member #{member_id} Added.")
-
-
-def update_member_record() -> None:
-    """
-    Prompt the user to update the member's information.
-
-    Prompts the user for a member ID, then prompts for which field to change.
-    This prompt repeats until the user chooses to exit.
-    """
-    try:
-        member_id = prompt_int("Member ID")
-        if member_id is None:
-            return
-        member_record = load_records_from_file(
-            MEMBER_INFO, eq_cols={"member_id": member_id}
-        )
-    except ArrowIOError:
-        PColor.pwarn("There was an error loading the member record.")
-        return
-
-    if member_record.empty:
-        PColor.pwarn("Warning: No matching member.\n")
-        return
-
-    member_record = member_record.iloc[0]
-
-    options = []
-    for field in member_record.index.values[1:]:
-        options.append(field)
-    selection = prompt_menu_options("Choose field to change", options)
+    menu_options = [
+        f"{name}: {val}" for name, val in row_to_update.items() if name not in blacklist
+    ]
+    selection = prompt_menu_options("Select field to update", menu_options)
     if selection is None:
         return
-    field_to_update = selection[1]
-    if field_to_update == "zipcode":
-        new_value = prompt_int(
-            f"New value for {field_to_update}", MEMBER_INFO.character_limits["zipcode"]
-        )
-    else:
-        new_value = prompt_str(
-            f"New value for {field_to_update}", MEMBER_INFO.character_limits["address"]
-        )
-
+    selected_field = row_to_update.iloc[selection[0]]
+    new_value = _prompt_field(table_info, selected_field)
     if new_value is None:
         return
-
     try:
-        update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
-        PColor.pok("Member record updated.")
-    except ArrowIOError:
-        PColor.pfail("There was an error updating the member record.")
-        return
-
-
-def remove_member_record() -> None:
-    """
-    Prompt the user to remove the member's information.
-
-    Prompts the user for a member ID, and then removes the record.
-    """
-    # try:
-    #     member_id = prompt_int("Member ID")
-    #     if member_id is not None:
-    #         if remove_record(member_id, MEMBER_INFO):
-    #             print(f"Member {member_id} Removed")
-    #         else:
-    #             print(f"Member {member_id} Not Found.")
-    #     else:
-    #         print("Member ID cannot be a NULL value!")
-    # except ArrowIOError:
-    #     PColor.pfail("Member was not removed!")
-    #     return
-    member_id = prompt_int("Member ID")
-    if member_id is None:
-        return
-    try:
-        result = remove_record(member_id, MEMBER_INFO)
-    except ArrowIOError:
-        PColor.pfail(f"There was an error and member {member_id} was not removed!")
-        return
-
-    if result is True:
-        print(f"Member {member_id} Removed")
+        update_record(index_to_update, table_info, **{selected_field: new_value})
+    except pa.ArrowIOError as err_io:
+        PColor.pfail(f"Unable to access records in {table_info.name}\n{err_io}")
     else:
-        print(f"Member {member_id} Not Found.")
+        PColor.pok("Records Updated.")
+
+
+def _prompt_add_to_table_info(table_info: TableInfo, blacklist: Optional[List[str]] = None):
+    blacklist = blacklist or []
+    blacklist.append(table_info.index_col())
+    try:
+        new_id = generate_unique_id(table_info)
+    except IndexError:
+        PColor.pfail(f"Database {table_info.name} is full.")
+        return
+    except pa.ArrowIOError as err_io:
+        PColor.pfail(f"Unable to access {table_info.name}\n{err_io}")
+        return
+
+    new_row = _prompt_table_info(table_info, blacklist)
+    if new_row is None:
+        return
+
+    new_row[table_info.index_col()] = new_id
+
+    try:
+        add_record_to_file(new_row, table_info)
+    except pa.ArrowIOError as err_io:
+        PColor.pfail(f"Unable to access records in {table_info.name}\n{err_io}")
+    else:
+        PColor.pok("Record Added.")
+
+
+def _prompt_remove_from_table_info(table_info: TableInfo):
+    index_to_update = _prompt_field(table_info, table_info.index_col())
+    if index_to_update is None:
+        return
+    index_to_update = cast(int, index_to_update)
+    try:
+        if remove_record(index_to_update, table_info):
+            PColor.pok("Record removed.")
+        else:
+            PColor.pfail("Record not found.")
+    except pa.ArrowIOError as err_io:
+        PColor.pfail(f"Unable to remove record from {table_info.name}\n{err_io}")
 
 
 def generate_unique_id(table_info: TableInfo) -> int:
@@ -291,241 +227,17 @@ def generate_unique_id(table_info: TableInfo) -> int:
     df = None
     try:
         df = load_records_from_file(table_info)
-    except ArrowIOError:
-        PColor.pwarn(
-            "There was an issue accessing the database."
-        )
+    except pa.ArrowIoError as err_io:
+        raise err_io
+
     if df.empty:
         return 1000000000
 
-    id = df.iloc[:, 0]
-    if not is_numeric_dtype(id):
+    existing_ids = df.iloc[:, 0]
+    if not is_numeric_dtype(existing_ids):
         raise TypeError("Only integers are allowed.")
 
     max_id = id.max()
     if max_id >= 9999999999:
         raise IndexError("User Limit Exceeded.")
     return max_id + 1
-
-
-def add_provider_record() -> None:
-    """
-    Manager is prompted to enter provider information.
-
-    Provider information: name, street address, city, state, zip code, and email address.
-    Provider number is generated from generate_unique_id().
-
-    This prompt repeats until the user chooses to exit.
-
-    Raises-
-        IndexError: Maximum number of providers exceeded
-    """
-    try:
-        provider_id = generate_unique_id(USER_INFO)
-    except IndexError:
-        PColor.pfail("The maximum number of users has been reached. No new user added.")
-        return
-
-    provider_df = pd.DataFrame(
-        {
-            "id": provider_id,
-            "type": 1,
-            "name": prompt_str("Name", USER_INFO.character_limits["name"]),
-            "address": prompt_str("Address", USER_INFO.character_limits["address"]),
-            "city": prompt_str("City", USER_INFO.character_limits["city"]),
-            "state": prompt_str("State", USER_INFO.character_limits["state"]),
-            "zipcode": prompt_int("Zipcode", USER_INFO.character_limits["zipcode"]),
-            "password_hash": bytes(0),
-        },
-        index=[0],
-    )
-    if provider_df.isna().values.any():
-        return
-    try:
-        add_records_to_file(provider_df, USER_INFO)
-    except ArrowIOError:
-        PColor.pwarn(
-            "There was an issue accessing the database. Provider was not added."
-        )
-        return
-    # value / type errors are impossible due to checks during prompting.
-    PColor.pok(f"Provider #{provider_id} Added.")
-
-
-def update_provider_record() -> None:
-    """
-    Prompt the user to update the provider's information.
-
-    Prompts the user for a provider ID, then prompts for which field to change.
-    """
-    provider_id = prompt_int("Provider ID")
-    if provider_id is None:
-        return None
-    try:
-        provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
-    except ArrowIOError:
-        PColor.pwarn("There was an error loading the provider record.")
-        return
-    if provider_record.empty:
-        PColor.pwarn("Provider ID not found.")
-        return
-    provider_record = provider_record.iloc[0]
-
-    options = []
-    for field in provider_record.index.values[1:]:
-        options.append(field)
-    selection = prompt_menu_options("Choose field to change", options)
-    if selection is None:
-        return
-    field_to_update = selection[1]
-    if field_to_update == "zipcode":
-        new_value = prompt_int(
-            f"New value for {field_to_update}", USER_INFO.character_limits["zipcode"]
-        )
-    else:
-        new_value = prompt_str(
-            f"New value for {field_to_update}", USER_INFO.character_limits["address"]
-        )
-
-    if new_value is None:
-        return
-
-    try:
-        update_record(provider_id, USER_INFO, **{field_to_update: new_value})
-    except ArrowIOError:
-        PColor.pfail("There was an error updating the provider record.")
-        return
-
-
-def remove_provider_record() -> None:
-    """
-    Prompt the user to remove the provider's information.
-
-    Prompts the user for a provider ID, then prompts for which field to remove.
-    This prompt repeats until the user chooses to exit.
-    """
-    # try:
-    #     provider_id = prompt_int("Provider ID")
-    #     if provider_id is not None:
-    #         if remove_record(provider_id, USER_INFO):
-    #             print(f"Provider {provider_id} Removed")
-    #         else:
-    #             print(f"Provider {provider_id} Not Found.")
-    #     else:
-    #         print("Provider ID cannot be a NULL value!")
-    # except ArrowIOError:
-    #     PColor.pfail("Provider was not removed!")
-    #     return
-    provider_id = prompt_int("Provider ID")
-    try:
-        result = remove_record(provider_id, USER_INFO)
-    except ArrowIOError:
-        PColor.pfail(f"There was an error and provider {provider_id} was not removed!")
-        return
-
-    if result is True:
-        print(f"Provider {provider_id} Removed")
-    else:
-        print(f"Provider {provider_id} Not Found.")
-
-
-def add_provider_directory_record() -> None:
-    """
-    Manager is prompted to enter service information.
-
-    This is the service information: service_id, service_name, price_dollars, and price_cents.
-    """
-    try:
-        service_id = generate_unique_id(PROVIDER_DIRECTORY_INFO)
-    except IndexError:
-        PColor.pfail(
-            "The maximum number of services has been reached. No new services added."
-        )
-        return
-
-    service_df = pd.DataFrame(
-        {
-            "service_id": service_id,
-            "service_name": prompt_str(
-                "Service name", PROVIDER_DIRECTORY_INFO.character_limits["service_name"]
-            ),
-            "price_dollars": prompt_int("Price (dollars)"),
-            "price_cents": prompt_int(
-                "Price (cents)",
-                numeric_limit=PROVIDER_DIRECTORY_INFO.numeric_limits["price_cents"],
-            ),
-        },
-        index=[0],
-    )
-    if service_df.isna().values.any():
-        return
-    try:
-        add_records_to_file(service_df, PROVIDER_DIRECTORY_INFO)
-    except ArrowIOError:
-        PColor.pwarn(
-            "There was an issue accessing the database. Service was not added."
-        )
-        return
-    # value / type errors are impossible due to checks during prompting.
-    PColor.pok(f"Service #{service_id} Added.")
-
-
-def update_provider_directory_record() -> None:
-    """The manager is prompted for a service id and then the service is updated based on the id."""
-    service_id = prompt_int("Service ID")
-    if service_id is None:
-        return None
-    try:
-        service_record = load_records_from_file(
-            PROVIDER_DIRECTORY_INFO, eq_cols={"service_id": service_id}
-        )
-    except ArrowIOError:
-        PColor.pfail("There was an error loading the service record.")
-        return
-
-    if service_record.empty:
-        PColor.pfail("Error: No record loaded.")
-        return
-
-    service_record = service_record.iloc[0]
-
-    options = []
-    for field in service_record.index.values[1:]:
-        options.append(field)
-    selection = prompt_menu_options("Choose field to change", options)
-    if selection is None:
-        return
-    field_to_update = selection[1]
-    if field_to_update == "price_dollars" or field_to_update == "price_cents":
-        new_value = prompt_int(
-            f"New value for {field_to_update}",
-            numeric_limit=PROVIDER_DIRECTORY_INFO.numeric_limits["price_cents"],
-        )
-    else:
-        new_value = prompt_str(
-            f"New value for {field_to_update}",
-            PROVIDER_DIRECTORY_INFO.character_limits["service_name"],
-        )
-
-    try:
-        update_record(
-            service_id, PROVIDER_DIRECTORY_INFO, **{field_to_update: new_value}
-        )
-    except ArrowIOError:
-        PColor.pfail("There was an error updating the service record.")
-        return
-
-
-def remove_provider_directory_record() -> None:
-    """Manager is prompted for a service id, and a lookup is performed, and a service is removed."""
-    service_id = prompt_int("Service ID")
-    result = None
-    try:
-        result = remove_record(service_id, PROVIDER_DIRECTORY_INFO)
-    except ArrowIOError:
-        PColor.pfail(f"There as an error and service {service_id} was not removed!")
-        return
-    if result is True:
-        print(f"Service {service_id} Removed")
-    else:
-        print(f"Service {service_id} was not found")
