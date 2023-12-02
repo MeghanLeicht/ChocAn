@@ -9,6 +9,7 @@ from pandas.api.types import is_numeric_dtype
 from .database_management import (
     load_records_from_file,
     add_records_to_file,
+    update_record,
     remove_record,
     update_record,
 )
@@ -200,7 +201,45 @@ def update_member_record() -> None:
     Prompts the user for a member ID, then prompts for which field to change.
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("update_member_record")
+    try:
+        member_id = prompt_int("Member ID")
+        if member_id is None:
+            return
+        member_record = load_records_from_file(
+            MEMBER_INFO, eq_cols={"member_id": member_id}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the member record.")
+        return
+
+    if member_record.empty:
+        PColor.pfail("Error: No record loaded.")
+        return
+
+    member_record = member_record.iloc[0]
+
+    options = []
+    for field in member_record.index.values[1:]:
+        options.append(f"{field}: {member_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "zipcode":
+        new_value = prompt_int(
+            f"New value for {field_to_update}", MEMBER_INFO.character_limits["zipcode"]
+        )
+    else:
+        new_value = prompt_str(
+            f"New value for {field_to_update}", MEMBER_INFO.character_limits["address"]
+        )
+
+    try:
+        update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
+        PColor.pok("Member record updated.")
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the member record.")
+        return
 
 
 def remove_member_record() -> None:
