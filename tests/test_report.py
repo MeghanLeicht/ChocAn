@@ -1,9 +1,8 @@
-from datetime import datetime
+from datetime import date, datetime
 from unittest.mock import patch
 
 import pandas as pd
 import pyarrow as pa
-from pandas.testing import assert_frame_equal
 from pyarrow import ArrowIOError
 import pytest
 from _pytest.fixtures import fixture
@@ -105,12 +104,12 @@ test_service_log_info = pd.DataFrame(
             datetime(2023, 11, 24),
         ],
         "service_date_utc": [
-            datetime(2023, 11, 21),
-            datetime(2023, 11, 24),
-            datetime(2023, 11, 26),
-            datetime(2023, 11, 21),
-            datetime(2023, 11, 21),
-            datetime(2023, 11, 24),
+            date(2023, 11, 21),
+            date(2023, 11, 24),
+            date(2023, 11, 26),
+            date(2023, 11, 21),
+            date(2023, 11, 21),
+            date(2023, 11, 24),
         ],
         "member_id": [367868907, 752880910, 367868907, 989635272, 752880910, 137002632],
         "provider_id": [
@@ -188,7 +187,7 @@ def save_report_side_effect(*args, **kwargs):
 
 
 @fixture
-def expected_report_df():
+def expected_member_report_df():
     """Fixture for the expected report."""
     return pd.DataFrame(
         {
@@ -275,7 +274,293 @@ def expected_summary_report_total_fee_over_99999_99_df():
 
 
 @fixture
-def expected_output():
+def expected_provider_report_df():
+    """Fixture for the expected report."""
+    return pd.DataFrame(
+        {
+            "Provider Name": [
+                "Karla Tanners",
+                "Karla Tanners",
+                "Case Hall",
+                "Zelda Hammersmith",
+                "Zelda Hammersmith",
+                "Ray Donald",
+            ],
+            "Provider Number": [
+                483185890,
+                483185890,
+                940672921,
+                385685178,
+                385685178,
+                637066975,
+            ],
+            "address": [
+                "1011 Pine St",
+                "1011 Pine St",
+                "123 Main St",
+                "1213 Maple St",
+                "1213 Maple St",
+                "789 Oak St",
+            ],
+            "city": [
+                "Portland",
+                "Portland",
+                "Chicago",
+                "Sandy",
+                "Sandy",
+                "Los Angeles",
+            ],
+            "state": ["OR", "OR", "IL", "OR", "OR", "CA"],
+            "zipcode": [64198, 64198, 15603, 34268, 34268, 84524],
+            "Date of Service": [
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 24).date(),
+                datetime(2023, 11, 26).date(),
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 24).date(),
+            ],
+            "Date and Time Data Were Received by the Computer": [
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 24),
+                datetime(2023, 11, 26),
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 24),
+            ],
+            "Member Name": [
+                "Bob Henderson",
+                "Alex Smith",
+                "Bob Henderson",
+                "Alex Smith",
+                "Jane Doe",
+                "John Doe",
+            ],
+            "Member Number": [
+                367868907,
+                752880910,
+                367868907,
+                752880910,
+                989635272,
+                137002632,
+            ],
+            "Service Code": [889804, 951175, 495644, 427757, 805554, 708195],
+            "Fee to be paid": [
+                100.33000,
+                200.15000,
+                300.99000,
+                500.50000,
+                400.75000,
+                600.25000,
+            ],
+            "Total number of consultations with members": [
+                2.0,
+                2.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+            ],
+            "Total fee for the week": [300.48, 300.48, 300.99, 901.25, 901.25, 600.25],
+        }
+    )
+
+
+@fixture
+def expected_provider_report_total_fee_over_99999_99_df():
+    """Fixture for the expected report."""
+    return pd.DataFrame(
+        {
+            "Provider Name": [
+                "Karla Tanners",
+                "Karla Tanners",
+                "Case Hall",
+                "Zelda Hammersmith",
+                "Zelda Hammersmith",
+                "Ray Donald",
+            ],
+            "Provider Number": [
+                483185890,
+                483185890,
+                940672921,
+                385685178,
+                385685178,
+                637066975,
+            ],
+            "address": [
+                "1011 Pine St",
+                "1011 Pine St",
+                "123 Main St",
+                "1213 Maple St",
+                "1213 Maple St",
+                "789 Oak St",
+            ],
+            "city": [
+                "Portland",
+                "Portland",
+                "Chicago",
+                "Sandy",
+                "Sandy",
+                "Los Angeles",
+            ],
+            "state": ["OR", "OR", "IL", "OR", "OR", "CA"],
+            "zipcode": [64198, 64198, 15603, 34268, 34268, 84524],
+            "Date of Service": [
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 24).date(),
+                datetime(2023, 11, 26).date(),
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 24).date(),
+            ],
+            "Date and Time Data Were Received by the Computer": [
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 24),
+                datetime(2023, 11, 26),
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 24),
+            ],
+            "Member Name": [
+                "Bob Henderson",
+                "Alex Smith",
+                "Bob Henderson",
+                "Alex Smith",
+                "Jane Doe",
+                "John Doe",
+            ],
+            "Member Number": [
+                367868907,
+                752880910,
+                367868907,
+                752880910,
+                989635272,
+                137002632,
+            ],
+            "Service Code": [889804, 951175, 495644, 427757, 805554, 708195],
+            "Fee to be paid": [
+                100.33000,
+                200.15000,
+                300.99000,
+                500.50000,
+                400.75000,
+                600.25000,
+            ],
+            "Total number of consultations with members": [
+                2.0,
+                2.0,
+                1.0,
+                2.0,
+                2.0,
+                1.0,
+            ],
+            "Total fee for the week": [
+                99999.99,
+                99999.99,
+                99999.99,
+                99999.99,
+                99999.99,
+                99999.99,
+            ],
+        }
+    )
+
+
+@fixture
+def expected_provider_report_total_consults_over_999_df():
+    """Fixture for the expected report."""
+    return pd.DataFrame(
+        {
+            "Provider Name": [
+                "Karla Tanners",
+                "Karla Tanners",
+                "Case Hall",
+                "Zelda Hammersmith",
+                "Zelda Hammersmith",
+                "Ray Donald",
+            ],
+            "Provider Number": [
+                483185890,
+                483185890,
+                940672921,
+                385685178,
+                385685178,
+                637066975,
+            ],
+            "address": [
+                "1011 Pine St",
+                "1011 Pine St",
+                "123 Main St",
+                "1213 Maple St",
+                "1213 Maple St",
+                "789 Oak St",
+            ],
+            "city": [
+                "Portland",
+                "Portland",
+                "Chicago",
+                "Sandy",
+                "Sandy",
+                "Los Angeles",
+            ],
+            "state": ["OR", "OR", "IL", "OR", "OR", "CA"],
+            "zipcode": [64198, 64198, 15603, 34268, 34268, 84524],
+            "Date of Service": [
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 24).date(),
+                datetime(2023, 11, 26).date(),
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 21).date(),
+                datetime(2023, 11, 24).date(),
+            ],
+            "Date and Time Data Were Received by the Computer": [
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 24),
+                datetime(2023, 11, 26),
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 21),
+                datetime(2023, 11, 24),
+            ],
+            "Member Name": [
+                "Bob Henderson",
+                "Alex Smith",
+                "Bob Henderson",
+                "Alex Smith",
+                "Jane Doe",
+                "John Doe",
+            ],
+            "Member Number": [
+                367868907,
+                752880910,
+                367868907,
+                752880910,
+                989635272,
+                137002632,
+            ],
+            "Service Code": [889804, 951175, 495644, 427757, 805554, 708195],
+            "Fee to be paid": [
+                100.33000,
+                200.15000,
+                300.99000,
+                500.50000,
+                400.75000,
+                600.25000,
+            ],
+            "Total number of consultations with members": [
+                999.000,
+                999.000,
+                999.000,
+                999.000,
+                999.000,
+                999.000,
+            ],
+            "Total fee for the week": [300.48, 300.48, 300.99, 901.25, 901.25, 600.25],
+        }
+    )
+
+
+@fixture
+def expected_output_for_member():
     """Fixture for the expected output."""
     current_date = datetime.now().strftime("%m-%d-%Y")
     return "".join(
@@ -297,6 +582,20 @@ def expected_output_for_summary():
     )
 
 
+@fixture
+def expected_output_for_provider():
+    """Fixture for the expected output."""
+    current_date = datetime.now().strftime("%m-%d-%Y")
+    return "".join(
+        [
+            f"Provider Report saved to /path/to/report/Karla Tanners_{current_date}.csv\n",
+            f"Provider Report saved to /path/to/report/Case Hall_{current_date}.csv\n",
+            f"Provider Report saved to /path/to/report/Zelda Hammersmith_{current_date}.csv\n",
+            f"Provider Report saved to /path/to/report/Ray Donald_{current_date}.csv\n",
+        ]
+    )
+
+
 @patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
 @patch(
     "choc_an_simulator.report.load_records_from_file",
@@ -305,21 +604,21 @@ def expected_output_for_summary():
 def test_generate_member_report(
     mock_load_records_from_file,
     mock_save_report,
-    expected_report_df,
-    expected_output,
+    expected_member_report_df,
+    expected_output_for_member,
     capsys,
 ):
     """Test the generate_member_report function."""
     generate_member_report()
     captured = capsys.readouterr()
 
-    assert captured.out == expected_output
+    assert captured.out == expected_output_for_member
 
     actual_df = pd.DataFrame()
     for i in range(mock_save_report.call_args_list.__len__()):
         actual_df = actual_df._append(mock_save_report.call_args_list[i][0][0])
 
-    assert actual_df.equals(expected_report_df)
+    assert actual_df.equals(expected_member_report_df)
 
 
 @patch("choc_an_simulator.report.load_records_from_file", return_value=pd.DataFrame())
@@ -345,10 +644,112 @@ def test_generate_member_report_arrow_io_error(mock_load_records_from_file, caps
     assert captured.out == expected
 
 
-def test_generate_provider_report():
-    """Test of the generate_provider_report function."""
-    with pytest.raises(NotImplementedError):
-        generate_provider_report()
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+def test_generate_provider_report(
+    mock_load_records_from_file,
+    mock_save_report,
+    expected_provider_report_df,
+    expected_output_for_provider,
+    capsys,
+):
+    """Test the generate_member_report function."""
+    generate_provider_report()
+    captured = capsys.readouterr().out
+
+    assert captured == expected_output_for_provider
+
+    actual_df = pd.DataFrame()
+    for i in range(mock_save_report.call_args_list.__len__()):
+        actual_df = actual_df._append(mock_save_report.call_args_list[i][0][0])
+
+    actual_df = actual_df.reset_index(drop=True)
+
+    assert actual_df.equals(expected_provider_report_df)
+
+
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+@patch("choc_an_simulator.report.calculate_total_fee", return_value=999999.00)
+def test_generate_provider_report_has_total_fees_over_99999_99(
+    mock_load_records_from_file,
+    mock_sum,
+    mock_save_report,
+    expected_provider_report_total_fee_over_99999_99_df,
+    expected_output_for_provider,
+    capsys,
+):
+    """Test the generate_member_report function."""
+    generate_provider_report()
+    captured = capsys.readouterr().out
+
+    assert captured == expected_output_for_provider
+
+    actual_df = pd.DataFrame()
+    for i in range(mock_save_report.call_args_list.__len__()):
+        actual_df = actual_df._append(mock_save_report.call_args_list[i][0][0])
+
+    actual_df = actual_df.reset_index(drop=True)
+
+    assert actual_df.equals(expected_provider_report_total_fee_over_99999_99_df)
+
+
+@patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)
+@patch(
+    "choc_an_simulator.report.load_records_from_file",
+    side_effect=load_records_from_file_side_effect,
+)
+@patch("choc_an_simulator.report.len", return_value=1000)
+def test_generate_provider_report_has_total_consults_over_999(
+    mock_load_records_from_file,
+    mock_len,
+    mock_save_report,
+    expected_output_for_provider,
+    expected_provider_report_total_consults_over_999_df,
+    capsys,
+):
+    """Test the generate_member_report function."""
+    generate_provider_report()
+    captured = capsys.readouterr().out
+
+    assert captured == expected_output_for_provider
+
+    actual_df = pd.DataFrame()
+    for i in range(mock_save_report.call_args_list.__len__()):
+        actual_df = actual_df._append(mock_save_report.call_args_list[i][0][0])
+
+    actual_df = actual_df.reset_index(drop=True)
+
+    assert actual_df.equals(expected_provider_report_total_consults_over_999_df)
+
+
+@patch("choc_an_simulator.report.load_records_from_file", return_value=pd.DataFrame())
+def test_generate_provider_report_no_providers(mock_load_records_from_file, capsys):
+    """
+    Test the generate_member_report function with no members having had a service in the last
+    7 days.
+    """
+    expected_output = "No records found within the last 7 days.\n"
+
+    generate_provider_report()
+    captured = capsys.readouterr()
+
+    assert captured.out == expected_output
+
+
+@patch("choc_an_simulator.report.load_records_from_file", side_effect=ArrowIOError)
+def test_generate_provider_report_arrow_io_error(mock_load_records_from_file, capsys):
+    """Test the generate_member_report function with a KeyError."""
+    expected = "\033[93mThere was an issue accessing the database.\n\tError: \x1b[0m\n"
+    generate_provider_report()
+    captured = capsys.readouterr()
+    assert captured.out == expected
 
 
 @patch("choc_an_simulator.report.save_report", side_effect=save_report_side_effect)

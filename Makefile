@@ -12,7 +12,7 @@ install:  requirements-dev.txt requirements.txt
 
 test:
 	$(COVERAGE) run -m pytest
-	$(COVERAGE) report
+	$(COVERAGE) report -m
 	rm .coverage
 
 clean:

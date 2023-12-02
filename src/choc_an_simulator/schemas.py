@@ -254,5 +254,6 @@ SERVICE_LOG_INFO = TableInfo(
         "provider_id": USER_INFO.character_limits["id"],
         "member_id": MEMBER_INFO.character_limits["member_id"],
         "service_id": PROVIDER_DIRECTORY_INFO.character_limits["service_id"],
+        "comments": range(1, 100),
     },
 )

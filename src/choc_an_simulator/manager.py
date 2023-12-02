@@ -6,8 +6,14 @@ The manager sub-system allows managers to manage member, provider, and provider 
 import pandas as pd
 from pyarrow import ArrowIOError
 from pandas.api.types import is_numeric_dtype
-from .database_management import load_records_from_file, add_records_to_file
-from .schemas import USER_INFO, MEMBER_INFO, TableInfo
+from .database_management import (
+    load_records_from_file,
+    add_records_to_file,
+    update_record,
+    remove_record,
+    update_record,
+)
+from .schemas import USER_INFO, MEMBER_INFO, PROVIDER_DIRECTORY_INFO, TableInfo
 from .user_io import prompt_str, prompt_int, PColor, prompt_menu_options
 from .report import (
     generate_member_report,
@@ -195,16 +201,76 @@ def update_member_record() -> None:
     Prompts the user for a member ID, then prompts for which field to change.
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("update_member_record")
+    try:
+        member_id = prompt_int("Member ID")
+        if member_id is None:
+            return
+        member_record = load_records_from_file(
+            MEMBER_INFO, eq_cols={"member_id": member_id}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the member record.")
+        return
+
+    if member_record.empty:
+        PColor.pfail("Error: No record loaded.")
+        return
+
+    member_record = member_record.iloc[0]
+
+    options = []
+    for field in member_record.index.values[1:]:
+        options.append(f"{field}: {member_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "zipcode":
+        new_value = prompt_int(
+            f"New value for {field_to_update}", MEMBER_INFO.character_limits["zipcode"]
+        )
+    else:
+        new_value = prompt_str(
+            f"New value for {field_to_update}", MEMBER_INFO.character_limits["address"]
+        )
+
+    try:
+        update_record(member_id, MEMBER_INFO, **{field_to_update: new_value})
+        PColor.pok("Member record updated.")
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the member record.")
+        return
 
 
 def remove_member_record() -> None:
     """
     Prompt the user to remove the member's information.
 
-    Prompts the user for a member ID, then prompts for which field to remove.
+    Prompts the user for a member ID, and then removes the record.
     """
-    raise NotImplementedError("remove_member_record")
+    # try:
+    #     member_id = prompt_int("Member ID")
+    #     if member_id is not None:
+    #         if remove_record(member_id, MEMBER_INFO):
+    #             print(f"Member {member_id} Removed")
+    #         else:
+    #             print(f"Member {member_id} Not Found.")
+    #     else:
+    #         print("Member ID cannot be a NULL value!")
+    # except ArrowIOError:
+    #     PColor.pfail("Member was not removed!")
+    #     return
+    member_id = prompt_int("Member ID")
+    try:
+        result = remove_record(member_id, MEMBER_INFO)
+    except ArrowIOError:
+        PColor.pfail(f"There was an error and member {member_id} was not removed!")
+        return
+
+    if result is True:
+        print(f"Member {member_id} Removed")
+    else:
+        print(f"Member {member_id} Not Found.")
 
 
 def generate_unique_id(table_info: TableInfo) -> int:
@@ -280,9 +346,39 @@ def update_provider_record() -> None:
     Prompt the user to update the provider's information.
 
     Prompts the user for a provider ID, then prompts for which field to change.
-    This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("update_provider_record")
+    provider_id = prompt_int("Provider ID")
+    if provider_id is None:
+        return None
+    try:
+        provider_record = load_records_from_file(USER_INFO, eq_cols={"id": provider_id})
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the provider record.")
+        return
+
+    provider_record = provider_record.iloc[0]
+
+    options = []
+    for field in provider_record.index.values[1:]:
+        options.append(f"{field}: {provider_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "type" or field_to_update == "zipcode":
+        new_value = prompt_int(
+            f"New value for {field_to_update}", USER_INFO.character_limits["zipcode"]
+        )
+    else:
+        new_value = prompt_str(
+            f"New value for {field_to_update}", USER_INFO.character_limits["address"]
+        )
+
+    try:
+        update_record(provider_id, USER_INFO, **{field_to_update: new_value})
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the provider record.")
+        return
 
 
 def remove_provider_record() -> None:
@@ -292,7 +388,29 @@ def remove_provider_record() -> None:
     Prompts the user for a provider ID, then prompts for which field to remove.
     This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("remove_provider_record")
+    # try:
+    #     provider_id = prompt_int("Provider ID")
+    #     if provider_id is not None:
+    #         if remove_record(provider_id, USER_INFO):
+    #             print(f"Provider {provider_id} Removed")
+    #         else:
+    #             print(f"Provider {provider_id} Not Found.")
+    #     else:
+    #         print("Provider ID cannot be a NULL value!")
+    # except ArrowIOError:
+    #     PColor.pfail("Provider was not removed!")
+    #     return
+    provider_id = prompt_int("Provider ID")
+    try:
+        result = remove_record(provider_id, USER_INFO)
+    except ArrowIOError:
+        PColor.pfail(f"There was an error and provider {provider_id} was not removed!")
+        return
+
+    if result is True:
+        print(f"Provider {provider_id} Removed")
+    else:
+        print(f"Provider {provider_id} Not Found.")
 
 
 def add_provider_directory_record() -> None:
@@ -300,25 +418,97 @@ def add_provider_directory_record() -> None:
     Manager is prompted to enter service information.
 
     This is the service information: service_id, service_name, price_dollars, and price_cents.
-
-    This prompt repeats until the user chooses to exit.
     """
-    raise NotImplementedError("add_provider_directory_record")
+    try:
+        service_id = generate_unique_id(PROVIDER_DIRECTORY_INFO)
+    except IndexError:
+        PColor.pfail(
+            "The maximum number of services has been reached. No new services added."
+        )
+        return
+
+    service_df = pd.DataFrame(
+        {
+            "service_id": service_id,
+            "service_name": prompt_str(
+                "Service name", PROVIDER_DIRECTORY_INFO.character_limits["service_name"]
+            ),
+            "price_dollars": prompt_int("Price (dollars)"),
+            "price_cents": prompt_int(
+                "Price (cents)", PROVIDER_DIRECTORY_INFO.character_limits["price_cents"]
+            ),
+        },
+        index=[0],
+    )
+    if service_df.isna().values.any():
+        return
+    try:
+        add_records_to_file(service_df, PROVIDER_DIRECTORY_INFO)
+    except ArrowIOError:
+        PColor.pwarn(
+            "There was an issue accessing the database. Service was not added."
+        )
+        return
+    # value / type errors are impossible due to checks during prompting.
+    PColor.pok(f"Service #{service_id} Added.")
 
 
 def update_provider_directory_record() -> None:
-    """
-    The manager is prompted for a service id to update, and a lookup is performed.
+    """The manager is prompted for a service id and then the service is updated based on the id."""
+    service_id = prompt_int("Service ID")
+    if service_id is None:
+        return None
+    try:
+        service_record = load_records_from_file(
+            PROVIDER_DIRECTORY_INFO, eq_cols={"service_id": service_id}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error loading the service record.")
+        return
 
-    This prompt repeats until the user chooses to exit.
-    """
-    raise NotImplementedError("update_provider_directory_record")
+    if service_record.empty:
+        PColor.pfail("Error: No record loaded.")
+        return
+
+    service_record = service_record.iloc[0]
+
+    options = []
+    for field in service_record.index.values[1:]:
+        options.append(f"{field}: {service_record[field]}")
+    selection = prompt_menu_options("Choose field to change", options)
+    if selection is None:
+        return
+    field_to_update = selection[1]
+    if field_to_update == "price_dollars" or field_to_update == "price_cents":
+        new_value = prompt_int(
+            f"New value for {field_to_update}",
+            PROVIDER_DIRECTORY_INFO.character_limits["price_cents"],
+        )
+    else:
+        new_value = prompt_str(
+            f"New value for {field_to_update}",
+            PROVIDER_DIRECTORY_INFO.character_limits["service_name"],
+        )
+
+    try:
+        update_record(
+            service_id, PROVIDER_DIRECTORY_INFO, **{field_to_update: new_value}
+        )
+    except ArrowIOError:
+        PColor.pfail("There was an error updating the service record.")
+        return
 
 
 def remove_provider_directory_record() -> None:
-    """
-    Manager is prompted for a service id to be removed, and a lookup is performed.
-
-    This prompt repeats until the user chooses to exit.
-    """
-    raise NotImplementedError("remove_provider_directory_record")
+    """Manager is prompted for a service id, and a lookup is performed, and a service is removed."""
+    service_id = prompt_int("Service ID")
+    result = None
+    try:
+        result = remove_record(service_id, PROVIDER_DIRECTORY_INFO)
+    except ArrowIOError:
+        PColor.pfail(f"There as an error and service {service_id} was not removed!")
+        return
+    if result is True:
+        print(f"Service {service_id} Removed")
+    else:
+        print(f"Service {service_id} was not found")
