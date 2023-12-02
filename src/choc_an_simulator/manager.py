@@ -99,6 +99,19 @@ def _prompt_report_options() -> None:
 
 
 def _prompt_field(table_info: TableInfo, field_name: str) -> Optional[str | int | date]:
+    """
+    Prompt the user for a field from a table_info object.
+
+    Args-
+        table_info (TableInfo): Object to get type information from
+        field_name (str): Name of field to prompt for
+
+    Returns-
+        the input, as a date, str, or int depending on the type from table_info
+
+    Raises-
+        ValueError: Field not found in table_info
+    """
     field = next((field for field in table_info.schema.fields if field.name == field_name), None)
     if field is None:
         raise ValueError(f"Field {field_name} not found in schema {table_info.name}")
@@ -141,6 +154,13 @@ def _prompt_table_info(
 
 
 def _prompt_update_table_info(table_info: TableInfo, blacklist: Optional[List[str]] = None):
+    """
+    Prompt the user to update one field in a database
+
+    Args-
+        table_info (TableInfo): Info for the database being updated
+        blacklist (Optional[List[str]]): Optional list of fields not to include as options
+    """
     blacklist = blacklist or []
     blacklist.append(table_info.index_col())
     index_to_update = _prompt_field(table_info, table_info.index_col())
@@ -175,6 +195,13 @@ def _prompt_update_table_info(table_info: TableInfo, blacklist: Optional[List[st
 
 
 def _prompt_add_to_table_info(table_info: TableInfo, blacklist: Optional[List[str]] = None):
+    """
+    Prompt the user to add a record to a database
+
+    Args-
+        table_info (TableInfo): Info for the database being added to
+        blacklist (Optional[List[str]]): Optional list of fields not to prompt for
+    """
     blacklist = blacklist or []
     blacklist.append(table_info.index_col())
     try:
@@ -201,6 +228,12 @@ def _prompt_add_to_table_info(table_info: TableInfo, blacklist: Optional[List[st
 
 
 def _prompt_remove_from_table_info(table_info: TableInfo):
+    """
+    Prompt the user to remove one row from a database
+
+    Args-
+        table_info (TableInfo): Info for the database being updated
+    """
     index_to_update = _prompt_field(table_info, table_info.index_col())
     if index_to_update is None:
         return
