@@ -105,7 +105,9 @@ def test_login_menu_incorrect_password(mocker, capsys):
     mocker.patch(f"{CAS_LOG_PATH}.user_type_authorization", return_value=0)
 
     # KeyboardInterrupt after first attempt
-    mocker.patch(f"{CAS_LOG_PATH}.getpass.getpass", side_effect=[False, KeyboardInterrupt])
+    mocker.patch(
+        f"{CAS_LOG_PATH}.getpass.getpass", side_effect=[False, KeyboardInterrupt]
+    )
 
     login_menu()
 
@@ -149,7 +151,9 @@ def test_secure_password_verification(mock_load_records_from_file, user_id, pass
 @patch("choc_an_simulator.login.load_records_from_file", return_value=pd.DataFrame())
 def test_secure_password_verification_no_user(mock_load_records_from_file):
     """password verification fails if user does not exist."""
-    verified_user = secure_password_verification(user_id=123456789, password="password1")
+    verified_user = secure_password_verification(
+        user_id=123456789, password="password1"
+    )
 
     assert verified_user is False
 

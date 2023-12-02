@@ -211,9 +211,7 @@ def save_example_provider_directory_info():
     )
     with contextlib.suppress(ValueError):  # Avoid adding duplicate values
         add_records_to_file(provider_directory_df, PROVIDER_DIRECTORY_INFO)
-        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(
-            provider_directory_df
-        )
+        assert load_records_from_file(PROVIDER_DIRECTORY_INFO).equals(provider_directory_df)
 
 
 def save_example_service_log():
@@ -248,9 +246,7 @@ def monkeysession(request):
 @pytest.fixture(scope="function")
 def save_example_info(monkeysession, tmp_path_factory):
     """Mock the directory that parquet files are stored in."""
-    monkeysession.setattr(
-        _parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp())
-    )
+    monkeysession.setattr(_parquet_utils, "_PARQUET_DIR_", str(tmp_path_factory.getbasetemp()))
     save_example_member_info()
     save_example_provider_info()
     save_example_provider_directory_info()
@@ -269,12 +265,8 @@ def mock_report_dir(monkeysession, tmp_path_factory):
 def mock_provider_password_auth(mocker):
     """Mock the password entry / authorization process."""
     mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
-    mocker.patch(
-        "choc_an_simulator.login.generate_secure_password", return_value=[None, None]
-    )
-    mocker.patch(
-        "choc_an_simulator.login.secure_password_verifiction", return_value=True
-    )
+    mocker.patch("choc_an_simulator.login.generate_secure_password", return_value=[None, None])
+    mocker.patch("choc_an_simulator.login.secure_password_verification", return_value=True)
     mocker.patch("choc_an_simulator.login.user_type_authorization", return_value=1)
     yield
 
@@ -283,11 +275,7 @@ def mock_provider_password_auth(mocker):
 def mock_manager_password_auth(mocker):
     """Mock the password entry / authorization process."""
     mocker.patch("choc_an_simulator.login.getpass.getpass", return_value=None)
-    mocker.patch(
-        "choc_an_simulator.login.generate_secure_password", return_value=[None, None]
-    )
-    mocker.patch(
-        "choc_an_simulator.login.secure_password_verifiction", return_value=True
-    )
+    mocker.patch("choc_an_simulator.login.generate_secure_password", return_value=[None, None])
+    mocker.patch("choc_an_simulator.login.secure_password_verification", return_value=True)
     mocker.patch("choc_an_simulator.login.user_type_authorization", return_value=0)
     yield
