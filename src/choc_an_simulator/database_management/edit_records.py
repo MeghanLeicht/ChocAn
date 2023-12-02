@@ -166,10 +166,10 @@ def _get_row_by_index(records: pd.DataFrame, index: Any) -> Optional[pd.Series]:
 
 
 def _validate_and_update_fields(
-        records: pd.DataFrame,
-        index: int,
-        field_updates: Dict[str, Any],
-        table_info: TableInfo,
+    records: pd.DataFrame,
+    index: int,
+    field_updates: Dict[str, Any],
+    table_info: TableInfo,
 ) -> pd.DataFrame:
     """
     Validates and updates specified fields in a record of a DataFrame.
@@ -208,10 +208,10 @@ def _validate_and_update_fields(
 
 
 def _validate_and_update_field(
-        row: pd.Series,
-        field_name: str,
-        updated_value: Any,
-        table_info: TableInfo,
+    row: pd.Series,
+    field_name: str,
+    updated_value: Any,
+    table_info: TableInfo,
 ) -> pd.Series:
     """
     Check that a field is valid, and then write it to its location in a dataframe.

@@ -2,7 +2,11 @@
 import pytest
 from choc_an_simulator.login import login_menu
 from choc_an_simulator.database_management import load_records_from_file
-from choc_an_simulator.schemas import MEMBER_INFO, PROVIDER_DIRECTORY_INFO, SERVICE_LOG_INFO
+from choc_an_simulator.schemas import (
+    MEMBER_INFO,
+    PROVIDER_DIRECTORY_INFO,
+    SERVICE_LOG_INFO,
+)
 
 PROVIDER_LOGIN_SEQUENCE = ["111111111"]
 
@@ -23,7 +27,9 @@ class MenuNums:
         (MenuNums.CHECK_IN + ["555555555"], "Invalid"),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_provider_password_auth")
+@pytest.mark.usefixtures(
+    "mock_input_series", "save_example_info", "mock_provider_password_auth"
+)
 def test_member_check_in(
     mock_input_series,
     save_example_info,
@@ -54,7 +60,9 @@ def test_member_check_in(
         ),
     ],
 )
-@pytest.mark.usefixtures("mock_input_series", "save_example_info", "mock_provider_password_auth")
+@pytest.mark.usefixtures(
+    "mock_input_series", "save_example_info", "mock_provider_password_auth"
+)
 def test_member_record_service(
     mock_input_series,
     save_example_info,

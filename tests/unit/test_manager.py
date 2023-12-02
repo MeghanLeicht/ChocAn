@@ -4,13 +4,23 @@ import pandas as pd
 import pyarrow as pa
 import pytest
 
-from choc_an_simulator.manager import (_prompt_member_options, _prompt_provider_directory_options,
-                                       _prompt_provider_options, _prompt_report_options,
-                                       add_member_record, add_provider_directory_record,
-                                       add_provider_record, generate_unique_id, manager_menu,
-                                       remove_member_record, remove_provider_directory_record,
-                                       remove_provider_record, update_member_record,
-                                       update_provider_directory_record, update_provider_record)
+from choc_an_simulator.manager import (
+    _prompt_member_options,
+    _prompt_provider_directory_options,
+    _prompt_provider_options,
+    _prompt_report_options,
+    add_member_record,
+    add_provider_directory_record,
+    add_provider_record,
+    generate_unique_id,
+    manager_menu,
+    remove_member_record,
+    remove_provider_directory_record,
+    remove_provider_record,
+    update_member_record,
+    update_provider_directory_record,
+    update_provider_record,
+)
 from choc_an_simulator.schemas import MEMBER_INFO, PROVIDER_DIRECTORY_INFO, USER_INFO
 
 CAS_MGR_PATH = "choc_an_simulator.manager"
@@ -27,7 +37,7 @@ CAS_MGR_PATH = "choc_an_simulator.manager"
 )
 @pytest.mark.usefixtures("assert_menu_endpoint")
 def test_manager_menu(
-        assert_menu_endpoint,
+    assert_menu_endpoint,
 ):
     """Parameterized test that manager_menu reaches the correct endpoints"""
     manager_menu()
@@ -43,7 +53,7 @@ def test_manager_menu(
 )
 @pytest.mark.usefixtures("assert_menu_endpoint")
 def test_prompt_member_options(
-        assert_menu_endpoint,
+    assert_menu_endpoint,
 ):
     """Parameterized test that _prompt_member_options reaches the correct endpoints"""
     _prompt_member_options()
@@ -59,7 +69,7 @@ def test_prompt_member_options(
 )
 @pytest.mark.usefixtures("assert_menu_endpoint")
 def test_prompt_provider_options(
-        assert_menu_endpoint,
+    assert_menu_endpoint,
 ):
     """Parameterized test that _prompt_provider_options reaches the correct endpoints"""
     _prompt_provider_options()
@@ -75,7 +85,7 @@ def test_prompt_provider_options(
 )
 @pytest.mark.usefixtures("assert_menu_endpoint")
 def test_prompt_provider_directory_options(
-        assert_menu_endpoint,
+    assert_menu_endpoint,
 ):
     """Parameterized test that _prompt_provider_directory_options reaches the correct endpoints"""
     _prompt_provider_directory_options()
@@ -91,7 +101,7 @@ def test_prompt_provider_directory_options(
 )
 @pytest.mark.usefixtures("assert_menu_endpoint")
 def test_prompt_report_options(
-        assert_menu_endpoint,
+    assert_menu_endpoint,
 ):
     """Parameterized test that _prompt_report_options reaches the correct endpoints"""
     _prompt_report_options()
@@ -184,8 +194,8 @@ class TestAddMemberRecord:
         )
         add_member_record()
         assert (
-                "There was an issue accessing the database. Member was not added."
-                in capsys.readouterr().out
+            "There was an issue accessing the database. Member was not added."
+            in capsys.readouterr().out
         )
 
     @pytest.mark.usefixtures("mock_input_ctrl_c")
@@ -267,13 +277,14 @@ class TestUpdateMemberRecord:
         )
         update_member_record()
         assert (
-                "There was an error loading the member record." in capsys.readouterr().out
+            "There was an error loading the member record." in capsys.readouterr().out
         )
 
     def test_update_member_record_user_exit(self, mocker):
         """Test of the update_member_record function with user exit."""
-        mock_update_records = mocker.patch("choc_an_simulator.manager.prompt_int",
-                                           return_value=None)
+        mock_update_records = mocker.patch(
+            "choc_an_simulator.manager.prompt_int", return_value=None
+        )
         assert update_member_record() is None
 
     def test_update_member_record_io_error(self, mocker, capsys):
@@ -284,7 +295,7 @@ class TestUpdateMemberRecord:
         )
         update_member_record()
         assert (
-                "There was an error loading the member record." in capsys.readouterr().out
+            "There was an error loading the member record." in capsys.readouterr().out
         )
 
     def test_update_member_record_empty_record_returned(self, mocker, capsys):
@@ -298,16 +309,10 @@ class TestUpdateMemberRecord:
             return_value=pd.DataFrame(),
         )
         assert update_member_record() is None
-        assert (
-                "Warning: No matching member.\n" in capsys.readouterr().out
-        )
+        assert "Warning: No matching member.\n" in capsys.readouterr().out
 
     def test_update_member_record_valid(
-            self,
-            mocker,
-            capsys,
-            test_member_info,
-            test_member_info_after_update
+        self, mocker, capsys, test_member_info, test_member_info_after_update
     ):
         """Test of the update_member_record function with valid input"""
         mocker.patch(
@@ -323,22 +328,16 @@ class TestUpdateMemberRecord:
             return_value=None,
         )
         mocker.patch(
-            "choc_an_simulator.manager.prompt_menu_options",
-            return_value=(5, "zipcode")
+            "choc_an_simulator.manager.prompt_menu_options", return_value=(5, "zipcode")
         )
-        mocker.patch(
-            "choc_an_simulator.manager.prompt_int",
-            return_value=86753
-        )
+        mocker.patch("choc_an_simulator.manager.prompt_int", return_value=86753)
         mocker.patch(
             "choc_an_simulator.manager.update_record",
-            return_value=test_member_info_after_update
+            return_value=test_member_info_after_update,
         )
         assert update_member_record() is None
         captured = capsys.readouterr().out
-        assert (
-                "Member record updated." in captured
-        )
+        assert "Member record updated." in captured
 
 
 class TestRemoveMemberRecord:
@@ -402,8 +401,8 @@ class TestAddProviderRecord:
         )
         add_provider_record()
         assert (
-                "There was an issue accessing the database. Provider was not added."
-                in capsys.readouterr().out
+            "There was an issue accessing the database. Provider was not added."
+            in capsys.readouterr().out
         )
 
     @pytest.mark.usefixtures("mock_input_ctrl_c")

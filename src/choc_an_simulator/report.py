@@ -237,7 +237,9 @@ def generate_summary_report() -> None:
     provided services, the total number of consultations, and the overall fee total are
     printed.
     """
-    gt_cols = gt_cols = {"service_date_utc": (datetime.now() - timedelta(days=7)).date()}
+    gt_cols = gt_cols = {
+        "service_date_utc": (datetime.now() - timedelta(days=7)).date()
+    }
     service_log = None
     provider_directory = None
     user_info = None

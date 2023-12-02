@@ -292,9 +292,7 @@ def generate_unique_id(table_info: TableInfo) -> int:
     try:
         df = load_records_from_file(table_info)
     except ArrowIOError:
-        PColor.pwarn(
-            "There was an issue accessing the database."
-        )
+        PColor.pwarn("There was an issue accessing the database.")
     if df.empty:
         return 1000000000
 
