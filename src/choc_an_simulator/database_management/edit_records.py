@@ -7,12 +7,12 @@ from ._write_records import _overwrite_records_to_file_
 from ..schemas import TableInfo
 
 
-def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
+def add_record_to_file(record: Dict[str, Any], table_info: TableInfo) -> None:
     """
-    Add new records to an existing Parquet file based on the provided schema.
+    Add a new record to an existing Parquet file based on the provided schema.
 
     Args-
-        records (pd.DataFrame): New records to be added.
+        record (Dict[str,Any]): Field/value pairs to be added. Must match the given schema.
         table_info (TableInfo): Object containing schema and other table-related information.
 
     Raises-
@@ -32,15 +32,17 @@ def add_records_to_file(records: pd.DataFrame, table_info: TableInfo) -> None:
     except pa.ArrowIOError as err_io:
         raise err_io
 
+    record_series = pd.Series(record)
+
     # Check for compatibility with the schema.
-    table_info.check_dataframe(records)
+    table_info.check_series(record_series)
 
     # Check that the addition will cause no duplicate indices
-    if _any_duplicate_values(existing_records.iloc[:, 0], records.iloc[:, 0]):
+    if _any_duplicate_values(existing_records.iloc[:, 0], record_series):
         raise ValueError("Added entries cause duplicates in the first column.")
 
     # Add the new data and save
-    records = pd.concat([existing_records, records])
+    records = pd.concat([existing_records, record_series.to_frame()])
     try:
         _overwrite_records_to_file_(records, table_info)
     except pa.ArrowIOError as err_io:
@@ -82,7 +84,7 @@ def update_record(index: Any, table_info: TableInfo, **kwargs) -> pd.Series:
             zipcode = 97212The
         )
     """
-    assert len(kwargs) > 0, "Must provide at least one key/value pair to update"
+    assert kwargs, "Must provide at least one key/value pair to update"
     try:
         records = _load_all_records_from_file_(table_info)
     except pa.ArrowInvalid as err_invalid:
@@ -160,16 +162,14 @@ def _get_row_by_index(records: pd.DataFrame, index: Any) -> Optional[pd.Series]:
         None: No matching row found.
     """
     rows = records.loc[records.iloc[:, 0] == index]
-    if rows.empty:
-        return None
-    return rows.iloc[0]
+    return None if rows.empty else rows.iloc[0]
 
 
 def _validate_and_update_fields(
-        records: pd.DataFrame,
-        index: int,
-        field_updates: Dict[str, Any],
-        table_info: TableInfo,
+    records: pd.DataFrame,
+    index: int,
+    field_updates: Dict[str, Any],
+    table_info: TableInfo,
 ) -> pd.DataFrame:
     """
     Validates and updates specified fields in a record of a DataFrame.
@@ -207,10 +207,10 @@ def _validate_and_update_fields(
 
 
 def _validate_and_update_field(
-        row: pd.Series,
-        field_name: str,
-        updated_value: Any,
-        table_info: TableInfo,
+    row: pd.Series,
+    field_name: str,
+    updated_value: Any,
+    table_info: TableInfo,
 ) -> pd.Series:
     """
     Check that a field is valid, and then write it to its location in a dataframe.
