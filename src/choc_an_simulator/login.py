@@ -56,6 +56,8 @@ def generate_secure_password(password: str) -> (bytes, bytes):
 
     This function is used to hash/salt the user password.
     It returns the hash/salt password and the salt.
+
+    Returns the number of bytes and str of the secure password.
     """
     password = password.encode()
     salt = bcrypt.gensalt()
@@ -67,7 +69,7 @@ def secure_password_verification(user_id: int, password: str) -> bool:
     """
     Verifies the password entered by the user.
 
-    Returns True or False if the password matches the database.
+    Returns True or False if the password and user ID matches the database.
     """
     try:
         pw = load_records_from_file(USER_INFO, eq_cols={"id": user_id})
@@ -81,16 +83,19 @@ def secure_password_verification(user_id: int, password: str) -> bool:
     return bcrypt.checkpw(password.encode(), pw)
 
 
-def user_type_authorization() -> None:
+def user_type_authorization(user_id: int) -> int:
     """
     Determines the user type.
 
     If the user type = 0, then the user has manager authorization.
     If the user type = 1, then the user has provider authorization.
-    """
 
+    Returns an integer of the user_type.
+    """
     try:
         user_type = load_records_from_file(USER_INFO, eq_cols={"id": user_id})["type"]
     except pa.ArrowIOError as err_io:
         PColor.pwarn(f"There was an issue accessing the database.\n\tError: {err_io}")
         return False
+
+    return user_type.iloc[0]
